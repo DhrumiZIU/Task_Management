@@ -1,10 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Discussion — Team Planner{% endblock %}
-{% block topbar_title %}Discussion{% endblock %}
-{% block topbar_sub %}Team meeting notes and updates{% endblock %}
-{% block topbar_actions %}
-  <a href="{{ url_for('meeting') }}" class="btn btn-secondary btn-sm">🌙 7 PM Meeting</a>
-{% endblock %}
+{% block title %}My Notes — Team Planner{% endblock %}
+{% block topbar_title %}My Notes{% endblock %}
+{% block topbar_sub %}Personal notes — only visible to you{% endblock %}
 
 {% block content %}
 <div class="discussion-layout">
@@ -17,18 +14,18 @@
         </div>
         <div>
           <div style="font-size:13px;font-weight:600;color:var(--text)">{{ session.display_name }}</div>
-          <div style="font-size:11px;color:var(--text3)">{{ (session.role or '')|capitalize }}</div>
+          <div style="font-size:11px;color:var(--text3)">Private note</div>
         </div>
       </div>
       <form method="post">
         <div class="field" style="margin-bottom:12px">
           <textarea name="note" rows="3"
-            placeholder="Share a meeting note, update, or action item..."
+            placeholder="Write a personal note, reminder, or action item..."
             style="resize:vertical"
             required></textarea>
         </div>
         <div class="btn-row">
-          <button type="submit" class="btn btn-primary btn-sm">Post Note</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Note</button>
         </div>
       </form>
     </div>
@@ -38,22 +35,29 @@
   <div class="discussion-feed">
     {% if notes %}
       {% for n in notes %}
-      <div class="note-card">
+      <div class="note-card" style="position:relative">
         <div class="note-header">
           <div class="note-avatar">{{ (n.display_name or 'U')[0] }}</div>
           <div class="note-meta">
             <span class="note-author">{{ n.display_name }}</span>
             <span class="note-time">{{ n.timestamp or '' }}</span>
           </div>
+          <form method="post" action="{{ url_for('delete_note', note_id=n.id) }}"
+                style="margin-left:auto"
+                onsubmit="return confirm('Delete this note?')">
+            <button type="submit"
+                    style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:14px;padding:2px 6px;border-radius:4px;opacity:0.6"
+                    title="Delete note">🗑</button>
+          </form>
         </div>
         <div class="note-body">{{ n.note }}</div>
       </div>
       {% endfor %}
     {% else %}
     <div class="no-data" style="padding:60px 20px">
-      <div style="font-size:32px;margin-bottom:12px">💬</div>
+      <div style="font-size:32px;margin-bottom:12px">📝</div>
       <div style="font-weight:600;color:var(--text2);margin-bottom:4px">No notes yet</div>
-      <div style="color:var(--text4);font-size:12px">Be the first to share a meeting note or update.</div>
+      <div style="color:var(--text4);font-size:12px">Your notes are private — only you can see them.</div>
     </div>
     {% endif %}
   </div>

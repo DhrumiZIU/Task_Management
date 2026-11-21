@@ -127,15 +127,23 @@ def register(app):
     @app.route("/discussion", methods=["GET", "POST"])
     @auth.login_required
     def discussion():
+        u, d = session.get("username", ""), session.get("display_name", "")
         if request.method == "POST":
             note = request.form.get("note", "").strip()
             if note:
-                u, d = session.get("username", ""), session.get("display_name", "")
                 db_backup.add_note(u, d, note)
                 db_backup.log_activity("add_note", u, d, note[:80])
                 flash("Note added.", "success")
             return redirect(url_for("discussion"))
-        return render_template("discussion.html", notes=db_backup.get_notes())
+        return render_template("discussion.html", notes=db_backup.get_notes(u))
+
+    @app.route("/discussion/delete/<int:note_id>", methods=["POST"])
+    @auth.login_required
+    def delete_note(note_id: int):
+        deleted = db_backup.delete_note(note_id, session.get("username", ""))
+        if not deleted:
+            flash("Note not found or not yours.", "error")
+        return redirect(url_for("discussion"))
 
     # ── Change Password / Profile ──────────────────────────────────────────
 

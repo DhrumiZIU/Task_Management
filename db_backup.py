@@ -158,11 +158,12 @@ def delete_task_db(excel_row: int):
 
 # ── Discussion ───────────────────────────────────────────────────────────────
 
-def get_notes() -> list[dict]:
+def get_notes(username: str) -> list[dict]:
+    """Return only the notes belonging to this user."""
     init_db()
     with _conn() as con:
         return [dict(r) for r in con.execute(
-            "SELECT * FROM discussion ORDER BY id DESC").fetchall()]
+            "SELECT * FROM discussion WHERE username=? ORDER BY id DESC", (username,)).fetchall()]
 
 
 def add_note(username: str, display_name: str, note: str):
@@ -170,6 +171,15 @@ def add_note(username: str, display_name: str, note: str):
     with _DB_WRITE, _conn() as con:
         con.execute("INSERT INTO discussion (username,display_name,note) VALUES(?,?,?)",
                     (username, display_name, note)); con.commit()
+
+
+def delete_note(note_id: int, username: str) -> bool:
+    """Delete a note only if it belongs to the given user. Returns True if deleted."""
+    init_db()
+    with _DB_WRITE, _conn() as con:
+        cur = con.execute("DELETE FROM discussion WHERE id=? AND username=?", (note_id, username))
+        con.commit()
+    return cur.rowcount > 0
 
 def log_activity(action: str, username: str, display_name: str, details: str = ""):
     init_db()
