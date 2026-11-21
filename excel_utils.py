@@ -1,4 +1,5 @@
-"""All openpyxl read/write helpers. Excel is the single source of truth."""
+"""All openpyxl read/write helpers. Excel is the single source of truth.
+When Excel is absent (e.g. on Railway), all operations fall back to SQLite."""
 from __future__ import annotations
 import threading
 from datetime import date, datetime
@@ -6,6 +7,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 WORKBOOK_PATH = Path(__file__).resolve().parent / "Team Daily Planner.xlsx"
+EXCEL_AVAILABLE = WORKBOOK_PATH.exists()
 LOCK = threading.RLock()
 TASK_COLS = {"date":1,"team_member":2,"task":3,"priority":4,
              "status":5,"done_looks_like":6,"est_hours":7,"update_7pm":8}
@@ -44,6 +46,9 @@ def _ensure_users_sheet(wb):
 
 
 def get_all_users() -> list[dict]:
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        return db_backup.get_users_backup()
     with LOCK:
         wb = _load(); _ensure_users_sheet(wb); ws = wb["Users"]
         return [{"username":r[0],"password":r[1],"role":r[2],
@@ -52,6 +57,9 @@ def get_all_users() -> list[dict]:
 
 
 def get_user(username: str) -> dict | None:
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        return db_backup.get_user_db(username)
     return next((u for u in get_all_users() if u["username"] == username), None)
 
 
@@ -62,6 +70,13 @@ def _next_empty_user_row(ws) -> int:
 
 
 def add_user(username: str, password: str, role: str, display_name: str, team_name: str = ""):
+    if not EXCEL_AVAILABLE:
+        import db_backup, sqlite3
+        with db_backup._DB_WRITE, db_backup._conn() as con:
+            con.execute("INSERT OR REPLACE INTO users (username,password,role,display_name,team_name)"
+                        " VALUES (?,?,?,?,?)", (username, password, role, display_name, team_name))
+            con.commit()
+        return
     with LOCK:
         wb = _load(); ws = wb["Users"]
         row = _next_empty_user_row(ws)
@@ -72,6 +87,11 @@ def add_user(username: str, password: str, role: str, display_name: str, team_na
 
 
 def delete_user(username: str):
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        with db_backup._DB_WRITE, db_backup._conn() as con:
+            con.execute("DELETE FROM users WHERE username=?", (username,)); con.commit()
+        return
     with LOCK:
         wb = _load(); ws = wb["Users"]
         for row in ws.iter_rows(min_row=DATA_START, max_row=200):
@@ -84,6 +104,12 @@ def delete_user(username: str):
 
 
 def update_user_password(username: str, new_password: str):
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        with db_backup._DB_WRITE, db_backup._conn() as con:
+            con.execute("UPDATE users SET password=? WHERE username=?", (new_password, username))
+            con.commit()
+        return
     with LOCK:
         wb = _load(); ws = wb["Users"]
         for row in ws.iter_rows(min_row=DATA_START, max_row=200):
@@ -104,12 +130,22 @@ def _remove_team_member(wb, name: str):
 
 
 def get_team_members() -> list[str]:
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        with db_backup._conn() as con:
+            rows = con.execute(
+                "SELECT DISTINCT team_name FROM users WHERE role='member' AND team_name!='' ORDER BY team_name"
+            ).fetchall()
+        return [r[0] for r in rows]
     with LOCK:
         wb = _load(); ws = wb["Team"]
         return [r[0] for r in ws.iter_rows(min_row=DATA_START, max_row=51, values_only=True) if r[0]]
 
 
 def get_tasks(filter_date: date | None = None, member: str | None = None) -> list[dict]:
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        return db_backup.get_tasks_db(filter_date=filter_date, member=member)
     with LOCK:
         wb = _load(); ws = wb["Tasks"]; tasks = []
         for i, row in enumerate(
@@ -127,6 +163,14 @@ def get_tasks(filter_date: date | None = None, member: str | None = None) -> lis
 
 def add_task(task_date: date, team_member: str, task: str, priority: str,
              done_looks_like: str = "", est_hours: float | None = None) -> int:
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        with db_backup._conn() as con:
+            row = con.execute("SELECT MAX(excel_row) FROM tasks").fetchone()
+            row_num = (row[0] or 1) + 1
+        db_backup.write_task_db(row_num, task_date, team_member, task, priority,
+                                "Not started", done_looks_like, est_hours, "")
+        return row_num
     with LOCK:
         wb = _load(); ws = wb["Tasks"]; row_num = DATA_START
         for row in ws.iter_rows(min_row=DATA_START, max_row=MAX_ROWS):
@@ -144,6 +188,14 @@ def add_task(task_date: date, team_member: str, task: str, priority: str,
 
 def update_task_full(row_num: int, task: str, priority: str, status: str,
                      done_looks_like: str, est_hours: float | None, update_7pm: str):
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        with db_backup._DB_WRITE, db_backup._conn() as con:
+            con.execute("UPDATE tasks SET task=?,priority=?,status=?,done_looks_like=?,"
+                        "est_hours=?,update_7pm=? WHERE excel_row=?",
+                        (task, priority, status, done_looks_like, est_hours, update_7pm, row_num))
+            con.commit()
+        return
     with LOCK:
         wb = _load(); ws = wb["Tasks"]
         for col, val in zip(
@@ -155,6 +207,10 @@ def update_task_full(row_num: int, task: str, priority: str, status: str,
 
 
 def update_task_status(row_num: int, status: str, update_7pm: str):
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        db_backup.update_task_status_db(row_num, status, update_7pm)
+        return
     with LOCK:
         wb = _load(); ws = wb["Tasks"]
         ws.cell(row_num, TASK_COLS["status"]).value    = status
@@ -163,6 +219,10 @@ def update_task_status(row_num: int, status: str, update_7pm: str):
 
 
 def delete_task(row_num: int):
+    if not EXCEL_AVAILABLE:
+        import db_backup
+        db_backup.delete_task_db(row_num)
+        return
     with LOCK:
         wb = _load(); ws = wb["Tasks"]
         for col in range(1, 9): ws.cell(row_num, col).value = None
