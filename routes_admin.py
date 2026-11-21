@@ -125,7 +125,7 @@ def register(app):
     # ── Discussion ─────────────────────────────────────────────────────────
 
     @app.route("/discussion", methods=["GET", "POST"])
-    @auth.member_required
+    @auth.login_required
     def discussion():
         if request.method == "POST":
             note = request.form.get("note", "").strip()

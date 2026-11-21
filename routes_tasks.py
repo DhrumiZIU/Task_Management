@@ -81,6 +81,26 @@ def register(app):
                                statuses=STATUS_OPTIONS, priorities=PRIORITY_OPTIONS,
                                is_manager=auth.is_manager())
 
+    @app.route("/task/status/<int:row_num>", methods=["POST"])
+    @auth.login_required
+    def quick_status(row_num: int):
+        """Inline status update from the dashboard — no full edit page needed."""
+        tasks = db_backup.get_tasks_db()
+        task  = next((t for t in tasks if t["row"] == row_num), None)
+        if not task or not auth.can_edit_task(task["team_member"]):
+            flash("Not allowed.", "error")
+            return redirect(url_for("dashboard"))
+        new_status = request.form.get("status", "").strip()
+        if new_status not in STATUS_OPTIONS:
+            flash("Invalid status.", "error")
+            return redirect(url_for("dashboard"))
+        xl.update_task_status(row_num, new_status, task.get("update_7pm") or "")
+        db_backup.update_task_status_db(row_num, new_status, task.get("update_7pm") or "")
+        db_backup.log_activity("status_change", session.get("username", ""),
+                               session.get("display_name", ""),
+                               f"Row {row_num} → {new_status}")
+        return redirect(request.referrer or url_for("dashboard"))
+
     @app.route("/task/delete/<int:row_num>", methods=["POST"])
     @auth.manager_required
     def delete_task(row_num: int):

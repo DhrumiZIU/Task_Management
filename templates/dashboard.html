@@ -123,9 +123,25 @@
         </td>
         <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority or '—' }}</span></td>
         <td style="color:var(--text3);font-size:12px">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
-        <td><span class="badge status-{{ (t.status or 'not-started')|lower|replace(' ','-') }}">
-          {% if t.status == 'Done' %}✓ {% elif t.status == 'Blocked' %}⚠ {% elif t.status == 'In progress' %}◉ {% endif %}{{ t.status or 'Not started' }}
-        </span></td>
+        <td>
+          {% if is_manager or team_name == member %}
+          <div class="status-quick" style="display:flex;gap:4px;flex-wrap:wrap">
+            {% for s in [('Not started','not-started','—'),('In progress','in-progress','◉'),('Done','done','✓'),('Blocked','blocked','⚠')] %}
+            <form method="post" action="{{ url_for('quick_status', row_num=t.row) }}" style="margin:0">
+              <input type="hidden" name="status" value="{{ s[0] }}">
+              <button type="submit"
+                class="badge status-{{ s[1] }}"
+                style="border:none;cursor:pointer;opacity:{% if t.status==s[0] %}1{% else %}0.35{% endif %};font-size:11px;padding:2px 7px"
+                title="Mark as {{ s[0] }}">{{ s[2] }} {{ s[0] }}</button>
+            </form>
+            {% endfor %}
+          </div>
+          {% else %}
+          <span class="badge status-{{ (t.status or 'not-started')|lower|replace(' ','-') }}">
+            {% if t.status == 'Done' %}✓ {% elif t.status == 'Blocked' %}⚠ {% elif t.status == 'In progress' %}◉ {% endif %}{{ t.status or 'Not started' }}
+          </span>
+          {% endif %}
+        </td>
         <td><div class="task-update">{{ t.update_7pm or '—' }}</div></td>
         {% if is_manager or team_name == member %}
         <td>
