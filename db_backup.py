@@ -191,22 +191,40 @@ def get_user_db(username: str) -> dict | None:
     return dict(row) if row else None
 
 
-def seed_users():
-    """Insert default users if the users table is empty (first run on Render)."""
+def update_profile_db(old_username: str, new_username: str, new_display_name: str, new_password: str | None = None):
+    """Rename username, display_name, and optionally password in SQLite."""
     init_db()
+    with _DB_WRITE, _conn() as con:
+        if new_password:
+            con.execute(
+                "UPDATE users SET username=?,display_name=?,team_name=CASE WHEN role='member' THEN ? ELSE team_name END,password=? WHERE username=?",
+                (new_username, new_display_name, new_display_name, new_password, old_username))
+        else:
+            con.execute(
+                "UPDATE users SET username=?,display_name=?,team_name=CASE WHEN role='member' THEN ? ELSE team_name END WHERE username=?",
+                (new_username, new_display_name, new_display_name, old_username))
+        # Keep task records in sync with the new display_name (member tasks use team_name)
+        con.execute("UPDATE tasks SET team_member=? WHERE team_member=?",
+                    (new_display_name, new_display_name))
+        con.commit()
+
+
+def seed_users():
+    """Insert/update default users on every startup so credential changes deploy automatically."""
+    init_db()
+    defaults = [
+        ("AdityaNaik",     "Aditya@123",  "manager", "Aditya Naik",     ""),
+        ("SachinSahane",   "Sachin@123",  "manager", "Sachin Sahane",   ""),
+        ("KathaPawale",    "Katha@123",   "member",  "Katha Pawale",    "Katha Pawale"),
+        ("DrashtiMakwana", "Drashti@123", "member",  "Drashti Makwana", "Drashti Makwana"),
+        ("DhrumiKhatri",   "Dhrumi@123",  "member",  "Dhrumi Khatri",   "Dhrumi Khatri"),
+        ("HarshMarodia",   "Harsh@123",   "member",  "Harsh Marodia",   "Harsh Marodia"),
+        ("MohitJain",      "Mohit@123",   "member",  "Mohit Jain",      "Mohit Jain"),
+    ]
+    old_usernames = ["manager1","manager2","member1","member2","member3","member4","member5"]
     with _conn() as con:
-        count = con.execute("SELECT COUNT(*) FROM users").fetchone()[0]
-        if count > 0:
-            return
-        defaults = [
-            ("manager1", "manager1pass", "manager", "Manager 1", ""),
-            ("manager2", "manager2pass", "manager", "Manager 2", ""),
-            ("member1",  "member1pass",  "member",  "Member 1",  "Member 1"),
-            ("member2",  "member2pass",  "member",  "Member 2",  "Member 2"),
-            ("member3",  "member3pass",  "member",  "Member 3",  "Member 3"),
-            ("member4",  "member4pass",  "member",  "Member 4",  "Member 4"),
-            ("member5",  "member5pass",  "member",  "Member 5",  "Member 5"),
-        ]
+        # Remove old default accounts if still present
+        con.executemany("DELETE FROM users WHERE username=?", [(u,) for u in old_usernames])
         con.executemany(
             "INSERT OR IGNORE INTO users (username,password,role,display_name,team_name)"
             " VALUES (?,?,?,?,?)", defaults)

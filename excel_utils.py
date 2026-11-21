@@ -117,6 +117,23 @@ def update_user_password(username: str, new_password: str):
         wb.save(WORKBOOK_PATH); _sync()
 
 
+def update_user_profile(old_username: str, new_username: str, new_display_name: str, new_password: str | None = None):
+    """Update username, display_name, and optionally password."""
+    import db_backup
+    db_backup.update_profile_db(old_username, new_username, new_display_name, new_password)
+    if EXCEL_AVAILABLE:
+        with LOCK:
+            wb = _load()
+            ws = wb["Users"]
+            for row in ws.iter_rows(min_row=DATA_START, max_row=200):
+                if row[0].value == old_username:
+                    row[0].value = new_username
+                    row[3].value = new_display_name
+                    if new_password: row[1].value = new_password
+                    break
+            wb.save(WORKBOOK_PATH)
+
+
 def _add_team_member(wb, name: str, role: str = "member"):
     ws = wb["Team"]
     for row in ws.iter_rows(min_row=DATA_START, max_row=51):
