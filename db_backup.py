@@ -4,8 +4,12 @@ import os, sqlite3, threading
 from datetime import date, datetime
 from pathlib import Path
 
-DB_PATH    = Path(__file__).resolve().parent / "team_planner.db"
-EXCEL_PATH = Path(__file__).resolve().parent / "Team Daily Planner.xlsx"
+# DATA_DIR: use Railway volume mount if set, otherwise the project directory
+_DATA_DIR  = Path(os.environ.get("DATA_DIR", str(Path(__file__).resolve().parent)))
+_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+DB_PATH    = _DATA_DIR / "team_planner.db"
+EXCEL_PATH = _DATA_DIR / "Team Daily Planner.xlsx"
 _LOCK      = threading.Lock()   # serialises Excel sync
 _DB_WRITE  = threading.Lock()   # serialises concurrent SQLite writes (WAL handles reads)
 
