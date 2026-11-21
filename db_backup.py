@@ -179,6 +179,36 @@ def get_activity_log(limit: int = 100) -> list[dict]:
         return [dict(r) for r in con.execute(
             "SELECT * FROM activity_log ORDER BY id DESC LIMIT ?", (limit,)).fetchall()]
 
+def get_user_db(username: str) -> dict | None:
+    """Read one user from SQLite — used by auth (works without Excel on Render)."""
+    init_db()
+    with _conn() as con:
+        row = con.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
+    return dict(row) if row else None
+
+
+def seed_users():
+    """Insert default users if the users table is empty (first run on Render)."""
+    init_db()
+    with _conn() as con:
+        count = con.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        if count > 0:
+            return
+        defaults = [
+            ("manager1", "manager1pass", "manager", "Manager 1", ""),
+            ("manager2", "manager2pass", "manager", "Manager 2", ""),
+            ("member1",  "member1pass",  "member",  "Member 1",  "Member 1"),
+            ("member2",  "member2pass",  "member",  "Member 2",  "Member 2"),
+            ("member3",  "member3pass",  "member",  "Member 3",  "Member 3"),
+            ("member4",  "member4pass",  "member",  "Member 4",  "Member 4"),
+            ("member5",  "member5pass",  "member",  "Member 5",  "Member 5"),
+        ]
+        con.executemany(
+            "INSERT OR IGNORE INTO users (username,password,role,display_name,team_name)"
+            " VALUES (?,?,?,?,?)", defaults)
+        con.commit()
+
+
 def get_tasks_backup() -> list[dict]:
     init_db()
     with _conn() as con:

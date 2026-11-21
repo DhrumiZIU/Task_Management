@@ -1,19 +1,24 @@
 """Task Management Web App — Flask entry point."""
 from __future__ import annotations
-import json, subprocess, threading, time
+import json, os, subprocess, threading, time
 from datetime import date, timedelta
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 import auth
-import excel_utils as xl
 import db_backup
 
 app = Flask(__name__)
-app.secret_key = "task-mgmt-rbac-2024"
+# SECRET_KEY from environment variable on Render; fallback for local dev only
+app.secret_key = os.environ.get("SECRET_KEY", "local-dev-only-change-on-render")
 
-# Startup: init SQLite and sync from Excel
+# Startup: init SQLite, seed default users, sync from Excel if available
 with app.app_context():
     db_backup.init_db()
-    db_backup.sync_from_excel()
+    db_backup.seed_users()          # no-op if users already exist
+    try:
+        import excel_utils as xl
+        db_backup.sync_from_excel()
+    except Exception:
+        pass                        # Excel not present on Render — that's fine
 
 
 def _excel_watcher():
@@ -89,7 +94,12 @@ def dashboard():
 
     # Read from SQLite — safe even when Excel is open/being edited by manager
     tasks   = db_backup.get_tasks_db(filter_date=filter_date)
-    members = xl.get_team_members()
+    try:
+        import excel_utils as xl
+        members = xl.get_team_members()
+    except Exception:
+        members = [u["team_name"] for u in db_backup.get_users_backup()
+                   if u.get("role") == "member" and u.get("team_name")]
     grouped = {m: [] for m in members}
     for t in tasks:
         if t["team_member"] in grouped:
@@ -107,8 +117,13 @@ def dashboard():
 @app.route("/analytics")
 @auth.login_required
 def analytics():
-    tasks   = db_backup.get_tasks_db()   # read from SQLite — always consistent
-    members = xl.get_team_members()
+    tasks   = db_backup.get_tasks_db()
+    try:
+        import excel_utils as xl
+        members = xl.get_team_members()
+    except Exception:
+        members = [u["team_name"] for u in db_backup.get_users_backup()
+                   if u.get("role") == "member" and u.get("team_name")]
     sc = {"Done": 0, "In progress": 0, "Not started": 0, "Blocked": 0}
     pc = {"High": 0, "Medium": 0, "Low": 0}
     md = {m: {"total": 0, "done": 0} for m in members}

@@ -1,15 +1,15 @@
-"""Session-based auth + permission helpers. All user data comes from Excel."""
+"""Session-based auth + permission helpers."""
 from __future__ import annotations
 
 from functools import wraps
 
 from flask import redirect, session, url_for
 
-import excel_utils as xl
-
 
 def login_user(username: str, password: str) -> bool:
-    user = xl.get_user(username)
+    # Always read from SQLite — works both locally and on Render (no Excel needed)
+    import db_backup
+    user = db_backup.get_user_db(username)
     if user and user["password"] == password:
         session["username"] = username
         session["role"] = user["role"]
