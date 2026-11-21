@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>SQLite Backup</h2>
+    <span class="subtitle">Read-only safety net. Excel remains the primary source of truth.</span>
+  </div>
+  <form method="post" action="{{ url_for('backup_sync') }}">
+    <button type="submit" class="btn-primary">↻ Sync from Excel Now</button>
+  </form>
+</div>
+
+<div class="member-section" style="margin-bottom:16px">
+  <div class="member-header">
+    <span class="member-name">Backup Status</span>
+  </div>
+  <div style="padding:14px 16px;font-size:13px;display:flex;gap:32px">
+    <span>Last synced: <strong>{{ last_sync }}</strong></span>
+    <span>Tasks in backup: <strong>{{ tasks|length }}</strong></span>
+    <span>Users in backup: <strong>{{ users|length }}</strong></span>
+    <span>DB file: <code>backup.db</code></span>
+  </div>
+</div>
+
+<div class="member-section" style="margin-bottom:16px">
+  <div class="member-header">
+    <span class="member-name">Tasks (all dates)</span>
+    <span class="task-count">{{ tasks|length }}</span>
+  </div>
+  {% if tasks %}
+  <table class="task-table">
+    <thead>
+      <tr><th>Date</th><th>Member</th><th>Task</th><th>Priority</th><th>Status</th><th>7 PM Update</th></tr>
+    </thead>
+    <tbody>
+      {% for t in tasks %}
+      <tr>
+        <td>{{ t.task_date }}</td>
+        <td>{{ t.team_member }}</td>
+        <td>{{ t.task }}</td>
+        <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority or '—' }}</span></td>
+        <td><span class="badge status-{{ (t.status or 'not-started')|lower|replace(' ','-') }}">{{ t.status }}</span></td>
+        <td class="update-col">{{ t.update_7pm or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="no-tasks">No tasks in backup yet. Click "Sync from Excel Now".</p>
+  {% endif %}
+</div>
+
+<div class="member-section">
+  <div class="member-header">
+    <span class="member-name">Users</span>
+    <span class="task-count">{{ users|length }}</span>
+  </div>
+  <table class="task-table">
+    <thead>
+      <tr><th>Username</th><th>Display Name</th><th>Role</th><th>Team Name</th></tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td><code>{{ u.username }}</code></td>
+        <td>{{ u.display_name }}</td>
+        <td><span class="role-chip role-{{ u.role }}">{{ u.role }}</span></td>
+        <td>{{ u.team_name or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Analytics — Team Planner{% endblock %}
+{% block topbar_title %}Analytics{% endblock %}
+{% block topbar_sub %}Visual overview of team progress and task distribution{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Home</a>
+{% endblock %}
+
+{% block content %}
+{# Stat strip #}
+<div class="stat-grid" style="margin-bottom:24px">
+  <div class="stat-card c-blue">
+    <div><div class="stat-top">Total Tasks</div><div class="stat-val">{{ total_tasks }}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-emoji">📋</div>
+  </div>
+  <div class="stat-card c-green">
+    <div><div class="stat-top">Completed</div><div class="stat-val">{{ done_count }}</div><div class="stat-sub">{{ done_pct }}% done</div></div>
+    <div class="stat-emoji">✅</div>
+  </div>
+  <div class="stat-card c-orange">
+    <div><div class="stat-top">In Progress</div><div class="stat-val">{{ inprog_count }}</div><div class="stat-sub">Currently active</div></div>
+    <div class="stat-emoji">⚡</div>
+  </div>
+  <div class="stat-card c-red">
+    <div><div class="stat-top">Blocked</div><div class="stat-val">{{ blocked_count }}</div><div class="stat-sub">Need attention</div></div>
+    <div class="stat-emoji">🚫</div>
+  </div>
+</div>
+
+<div class="analytics-grid">
+  <div class="chart-card">
+    <div class="chart-title">Task Status</div>
+    <div class="chart-sub">Distribution across all statuses</div>
+    <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Priority Breakdown</div>
+    <div class="chart-sub">Tasks by priority level</div>
+    <div class="chart-wrap"><canvas id="priorityChart"></canvas></div>
+  </div>
+
+  <div class="chart-card chart-card-wide">
+    <div class="chart-title">Tasks per Member</div>
+    <div class="chart-sub">Total tasks assigned to each team member</div>
+    <div class="chart-wrap chart-wrap-tall"><canvas id="memberTotalChart"></canvas></div>
+  </div>
+
+  <div class="chart-card chart-card-wide">
+    <div class="chart-title">Member Completion</div>
+    <div class="chart-sub">Done vs. remaining per member</div>
+    <div class="chart-wrap chart-wrap-tall"><canvas id="memberDoneChart"></canvas></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+        integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+const SL = {{ status_labels|safe }};
+const SD = {{ status_data|safe }};
+const PL = {{ priority_labels|safe }};
+const PD = {{ priority_data|safe }};
+const ML = {{ member_labels|safe }};
+const MT = {{ member_total|safe }};
+const MD = {{ member_done|safe }};
+
+const STATUS_CLR   = ['#16a34a','#2563eb','#94a3b8','#dc2626'];
+const PRIORITY_CLR = ['#dc2626','#f59e0b','#16a34a'];
+const MEMBER_CLR   = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#be185d'];
+
+Chart.defaults.font.family = "Inter, -apple-system, sans-serif";
+Chart.defaults.color = '#667085';
+
+const donutOpts = (labels, data, colors) => ({
+  type: 'doughnut',
+  data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 3, borderColor: '#fff', hoverOffset: 6 }] },
+  options: {
+    cutout: '68%',
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 18, font: { size: 12, weight: '600' }, usePointStyle: true, pointStyleWidth: 10 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} tasks` } }
+    }
+  }
+});
+
+new Chart(document.getElementById('statusChart'),   donutOpts(SL, SD, STATUS_CLR));
+new Chart(document.getElementById('priorityChart'), donutOpts(PL, PD, PRIORITY_CLR));
+
+new Chart(document.getElementById('memberTotalChart'), {
+  type: 'bar',
+  data: {
+    labels: ML,
+    datasets: [{ label: 'Total Tasks', data: MT,
+      backgroundColor: MEMBER_CLR.slice(0, ML.length),
+      borderRadius: 7, borderWidth: 0 }]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} tasks` } }
+    },
+    scales: {
+      x: { grid: { color: '#f1f5f9' }, ticks: { stepSize: 1, font: { size: 12 } } },
+      y: { grid: { display: false }, ticks: { font: { size: 13, weight: '600' } } }
+    }
+  }
+});
+
+new Chart(document.getElementById('memberDoneChart'), {
+  type: 'bar',
+  data: {
+    labels: ML,
+    datasets: [
+      { label: 'Done',      data: MD, backgroundColor: '#16a34a', borderRadius: 7, borderWidth: 0, stack: 's' },
+      { label: 'Remaining', data: MT.map((t,i) => t - MD[i]), backgroundColor: '#e2e8f0', borderRadius: 0, borderWidth: 0, stack: 's' }
+    ]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 18 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x}` } }
+    },
+    scales: {
+      x: { stacked: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } },
+      y: { stacked: true, grid: { display: false }, ticks: { font: { size: 13, weight: '600' } } }
+    }
+  }
+});
+</script>
+{% endblock %}

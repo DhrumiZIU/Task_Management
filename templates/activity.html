@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Activity · Team Planner{% endblock %}
+{% block activity_id %}{{ activities[0].id if activities else 0 }}{% endblock %}
+{% block content %}
+  <section class="hero compact-hero"><div><p class="eyebrow">Workbook Activity log</p><h1>Updates and notification queue</h1><p class="muted">This audit trail is saved in a new Activity log sheet as soon as the first update is made.</p></div></section>
+  <section class="panel table-panel">
+    {% if activities %}<div class="table-wrap"><table><thead><tr><th>Time</th><th>Who</th><th>Change</th><th>Task</th><th>Route</th></tr></thead><tbody>{% for item in activities %}<tr><td>{{ item.time }}</td><td><strong>{{ item.actor }}</strong><small>{{ item.role }}</small></td><td>{{ item.event }}</td><td>{{ item.member }}{% if item.task %}<small>{{ item.task }}{% if item.status %} · {{ item.status }}{% endif %}</small>{% endif %}</td><td>{{ item.route }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="empty">No activity yet. Task changes will be recorded here.</p>{% endif %}
+  </section>
+{% endblock %}

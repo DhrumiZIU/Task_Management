@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Edit Task — Team Planner{% endblock %}
+{% block topbar_title %}Edit Task{% endblock %}
+{% block topbar_sub %}{{ task.team_member }} · {{ task.date }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="form-card">
+    <h3>
+      {% if is_manager %}Edit Task{% else %}Update Status{% endif %}
+    </h3>
+
+    {% if not is_manager %}
+    <div class="form-role-note">
+      ℹ️ As a team member, you can update <strong>Status</strong> and <strong>7 PM Update</strong> only.
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% if is_manager %}
+      <div class="field">
+        <label for="f-task">Task Description</label>
+        <input id="f-task" type="text" name="task" value="{{ task.task or '' }}" required>
+      </div>
+      <div class="field">
+        <label for="f-dll">Done looks like</label>
+        <input id="f-dll" type="text" name="done_looks_like" value="{{ task.done_looks_like or '' }}">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="f-priority">Priority</label>
+          <select id="f-priority" name="priority">
+            {% for p in priorities %}
+            <option value="{{ p }}" {% if task.priority == p %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-hours">Est. Hours</label>
+          <input id="f-hours" type="number" name="est_hours" step="0.5" min="0" value="{{ task.est_hours or '' }}">
+        </div>
+      </div>
+      {% else %}
+      <div class="readonly-box" style="margin-bottom:16px">
+        <span class="readonly-label">Task</span>
+        <span style="font-size:14px;font-weight:500;color:var(--text)">{{ task.task }}</span>
+      </div>
+      {% endif %}
+
+      <div class="field">
+        <label for="f-status">Status</label>
+        <select id="f-status" name="status">
+          {% for s in statuses %}
+          <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-update">7 PM Update</label>
+        <textarea id="f-update" name="update_7pm" rows="3" placeholder="What did you accomplish? What's remaining?">{{ task.update_7pm or '' }}</textarea>
+      </div>
+      <hr class="divider">
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

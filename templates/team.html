@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Team · Team Planner{% endblock %}
+{% block content %}
+  <section class="hero compact-hero"><div><p class="eyebrow">Workbook Team sheet</p><h1>Team members</h1><p class="muted">Add people once; they then appear in the task-assignment dropdown.</p></div></section>
+  <section class="content-grid team-grid">
+    <article class="panel">
+      <h2>Add member</h2>
+      <form class="stacked-form" method="post"><label>Name <input name="name" maxlength="80" required placeholder="e.g. Aisha Khan"></label><label>Role <input name="role" maxlength="80" placeholder="e.g. Designer"></label><button class="button primary" type="submit">Add to Team sheet</button></form>
+    </article>
+    <article class="panel">
+      <h2>Current team</h2>
+      {% if team %}<div class="member-list">{% for person in team %}<div><strong>{{ person.name }}</strong><span>{{ person.role or 'No role entered' }}</span><small>{{ person.today_count }} task(s) today · {{ person.next_day_count }} task(s) tomorrow</small></div>{% endfor %}</div>{% else %}<p class="empty">No team members yet. Add the first person using the form.</p>{% endif %}
+    </article>
+  </section>
+{% endblock %}

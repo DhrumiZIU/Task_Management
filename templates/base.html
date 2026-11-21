@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Team Planner{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📋</div>
+      <div>
+        <div class="brand-name">Team Planner</div>
+        <div class="brand-sub">Daily Task Manager</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Workspace</div>
+      <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}">
+        <span class="nav-icon">🏠</span> Home
+      </a>
+      <a href="{{ url_for('analytics') }}" class="nav-item {% if request.endpoint=='analytics' %}active{% endif %}">
+        <span class="nav-icon">📊</span> Analytics
+      </a>
+      <a href="{{ url_for('add_task') }}" class="nav-item {% if request.endpoint=='add_task' %}active{% endif %}">
+        <span class="nav-icon">➕</span> Add Task
+      </a>
+      <div class="nav-section-label" style="margin-top:8px">Team</div>
+      <a href="{{ url_for('meeting') }}" class="nav-item {% if request.endpoint=='meeting' %}active{% endif %}">
+        <span class="nav-icon">🌙</span> 7 PM Meeting
+      </a>
+      {% if session.role != 'manager' %}
+      <a href="{{ url_for('discussion') }}" class="nav-item {% if request.endpoint=='discussion' %}active{% endif %}">
+        <span class="nav-icon">💬</span> Discussion
+      </a>
+      {% endif %}
+      <a href="{{ url_for('projects') }}" class="nav-item {% if request.endpoint in ['projects','add_project','edit_project','delete_project'] %}active{% endif %}">
+        <span class="nav-icon">🗂️</span> Projects
+      </a>
+      {% if session.role == 'manager' %}
+      <div class="nav-section-label" style="margin-top:8px">Manager</div>
+      <a href="{{ url_for('users') }}" class="nav-item {% if request.endpoint=='users' %}active{% endif %}">
+        <span class="nav-icon">👥</span> Manage Users
+      </a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">{{ (session.display_name or 'U')[0] }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ session.display_name or '' }}</div>
+          <div class="user-role">{{ (session.role or '')|capitalize }}</div>
+        </div>
+        <a href="{{ url_for('change_password') }}" class="logout-btn" title="Change Password" style="margin-right:4px">🔑</a>
+        <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">⏻</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main area -->
+  <div class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">{% block topbar_title %}{% endblock %}</div>
+        <div class="topbar-subtitle">{% block topbar_sub %}{% endblock %}</div>
+      </div>
+      <div class="topbar-actions">{% block topbar_actions %}{% endblock %}</div>
+    </div>
+    <div class="page-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-wrap">
+          {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+</body>
+</html>

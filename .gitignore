@@ -1,0 +1,30 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+.pytest_cache/
+
+# SQLite databases — contain user data, never commit
+*.db
+*.db-shm
+*.db-wal
+
+# Excel file — contains user passwords, never commit
+*.xlsx
+
+# macOS
+.DS_Store
+
+# PDF and generated files
+project_summary.pdf
+make_pdf.py
+
+# Backup files
+Team Daily Planner.backup.xlsx
+data/
+
+# VSCode
+.vscode/

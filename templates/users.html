@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Manage Users — Team Planner{% endblock %}
+{% block topbar_title %}Manage Users{% endblock %}
+{% block topbar_sub %}Add or remove team members and managers · Changes saved to Excel instantly{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:20px;align-items:start">
+
+  <!-- Add user form -->
+  <div class="form-card" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px">
+    <h3>Add New User</h3>
+    <form method="post" action="{{ url_for('add_user') }}">
+      <div class="field">
+        <label for="u-display">Display Name</label>
+        <input id="u-display" type="text" name="display_name" placeholder="e.g. John Smith" required>
+      </div>
+      <div class="field">
+        <label for="u-username">Username</label>
+        <input id="u-username" type="text" name="username" placeholder="e.g. john" required>
+        <div class="field-hint">Used to login. Lowercase, no spaces.</div>
+      </div>
+      <div class="field">
+        <label for="u-password">Password</label>
+        <input id="u-password" type="text" name="password" placeholder="Initial password" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="u-role">Role</label>
+          <select id="u-role" name="role">
+            {% for r in roles %}<option value="{{ r }}">{{ r|capitalize }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="u-team">Team Name</label>
+          <input id="u-team" type="text" name="team_name" placeholder="e.g. Member 6">
+          <div class="field-hint">For members only. Leave blank for managers.</div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Add User</button>
+    </form>
+  </div>
+
+  <!-- Users table -->
+  <div class="section-wrap">
+    <div class="section-head">
+      <div class="section-title">👥 All Users</div>
+      <span class="count-pill">{{ users|length }} total</span>
+    </div>
+    <table class="task-table">
+      <thead>
+        <tr><th>User</th><th>Role</th><th>Team</th><th style="min-width:230px">Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="user-avatar" style="width:30px;height:30px;font-size:12px;background:{% if u.role=='manager' %}var(--purple){% else %}var(--primary){% endif %}">
+                {{ u.display_name[0] }}
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:13px;color:var(--text)">{{ u.display_name }}</div>
+                <code>{{ u.username }}</code>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-{{ u.role }}">{{ u.role|capitalize }}</span></td>
+          <td style="color:var(--text3);font-size:12px">{{ u.team_name or '—' }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <!-- Reset password -->
+              <form method="post" action="{{ url_for('reset_password', username=u.username) }}" class="inline-form">
+                <input class="inline-input" type="text" name="new_password" placeholder="New password">
+                <button type="submit" class="btn btn-xs btn-secondary">Reset</button>
+              </form>
+              {% if u.username != current_username %}
+              <form method="post" action="{{ url_for('delete_user', username=u.username) }}"
+                    style="display:inline" onsubmit="return confirm('Remove {{ u.display_name }}?')">
+                <button type="submit" class="btn btn-xs btn-delete">Remove</button>
+              </form>
+              {% else %}
+              <span style="font-size:11px;color:var(--text4)">(you)</span>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

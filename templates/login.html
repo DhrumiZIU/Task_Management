@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Team Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-box">
+    <div class="login-header">
+      <div class="login-logo">📋</div>
+      <h1>Team Daily Planner</h1>
+      <p>Sign in to access your workspace</p>
+    </div>
+    <div class="login-card">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}" style="margin-bottom:16px">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="post">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" type="text" name="username"
+                 placeholder="Enter your username" autocomplete="username" required autofocus>
+        </div>
+        <div class="field" style="margin-bottom:20px">
+          <label for="password">Password</label>
+          <input id="password" type="password" name="password"
+                 placeholder="Enter your password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Sign In →</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Update task' if editing else 'Add task' }} · Team Planner{% endblock %}
+{% block content %}
+  <section class="form-page">
+    <p class="eyebrow">{{ 'Manager or team-member update' if editing else 'Plan work' }}</p>
+    <h1>{{ 'Update task' if editing else 'Add a task' }}</h1>
+    <p class="muted">The workbook is updated immediately. Choose “Manager” when assigning or changing somebody else’s work; otherwise the update appears in the manager’s live feed.</p>
+    <form class="task-form panel" method="post">
+      <fieldset class="actor-box"><legend>Who is making this update?</legend>
+        <label>Your name <input name="actor" maxlength="80" value="Manager" required></label>
+        <label>Role <select name="actor_role"><option value="Manager">Manager</option><option value="Team member" {% if not editing %}selected{% endif %}>Team member</option></select></label>
+      </fieldset>
+      <div class="form-grid">
+        <label>Task date <input type="date" name="date" value="{{ task.date }}" required></label>
+        <label>Assigned to <select name="member" required><option value="">Choose a team member</option>{% for person in team %}<option value="{{ person.name }}" {% if task.member == person.name %}selected{% endif %}>{{ person.name }}{% if person.role %} — {{ person.role }}{% endif %}</option>{% endfor %}</select></label>
+        <label class="span-2">Task <input name="task" maxlength="250" value="{{ task.task }}" placeholder="Describe one clear piece of work" required></label>
+        <label>Priority <select name="priority">{% for item in priorities %}<option value="{{ item }}" {% if task.priority == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+        <label>Status <select name="status">{% for item in statuses %}<option value="{{ item }}" {% if task.status == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+        <label>Estimated hours <input name="hours" type="number" min="0" max="24" step="0.25" value="{{ task.hours }}" placeholder="e.g. 2.5"></label>
+        <label class="span-2">Done looks like <textarea name="done_looks_like" rows="3" placeholder="What result proves the task is finished?">{{ task.done_looks_like }}</textarea></label>
+        <label class="span-2">7 PM update <textarea name="update_7pm" rows="4" placeholder="At the daily review: what is done, pending, or blocked?">{{ task.update_7pm }}</textarea></label>
+      </div>
+      <div class="form-actions"><a class="button" href="{{ url_for('tasks') }}">Cancel</a><button class="button primary" type="submit">Save to Excel &amp; notify manager</button></div>
+    </form>
+  </section>
+{% endblock %}

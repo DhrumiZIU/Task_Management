@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}7 PM Meeting — Team Planner{% endblock %}
+{% block topbar_title %}7 PM Meeting{% endblock %}
+{% block topbar_sub %}Tomorrow's plan · {{ tomorrow.strftime('%A, %B %d, %Y') }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('discussion') }}" class="btn btn-secondary btn-sm">💬 Discussion</a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Home</a>
+{% endblock %}
+
+{% block content %}
+{% if is_manager %}
+{# Manager view: add tasks for all members #}
+<form method="post">
+  {% for member in members %}
+  <div class="section-wrap">
+    <div class="section-head">
+      <div class="section-title">
+        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;background:var(--primary)">{{ member[0] }}</div>
+        {{ member }}
+      </div>
+      {% if grouped_next[member] %}
+      <span class="count-pill">{{ grouped_next[member]|length }} already planned</span>
+      {% endif %}
+    </div>
+
+    {% if grouped_next[member] %}
+    <div style="padding:0 18px;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 6px">Already planned for tomorrow</div>
+      <table class="task-table" style="margin-bottom:12px">
+        <thead><tr><th>Task</th><th>Priority</th><th>Est.</th></tr></thead>
+        <tbody>
+          {% for t in grouped_next[member] %}
+          <tr>
+            <td class="task-desc">{{ t.task }}</td>
+            <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority }}</span></td>
+            <td style="font-size:12px;color:var(--text3)">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="meeting-add">
+      <div class="meeting-add-label">Add new tasks for {{ member }}</div>
+      {% for i in range(3) %}
+      <div class="task-input-row">
+        <input type="text" name="tasks_{{ member }}"
+               placeholder="Task {{ i+1 }} description (leave blank to skip)"
+               aria-label="Task {{ i+1 }} for {{ member }}">
+        <select name="priorities_{{ member }}" aria-label="Priority for task {{ i+1 }}">
+          {% for p in priorities %}<option>{{ p }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="btn-row" style="margin-top:4px">
+    <button type="submit" class="btn btn-primary">Save All Tasks for Tomorrow →</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+
+{% else %}
+{# Member view: see + add their own tomorrow tasks #}
+<div class="meeting-info-banner">
+  <span class="meeting-info-icon">🌙</span>
+  <div>
+    <div class="meeting-info-title">Plan your tomorrow · {{ tomorrow.strftime('%A, %B %d') }}</div>
+    <div class="meeting-info-sub">Add your own tasks for tomorrow, then share updates in <a href="{{ url_for('discussion') }}" style="color:var(--primary)">Discussion</a>.</div>
+  </div>
+</div>
+
+{% set my_tasks = grouped_next[team_name] if team_name in grouped_next else [] %}
+<form method="post">
+  <div class="section-wrap">
+    <div class="section-head">
+      <div class="section-title">
+        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;background:var(--primary)">{{ (team_name or 'M')[0] }}</div>
+        {{ team_name }}
+      </div>
+      {% if my_tasks %}
+      <span class="count-pill">{{ my_tasks|length }} already planned</span>
+      {% endif %}
+    </div>
+
+    {% if my_tasks %}
+    <div style="padding:0 18px;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 6px">Already planned for tomorrow</div>
+      <table class="task-table" style="margin-bottom:12px">
+        <thead><tr><th>Task</th><th>Priority</th><th>Est.</th><th>Done looks like</th></tr></thead>
+        <tbody>
+          {% for t in my_tasks %}
+          <tr>
+            <td class="task-desc">{{ t.task }}</td>
+            <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority }}</span></td>
+            <td style="font-size:12px;color:var(--text3)">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
+            <td style="font-size:12px;color:var(--text3);font-style:italic">{{ t.done_looks_like or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="meeting-add">
+      <div class="meeting-add-label">Add new tasks for tomorrow</div>
+      {% for i in range(3) %}
+      <div class="task-input-row">
+        <input type="text" name="tasks_{{ team_name }}"
+               placeholder="Task {{ i+1 }} description (leave blank to skip)"
+               aria-label="Task {{ i+1 }}">
+        <select name="priorities_{{ team_name }}" aria-label="Priority">
+          {% for p in priorities %}<option>{{ p }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="btn-row" style="margin-top:4px">
+    <button type="submit" class="btn btn-primary">Save My Tasks for Tomorrow →</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

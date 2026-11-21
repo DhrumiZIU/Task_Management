@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Add Task — Team Planner{% endblock %}
+{% block topbar_title %}Add Task{% endblock %}
+{% block topbar_sub %}Create a new task for a team member{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="form-card">
+    <h3>New Task</h3>
+    <form method="post">
+      <div class="field-row">
+        <div class="field">
+          <label for="f-date">Date</label>
+          <input id="f-date" type="date" name="task_date" value="{{ today }}"
+                 {% if not is_manager %}min="{{ today }}"{% endif %} required>
+        </div>
+        <div class="field">
+          <label for="f-member">Team Member</label>
+          <select id="f-member" name="team_member" required>
+            {% for m in members %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-task">Task Description</label>
+        <input id="f-task" type="text" name="task" placeholder="Describe the task clearly and specifically" required>
+      </div>
+      <div class="field">
+        <label for="f-dll">Done looks like <span style="color:var(--text4);font-weight:400">(optional)</span></label>
+        <input id="f-dll" type="text" name="done_looks_like" placeholder="What does completion look like? e.g. Report emailed to client">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="f-priority">Priority</label>
+          <select id="f-priority" name="priority">
+            {% for p in priorities %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-hours">Estimated Hours <span style="color:var(--text4);font-weight:400">(optional)</span></label>
+          <input id="f-hours" type="number" name="est_hours" step="0.5" min="0" placeholder="e.g. 2.5">
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">Add Task</button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

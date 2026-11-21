@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Team Planner{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+{% block topbar_sub %}
+  {% if current_view == 'today' %}{{ today.strftime('%A, %B %d, %Y') }}
+  {% elif current_view == 'tomorrow' %}Tomorrow · {{ tomorrow.strftime('%A, %B %d, %Y') }}
+  {% else %}All Dates{% endif %}
+{% endblock %}
+{% block topbar_actions %}
+  {% if is_manager %}
+  {# Date view tabs #}
+  <div class="view-tabs">
+    <a href="{{ url_for('dashboard', view='today') }}"
+       class="view-tab {% if current_view=='today' %}active{% endif %}">Today</a>
+    <a href="{{ url_for('dashboard', view='tomorrow') }}"
+       class="view-tab {% if current_view=='tomorrow' %}active{% endif %}">Tomorrow</a>
+    <a href="{{ url_for('dashboard', view='all') }}"
+       class="view-tab {% if current_view=='all' %}active{% endif %}">All Dates</a>
+  </div>
+  <a href="{{ url_for('meeting') }}" class="btn btn-secondary btn-sm">🌙 7 PM Meeting</a>
+  {% endif %}
+  <a href="{{ url_for('add_task') }}" class="btn btn-primary btn-sm">+ Add Task</a>
+{% endblock %}
+
+{% block content %}
+{# ── Stats ── #}
+{% set total   = namespace(n=0) %}
+{% set done    = namespace(n=0) %}
+{% set inprog  = namespace(n=0) %}
+{% set blocked = namespace(n=0) %}
+{% for m in members %}
+  {% for t in grouped[m] %}
+    {% set total.n = total.n + 1 %}
+    {% if t.status == 'Done' %}{% set done.n = done.n + 1 %}{% endif %}
+    {% if t.status == 'In progress' %}{% set inprog.n = inprog.n + 1 %}{% endif %}
+    {% if t.status == 'Blocked' %}{% set blocked.n = blocked.n + 1 %}{% endif %}
+  {% endfor %}
+{% endfor %}
+{% set pct = ((done.n / total.n * 100)|int) if total.n > 0 else 0 %}
+
+<div class="stat-grid">
+  <div class="stat-card c-blue">
+    <div><div class="stat-top">Total Tasks</div><div class="stat-val">{{ total.n }}</div>
+    <div class="stat-sub">{% if current_view=='all' %}All dates{% else %}{{ current_view|capitalize }}{% endif %}</div></div>
+    <div class="stat-emoji">📋</div>
+  </div>
+  <div class="stat-card c-green">
+    <div><div class="stat-top">Completed</div><div class="stat-val">{{ done.n }}</div>
+    <div class="stat-sub">{{ pct }}% done</div></div>
+    <div class="stat-emoji">✅</div>
+  </div>
+  <div class="stat-card c-orange">
+    <div><div class="stat-top">In Progress</div><div class="stat-val">{{ inprog.n }}</div>
+    <div class="stat-sub">Currently active</div></div>
+    <div class="stat-emoji">⚡</div>
+  </div>
+  <div class="stat-card c-red">
+    <div><div class="stat-top">Blocked</div><div class="stat-val">{{ blocked.n }}</div>
+    <div class="stat-sub">Need attention</div></div>
+    <div class="stat-emoji">🚫</div>
+  </div>
+</div>
+
+{% if total.n > 0 %}
+<div class="progress-wrap">
+  <div class="prog-label">Overall Progress</div>
+  <div class="prog-track"><div class="prog-fill" style="width:{{ pct }}%"></div></div>
+  <div class="prog-pct">{{ done.n }}/{{ total.n }} done ({{ pct }}%)</div>
+</div>
+{% endif %}
+
+{# ── Per-member sections ── #}
+{% for member in members %}
+{% set mt = grouped[member] %}
+{% set md = mt|selectattr('status','equalto','Done')|list|length %}
+{% set mp = ((md / mt|length * 100)|int) if mt|length > 0 else 0 %}
+
+<div class="section-wrap">
+  <div class="section-head">
+    <div class="section-title">
+      <div class="av av{{ loop.index }}">{{ member[0] }}</div>
+      {{ member }}
+    </div>
+    <div class="section-meta">
+      {% if mt|length > 0 %}
+      <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text3)">
+        <div style="width:80px;height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:{{ mp }}%;background:var(--success);border-radius:3px"></div>
+        </div>
+        {{ md }}/{{ mt|length }}
+      </div>
+      {% endif %}
+      <span class="count-pill">{{ mt|length }} task{{ 's' if mt|length != 1 }}</span>
+      {% if is_manager or team_name == member %}
+      <a href="{{ url_for('add_task') }}" class="btn btn-xs btn-secondary">+ Task</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if mt %}
+  <table class="task-table">
+    <thead>
+      <tr>
+        {% if current_view == 'all' %}<th>Date</th>{% endif %}
+        <th style="width:{% if current_view=='all' %}30{% else %}36{% endif %}%">Task</th>
+        <th>Priority</th><th>Est.</th><th>Status</th><th>7 PM Update</th>
+        {% if is_manager or team_name == member %}<th style="width:120px">Actions</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in mt %}
+      <tr>
+        {% if current_view == 'all' %}
+        <td style="font-size:12px;color:var(--text3);white-space:nowrap;font-weight:500">
+          {% if t.date == today %}<span style="color:var(--primary);font-weight:700">Today</span>
+          {% elif t.date == tomorrow %}<span style="color:var(--success);font-weight:700">Tomorrow</span>
+          {% else %}{{ t.date.strftime('%b %d') if t.date else '—' }}{% endif %}
+        </td>
+        {% endif %}
+        <td>
+          <div class="task-desc">{{ t.task }}</div>
+          {% if t.done_looks_like %}<div style="font-size:11px;color:var(--text4);margin-top:2px">✓ {{ t.done_looks_like }}</div>{% endif %}
+        </td>
+        <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority or '—' }}</span></td>
+        <td style="color:var(--text3);font-size:12px">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
+        <td><span class="badge status-{{ (t.status or 'not-started')|lower|replace(' ','-') }}">
+          {% if t.status == 'Done' %}✓ {% elif t.status == 'Blocked' %}⚠ {% elif t.status == 'In progress' %}◉ {% endif %}{{ t.status or 'Not started' }}
+        </span></td>
+        <td><div class="task-update">{{ t.update_7pm or '—' }}</div></td>
+        {% if is_manager or team_name == member %}
+        <td>
+          <div class="actions-cell">
+            <a href="{{ url_for('edit_task', row_num=t.row) }}" class="btn btn-xs btn-edit">Edit</a>
+            {% if is_manager %}
+            <form method="post" action="{{ url_for('delete_task', row_num=t.row) }}"
+                  style="display:inline" onsubmit="return confirm('Delete this task?')">
+              <button type="submit" class="btn btn-xs btn-delete">Del</button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="no-data">No tasks assigned {% if current_view == 'today' %}for today{% elif current_view == 'tomorrow' %}for tomorrow{% endif %}</div>
+  {% endif %}
+</div>
+{% endfor %}
+{% endblock %}
