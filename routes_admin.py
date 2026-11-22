@@ -213,3 +213,20 @@ def register(app):
         t_count, u_count = db_backup.sync_from_excel()
         flash(f"SQLite synced: {t_count} tasks, {u_count} users.", "success")
         return redirect(url_for("backup_status"))
+
+    @app.route("/onedrive/push", methods=["POST"])
+    @auth.manager_required
+    def onedrive_push():
+        """Manually push latest data to the manager's OneDrive."""
+        import onedrive_sync
+        if not onedrive_sync.is_configured():
+            flash(
+                "OneDrive sync is not configured. "
+                "Set AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET "
+                "and ONEDRIVE_USER_EMAIL in Railway environment variables.",
+                "error",
+            )
+            return redirect(url_for("backup_status"))
+        ok, msg = onedrive_sync.push_to_onedrive_sync()
+        flash(msg, "success" if ok else "error")
+        return redirect(url_for("backup_status"))

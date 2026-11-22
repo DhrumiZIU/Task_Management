@@ -4,6 +4,15 @@ import os, sqlite3, threading
 from datetime import date, datetime
 from pathlib import Path
 
+
+def _onedrive_push():
+    """Fire-and-forget OneDrive sync after any data write (no-op if not configured)."""
+    try:
+        import onedrive_sync
+        onedrive_sync.push_to_onedrive()
+    except Exception:
+        pass
+
 # DATA_DIR: use Railway volume mount if set, otherwise the project directory
 _DATA_DIR  = Path(os.environ.get("DATA_DIR", str(Path(__file__).resolve().parent)))
 _DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -143,17 +152,20 @@ def write_task_db(excel_row: int, task_date, team_member: str, task: str,
                     (excel_row, str(task_date), team_member, task, priority,
                      status, done_looks_like, est_hours, update_7pm))
         con.commit()
+    _onedrive_push()
 
 def update_task_status_db(excel_row: int, status: str, update_7pm: str):
     init_db()
     with _DB_WRITE, _conn() as con:
         con.execute("UPDATE tasks SET status=?,update_7pm=? WHERE excel_row=?",
                     (status, update_7pm, excel_row)); con.commit()
+    _onedrive_push()
 
 def delete_task_db(excel_row: int):
     init_db()
     with _DB_WRITE, _conn() as con:
         con.execute("DELETE FROM tasks WHERE excel_row=?", (excel_row,)); con.commit()
+    _onedrive_push()
 
 
 # ── Discussion ───────────────────────────────────────────────────────────────

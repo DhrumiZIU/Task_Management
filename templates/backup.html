@@ -5,9 +5,16 @@
     <h2>SQLite Backup</h2>
     <span class="subtitle">Read-only safety net. Excel remains the primary source of truth.</span>
   </div>
-  <form method="post" action="{{ url_for('backup_sync') }}">
-    <button type="submit" class="btn-primary">↻ Sync from Excel Now</button>
-  </form>
+  <div style="display:flex;gap:8px;align-items:center">
+    <form method="post" action="{{ url_for('backup_sync') }}">
+      <button type="submit" class="btn-primary">↻ Sync from Excel Now</button>
+    </form>
+    <form method="post" action="{{ url_for('onedrive_push') }}">
+      <button type="submit" class="btn-primary" style="background:#0078d4" title="Push latest data as Excel to manager OneDrive">
+        ☁ Push to OneDrive
+      </button>
+    </form>
+  </div>
 </div>
 
 <div class="member-section" style="margin-bottom:16px">

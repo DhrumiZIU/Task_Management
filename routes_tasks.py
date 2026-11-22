@@ -12,8 +12,12 @@ def register(app):
     @app.route("/task/add", methods=["GET", "POST"])
     @auth.login_required
     def add_task():
-        all_members = xl.get_team_members()
-        members = all_members if auth.is_manager() else [session.get("team_name")]
+        if auth.is_manager():
+            # managers can assign tasks to anyone — members AND other managers (including self)
+            all_users = xl.get_all_users()
+            members = [u["display_name"] or u["username"] for u in all_users if u.get("display_name") or u.get("username")]
+        else:
+            members = [session.get("team_name")]
         if request.method == "POST":
             raw_date  = request.form.get("task_date") or str(date.today())
             member    = request.form.get("team_member", "").strip()
@@ -114,7 +118,11 @@ def register(app):
     @app.route("/meeting", methods=["GET", "POST"])
     @auth.login_required
     def meeting():
-        members   = xl.get_team_members()
+        if auth.is_manager():
+            all_users = xl.get_all_users()
+            members = [u["display_name"] or u["username"] for u in all_users if u.get("display_name") or u.get("username")]
+        else:
+            members = xl.get_team_members()
         tomorrow  = date.today() + timedelta(days=1)
         team_name = session.get("team_name", "")
         if request.method == "POST":
