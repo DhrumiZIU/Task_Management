@@ -10,10 +10,18 @@ app = Flask(__name__)
 # SECRET_KEY from environment variable on Render; fallback for local dev only
 app.secret_key = os.environ.get("SECRET_KEY", "local-dev-only-change-on-render")
 
-# Startup: init Postgres tables and seed default users
-with app.app_context():
-    db_backup.init_db()
-    db_backup.seed_users()
+_db_ready = False
+
+def _ensure_db():
+    global _db_ready
+    if not _db_ready:
+        db_backup.init_db()
+        db_backup.seed_users()
+        _db_ready = True
+
+@app.before_request
+def before_request():
+    _ensure_db()
 
 # Register route modules
 import routes_tasks; routes_tasks.register(app)
