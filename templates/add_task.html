@@ -1,55 +1,408 @@
-{% extends "base.html" %}
-{% block title %}Add Task — Team Planner{% endblock %}
-{% block topbar_title %}Add Task{% endblock %}
-{% block topbar_sub %}Create a new task for a team member{% endblock %}
-{% block topbar_actions %}
-  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Back</a>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Task — Team Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #f0f2f5;
+  --surface:  #ffffff;
+  --primary:  #2563eb;
+  --primary-dark: #1d4ed8;
+  --text:     #0f172a;
+  --text2:    #334155;
+  --text3:    #64748b;
+  --text4:    #94a3b8;
+  --border:   #e2e8f0;
+  --radius:   10px;
+  --shadow:   0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.14);
+}
 
-{% block content %}
-<div class="form-page">
-  <div class="form-card">
-    <h3>New Task</h3>
-    <form method="post">
-      <div class="field-row">
-        <div class="field">
-          <label for="f-date">Date</label>
-          <input id="f-date" type="date" name="task_date" value="{{ today }}"
-                 {% if not is_manager %}min="{{ today }}"{% endif %} required>
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+}
+
+/* ── Top bar ── */
+.at-topbar {
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--shadow);
+}
+.at-brand {
+  display: flex; align-items: center; gap: 9px;
+  font-weight: 800; font-size: 15px; color: var(--primary);
+  text-decoration: none;
+}
+.at-brand-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--primary); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.at-sep { flex: 1; }
+.at-back {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: var(--text3);
+  text-decoration: none; padding: 7px 14px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--surface);
+  transition: background .15s, color .15s;
+}
+.at-back:hover { background: var(--bg); color: var(--text); }
+
+/* ── Page body ── */
+.at-body {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 60px;
+}
+
+.at-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 760px;
+  overflow: hidden;
+  animation: cardIn .22s ease both;
+}
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.at-card-head {
+  padding: 28px 32px 24px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+}
+.at-card-head h1 {
+  font-size: 20px; font-weight: 800; color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+.at-head-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: #eff6ff; color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.at-card-head p {
+  font-size: 13px; color: var(--text3); margin-top: 6px; padding-left: 46px;
+}
+
+.at-form { padding: 28px 32px 32px; }
+
+/* ── Person selector ── */
+.at-section-label {
+  font-size: 12px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 7px;
+}
+.at-section-label span { display: inline-block; width: 18px; height: 2px; background: var(--primary); border-radius: 2px; }
+
+.at-person-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.at-person-card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 10px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .12s, background .15s;
+  user-select: none;
+  background: var(--surface);
+  position: relative;
+}
+.at-person-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px #eff6ff;
+  transform: translateY(-1px);
+}
+.at-person-card.selected {
+  border-color: var(--primary);
+  background: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.at-person-card.selected::after {
+  content: '✓';
+  position: absolute; top: 6px; right: 8px;
+  font-size: 11px; font-weight: 800; color: var(--primary);
+}
+.at-pav {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800; color: #fff;
+  margin: 0 auto 9px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.at-pname {
+  font-size: 12.5px; font-weight: 700; color: var(--text);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.at-prole { font-size: 11px; color: var(--text4); margin-top: 3px; }
+
+/* ── Form fields ── */
+.at-fields { display: flex; flex-direction: column; gap: 18px; }
+.at-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.at-field { display: flex; flex-direction: column; gap: 6px; }
+.at-field label {
+  font-size: 12px; font-weight: 700; color: var(--text2);
+  display: flex; align-items: center; gap: 5px;
+}
+.at-field label .req { color: var(--primary); }
+.at-field input,
+.at-field select,
+.at-field textarea {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+  width: 100%;
+}
+.at-field input:focus,
+.at-field select:focus,
+.at-field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+}
+.at-field textarea { resize: vertical; min-height: 72px; }
+
+/* ── Description box ── */
+.at-assignee-info {
+  background: #f8faff;
+  border: 1.5px solid #c7d9ff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.at-assignee-info.visible { display: flex; }
+.at-ai-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.at-ai-text { font-size: 13px; color: var(--text2); font-weight: 500; }
+.at-ai-name { font-weight: 700; color: var(--primary); }
+
+/* ── Submit ── */
+.at-actions {
+  display: flex; gap: 12px; margin-top: 28px; justify-content: flex-end;
+  padding-top: 20px; border-top: 1px solid var(--border);
+}
+.btn-at-cancel {
+  padding: 11px 22px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  font-size: 14px; font-weight: 600; color: var(--text3);
+  cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 7px;
+  transition: background .15s, color .15s;
+}
+.btn-at-cancel:hover { background: var(--bg); color: var(--text); }
+.btn-at-submit {
+  padding: 11px 28px; border-radius: 8px;
+  background: var(--primary); border: none;
+  font-size: 14px; font-weight: 700; color: #fff;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  transition: background .15s, transform .12s, box-shadow .15s;
+  box-shadow: 0 1px 4px rgba(37,99,235,.30);
+}
+.btn-at-submit:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,.35); }
+.btn-at-submit:active { transform: translateY(0); }
+
+.at-err {
+  font-size: 12px; color: #dc2626; margin-top: 4px;
+  display: none;
+}
+.at-err.show { display: block; }
+
+@media (max-width: 600px) {
+  .at-topbar { padding: 0 16px; }
+  .at-body { padding: 20px 12px 40px; }
+  .at-card-head, .at-form { padding: 20px 16px; }
+  .at-row { grid-template-columns: 1fr; }
+  .at-person-grid { grid-template-columns: repeat(3, 1fr); }
+  .at-actions { flex-direction: column-reverse; }
+  .btn-at-cancel, .btn-at-submit { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="at-topbar">
+  <a class="at-brand" href="{{ url_for('dashboard') }}">
+    <div class="at-brand-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    Team Planner
+  </a>
+  <div class="at-sep"></div>
+  <a class="at-back" href="{{ url_for('dashboard') }}">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Dashboard
+  </a>
+</header>
+
+<!-- Main -->
+<main class="at-body">
+  <div class="at-card">
+
+    <div class="at-card-head">
+      <h1>
+        <div class="at-head-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </div>
-        <div class="field">
-          <label for="f-member">Team Member</label>
-          <select id="f-member" name="team_member" required>
-            {% for m in members %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
-          </select>
+        Assign New Task
+      </h1>
+      <p>Select a team member, fill in the task details, and assign it.</p>
+    </div>
+
+    <div class="at-form">
+      <form method="post" action="{{ url_for('add_task') }}" id="at-form">
+        <input type="hidden" name="team_member" id="hidden-member">
+
+        <!-- Person selector -->
+        {% set av_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d','#b45309','#0f766e'] %}
+        <div class="at-section-label"><span></span> Assign To <span style="color:#dc2626;font-size:13px;margin-left:2px">*</span></div>
+        <div class="at-person-grid" id="person-grid">
+          {% for m in members %}
+          {% set ac = av_colors[loop.index0 % 10] %}
+          <div class="at-person-card" data-name="{{ m }}" data-color="{{ ac }}"
+               onclick="selectPerson(this)" tabindex="0"
+               onkeydown="if(event.key==='Enter'||event.key===' ')selectPerson(this)">
+            <div class="at-pav" style="background:{{ ac }}">{{ m[0]|upper }}</div>
+            <div class="at-pname">{{ m }}</div>
+            <div class="at-prole">Team Member</div>
+          </div>
+          {% endfor %}
         </div>
-      </div>
-      <div class="field">
-        <label for="f-task">Task Description</label>
-        <input id="f-task" type="text" name="task" placeholder="Describe the task clearly and specifically" required>
-      </div>
-      <div class="field">
-        <label for="f-dll">Done looks like <span style="color:var(--text4);font-weight:400">(optional)</span></label>
-        <input id="f-dll" type="text" name="done_looks_like" placeholder="What does completion look like? e.g. Report emailed to client">
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="f-priority">Priority</label>
-          <select id="f-priority" name="priority">
-            {% for p in priorities %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
-          </select>
+        <div class="at-err" id="member-err">Please select a team member.</div>
+
+        <!-- Assignee confirmation banner -->
+        <div class="at-assignee-info" id="assignee-info">
+          <div class="at-ai-av" id="assignee-av"></div>
+          <div class="at-ai-text">Assigning task to <span class="at-ai-name" id="assignee-name"></span></div>
         </div>
-        <div class="field">
-          <label for="f-hours">Estimated Hours <span style="color:var(--text4);font-weight:400">(optional)</span></label>
-          <input id="f-hours" type="number" name="est_hours" step="0.5" min="0" placeholder="e.g. 2.5">
+
+        <div class="at-fields">
+          <!-- Task date + Priority row -->
+          <div class="at-row">
+            <div class="at-field">
+              <label for="task_date">Date <span class="req">*</span></label>
+              <input type="date" name="task_date" id="task_date"
+                     value="{{ today }}" required>
+            </div>
+            <div class="at-field">
+              <label for="priority">Priority <span class="req">*</span></label>
+              <select name="priority" id="priority" required>
+                {% for p in priorities %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Task description -->
+          <div class="at-field">
+            <label for="task">Task Description <span class="req">*</span></label>
+            <textarea name="task" id="task" rows="3"
+                      placeholder="What needs to be done? Be specific and actionable." required></textarea>
+          </div>
+
+          <!-- Done looks like -->
+          <div class="at-field">
+            <label for="done_looks_like">Done Looks Like</label>
+            <textarea name="done_looks_like" id="done_looks_like" rows="2"
+                      placeholder="What does success look like? How will you know it's complete?"></textarea>
+          </div>
+
+          <!-- Est. hours -->
+          <div class="at-field" style="max-width:200px">
+            <label for="est_hours">Estimated Hours</label>
+            <input type="number" name="est_hours" id="est_hours"
+                   min="0.25" max="24" step="0.25" placeholder="e.g. 2">
+          </div>
         </div>
-      </div>
-      <hr class="divider">
-      <div class="btn-row">
-        <button type="submit" class="btn btn-primary">Add Task</button>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
-      </div>
-    </form>
+
+        <div class="at-actions">
+          <a class="btn-at-cancel" href="{{ url_for('dashboard') }}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Cancel
+          </a>
+          <button type="submit" class="btn-at-submit">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Assign Task
+          </button>
+        </div>
+
+      </form>
+    </div>
+
   </div>
-</div>
-{% endblock %}
+</main>
+
+<script>
+function selectPerson(card) {
+  document.querySelectorAll('.at-person-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  const name  = card.dataset.name;
+  const color = card.dataset.color;
+  document.getElementById('hidden-member').value = name;
+  // Update banner
+  const info = document.getElementById('assignee-info');
+  document.getElementById('assignee-av').style.background = color;
+  document.getElementById('assignee-av').textContent = name[0].toUpperCase();
+  document.getElementById('assignee-name').textContent = name;
+  info.classList.add('visible');
+  document.getElementById('member-err').classList.remove('show');
+}
+
+document.getElementById('at-form').addEventListener('submit', function(e) {
+  if (!document.getElementById('hidden-member').value) {
+    e.preventDefault();
+    document.getElementById('member-err').classList.add('show');
+    document.getElementById('person-grid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+</script>
+
+</body>
+</html>

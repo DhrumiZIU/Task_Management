@@ -11,158 +11,186 @@
 {% block topbar_actions %}
   {% if is_manager %}
   <div class="view-tabs">
-    <a href="{{ url_for('analytics', view='today') }}"
-       class="view-tab {% if current_view=='today' %}active{% endif %}">Today</a>
-    <a href="{{ url_for('analytics', view='tomorrow') }}"
-       class="view-tab {% if current_view=='tomorrow' %}active{% endif %}">Tomorrow</a>
-    <a href="{{ url_for('analytics', view='all') }}"
-       class="view-tab {% if current_view=='all' %}active{% endif %}">All Dates</a>
+    <a href="{{ url_for('analytics', view='today') }}"    class="view-tab {% if current_view=='today'    %}active{% endif %}">Today</a>
+    <a href="{{ url_for('analytics', view='tomorrow') }}" class="view-tab {% if current_view=='tomorrow' %}active{% endif %}">Tomorrow</a>
+    <a href="{{ url_for('analytics', view='all') }}"      class="view-tab {% if current_view=='all'      %}active{% endif %}">All Dates</a>
   </div>
   {% endif %}
-  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Home</a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </a>
 {% endblock %}
 
 {% block content %}
-<style>
-.analytics-section-title {
-  font-size: 11px; font-weight: 800; color: var(--text3);
-  text-transform: uppercase; letter-spacing: .7px;
-  margin: 28px 0 14px; display: flex; align-items: center; gap: 8px;
-}
-.analytics-section-title::after {
-  content: ''; flex: 1; height: 1px; background: var(--border);
-}
-.chart-card {
-  background: var(--bg);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  padding: 22px 22px 18px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.04);
-}
-.chart-title { font-size: 15px; font-weight: 800; color: var(--text1); margin-bottom: 2px; }
-.chart-sub   { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
-.chart-wrap  { position: relative; height: 220px; }
-.chart-wrap-tall { height: 280px; }
-.analytics-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.chart-card-wide { grid-column: 1 / -1; }
-@media (max-width: 640px) {
-  .analytics-grid { grid-template-columns: 1fr; }
-  .chart-card-wide { grid-column: 1; }
-}
 
-/* Leaderboard */
-.leaderboard { display: flex; flex-direction: column; gap: 10px; }
-.lb-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; border-radius: 10px;
-  border: 1.5px solid var(--border); background: var(--bg2);
-  transition: box-shadow .15s;
-}
-.lb-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
-.lb-rank {
-  width: 28px; height: 28px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 800; flex-shrink: 0;
-}
-.lb-rank.r1 { background: #fef3c7; color: #d97706; }
-.lb-rank.r2 { background: #f1f5f9; color: #64748b; }
-.lb-rank.r3 { background: #fef2f2; color: #ef4444; }
-.lb-rank.rn { background: var(--bg); color: var(--text3); border: 1px solid var(--border); }
-.lb-name { font-size: 14px; font-weight: 700; color: var(--text1); min-width: 100px; }
-.lb-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
-.lb-bar { height: 100%; border-radius: 4px; transition: width .6s ease; }
-.lb-pct { font-size: 13px; font-weight: 800; color: var(--text1); min-width: 42px; text-align: right; }
-.lb-counts { font-size: 11px; color: var(--text3); min-width: 80px; text-align: right; }
-
-/* Stat strip enhancements */
-.stat-grid-5 {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-  margin-bottom: 24px;
-}
-@media (max-width: 900px) { .stat-grid-5 { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 540px) { .stat-grid-5 { grid-template-columns: 1fr 1fr; } }
-</style>
-
-{# ── Stat Strip (5 cards) ── #}
-<div class="stat-grid-5">
-  <div class="stat-card c-blue">
-    <div class="stat-top">Total Tasks</div><div class="stat-val">{{ total_tasks }}</div><div class="stat-sub">All time</div>
+{# ── KPI Strip ── #}
+<div class="an-kpi-row">
+  <div class="an-kpi an-kpi-blue">
+    <div class="an-kpi-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <div>
+      <div class="an-kpi-val">{{ total_tasks }}</div>
+      <div class="an-kpi-label">Total Tasks</div>
+      <div class="an-kpi-sub">All members</div>
+    </div>
   </div>
-  <div class="stat-card c-green">
-    <div class="stat-top">Completed</div><div class="stat-val">{{ done_count }}</div><div class="stat-sub">{{ done_pct }}% done</div>
+  <div class="an-kpi an-kpi-green">
+    <div class="an-kpi-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div>
+      <div class="an-kpi-val">{{ done_count }}</div>
+      <div class="an-kpi-label">Completed</div>
+      <div class="an-kpi-sub">{{ done_pct }}% completion rate</div>
+    </div>
   </div>
-  <div class="stat-card c-orange">
-    <div class="stat-top">In Progress</div><div class="stat-val">{{ inprog_count }}</div><div class="stat-sub">Currently active</div>
+  <div class="an-kpi an-kpi-orange">
+    <div class="an-kpi-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div>
+      <div class="an-kpi-val">{{ inprog_count }}</div>
+      <div class="an-kpi-label">In Progress</div>
+      <div class="an-kpi-sub">Currently active</div>
+    </div>
   </div>
-  <div class="stat-card c-red">
-    <div class="stat-top">Blocked</div><div class="stat-val">{{ blocked_count }}</div><div class="stat-sub">Need attention</div>
+  <div class="an-kpi an-kpi-red">
+    <div class="an-kpi-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div>
+      <div class="an-kpi-val">{{ blocked_count }}</div>
+      <div class="an-kpi-label">Blocked</div>
+      <div class="an-kpi-sub">Need attention</div>
+    </div>
   </div>
-  <div class="stat-card c-slate">
-    <div class="stat-top">Not Started</div><div class="stat-val">{{ not_started }}</div><div class="stat-sub">Pending kick-off</div>
+  <div class="an-kpi an-kpi-slate">
+    <div class="an-kpi-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+    </div>
+    <div>
+      <div class="an-kpi-val">{{ not_started }}</div>
+      <div class="an-kpi-label">Not Started</div>
+      <div class="an-kpi-sub">Pending kick-off</div>
+    </div>
   </div>
 </div>
 
-{# ── Overall progress bar ── #}
+{# ── Overall progress ── #}
 {% if total_tasks > 0 %}
-<div class="progress-wrap" style="margin-bottom:24px">
-  <div class="prog-label">Overall Completion</div>
-  <div class="prog-track"><div class="prog-fill" style="width:{{ done_pct }}%"></div></div>
-  <div class="prog-pct">{{ done_count }}/{{ total_tasks }} tasks done ({{ done_pct }}%)</div>
+<div class="an-prog-card">
+  <div class="an-prog-label">
+    <span>Overall Completion</span>
+    <span class="an-prog-pct">{{ done_count }}/{{ total_tasks }} tasks · <strong>{{ done_pct }}%</strong></span>
+  </div>
+  <div class="an-prog-track">
+    <div class="an-prog-fill" style="width:{{ done_pct }}%"></div>
+  </div>
 </div>
 {% endif %}
 
-{# ── Leaderboard — rendered server-side from Python dicts ── #}
-<div class="analytics-section-title">Member Leaderboard</div>
-<div class="leaderboard">
-  {% for m in members_data %}
-  {% set total = md[m].total %}
-  {% set done  = md[m].done %}
-  {% set pct   = ((done / total * 100)|int) if total > 0 else 0 %}
-  <div class="lb-row">
-    <div class="lb-rank {% if loop.index==1 %}r1{% elif loop.index==2 %}r2{% elif loop.index==3 %}r3{% else %}rn{% endif %}">
-      {{ loop.index }}
-    </div>
-    <div class="lb-name">{{ m }}</div>
-    <div class="lb-bar-wrap">
-      <div class="lb-bar" style="width:{{ pct }}%;background:{% if pct>=80 %}#16a34a{% elif pct>=50 %}#2563eb{% elif pct>=25 %}#f59e0b{% else %}#dc2626{% endif %}"></div>
-    </div>
-    <div class="lb-pct">{{ pct }}%</div>
-    <div class="lb-counts">{{ done }}/{{ total }} done</div>
+{# ── Leaderboard ── #}
+<div class="an-section-head">
+  <div class="an-section-title">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    Member Leaderboard
   </div>
-  {% endfor %}
+  <span class="an-section-sub">Ranked by completion rate</span>
+</div>
+
+<div class="an-lb-table-wrap">
+  <table class="an-lb-table">
+    <thead>
+      <tr>
+        <th style="width:50px">Rank</th>
+        <th>Member</th>
+        <th style="width:90px; text-align:center">Total</th>
+        <th style="width:90px; text-align:center">Done</th>
+        <th style="width:110px; text-align:center">In Progress</th>
+        <th style="width:90px; text-align:center">Blocked</th>
+        <th style="width:160px">Completion</th>
+        <th style="width:72px; text-align:right">Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set lb_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
+      {% for m in members_data %}
+      {% set row_total = md[m].total %}
+      {% set row_done  = md[m].done %}
+      {% set row_inp   = md[m].get('inprog', 0) %}
+      {% set row_blk   = md[m].get('blocked', 0) %}
+      {% set pct       = ((row_done / row_total * 100)|int) if row_total > 0 else 0 %}
+      {% set lc = lb_colors[loop.index0 % 8] %}
+      <tr class="an-lb-tr">
+        <td>
+          <span class="an-lb-rank {% if loop.index==1 %}rank-1{% elif loop.index==2 %}rank-2{% elif loop.index==3 %}rank-3{% else %}rank-n{% endif %}">{{ loop.index }}</span>
+        </td>
+        <td>
+          <div class="an-lb-member">
+            <div class="an-lb-av" style="background:{{ lc }}">{{ m[0]|upper }}</div>
+            <span class="an-lb-name">{{ m }}</span>
+          </div>
+        </td>
+        <td style="text-align:center"><span class="an-lb-num">{{ row_total }}</span></td>
+        <td style="text-align:center"><span class="an-lb-num an-num-done">{{ row_done }}</span></td>
+        <td style="text-align:center"><span class="an-lb-num an-num-inprog">{{ row_inp }}</span></td>
+        <td style="text-align:center"><span class="an-lb-num an-num-blocked">{{ row_blk }}</span></td>
+        <td>
+          <div class="an-lb-bar-wrap">
+            <div class="an-lb-bar" style="width:{{ pct }}%;background:{% if pct>=80 %}#16a34a{% elif pct>=50 %}#2563eb{% elif pct>=25 %}#f59e0b{% else %}#e2e8f0{% endif %}"></div>
+          </div>
+        </td>
+        <td style="text-align:right">
+          <span class="an-lb-pct" style="color:{% if pct>=80 %}#16a34a{% elif pct>=50 %}#2563eb{% elif pct>=25 %}#f59e0b{% else %}#94a3b8{% endif %}">{{ pct }}%</span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 {# ── Charts ── #}
-<div class="analytics-section-title">Charts</div>
-<div class="analytics-grid">
-  <div class="chart-card">
-    <div class="chart-title">Task Status</div>
-    <div class="chart-sub">Distribution across all statuses</div>
-    <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+<div class="an-section-head" style="margin-top:28px">
+  <div class="an-section-title">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Charts & Breakdown
+  </div>
+  <span class="an-section-sub">Visual task distribution</span>
+</div>
+
+<div class="an-charts-grid">
+  <div class="an-chart-card">
+    <div class="an-chart-head">
+      <div class="an-chart-title">Task Status</div>
+      <div class="an-chart-sub">Distribution across all statuses</div>
+    </div>
+    <div class="an-chart-body"><canvas id="statusChart"></canvas></div>
   </div>
 
-  <div class="chart-card">
-    <div class="chart-title">Priority Breakdown</div>
-    <div class="chart-sub">Tasks by priority level</div>
-    <div class="chart-wrap"><canvas id="priorityChart"></canvas></div>
+  <div class="an-chart-card">
+    <div class="an-chart-head">
+      <div class="an-chart-title">Priority Breakdown</div>
+      <div class="an-chart-sub">Tasks by priority level</div>
+    </div>
+    <div class="an-chart-body"><canvas id="priorityChart"></canvas></div>
   </div>
 
-  <div class="chart-card chart-card-wide">
-    <div class="chart-title">Tasks per Member</div>
-    <div class="chart-sub">Total assigned vs completed per person</div>
-    <div class="chart-wrap chart-wrap-tall"><canvas id="memberStackChart"></canvas></div>
+  <div class="an-chart-card an-chart-wide">
+    <div class="an-chart-head">
+      <div class="an-chart-title">Tasks per Member</div>
+      <div class="an-chart-sub">Total assigned vs completed per person</div>
+    </div>
+    <div class="an-chart-body an-chart-tall"><canvas id="memberStackChart"></canvas></div>
   </div>
 
-  <div class="chart-card chart-card-wide">
-    <div class="chart-title">Member Status Breakdown</div>
-    <div class="chart-sub">Done · In Progress · Blocked · Not Started per member</div>
-    <div class="chart-wrap chart-wrap-tall"><canvas id="memberStatusChart"></canvas></div>
+  <div class="an-chart-card an-chart-wide">
+    <div class="an-chart-head">
+      <div class="an-chart-title">Member Status Breakdown</div>
+      <div class="an-chart-sub">Done · In Progress · Blocked · Not Started per member</div>
+    </div>
+    <div class="an-chart-body an-chart-tall"><canvas id="memberStatusChart"></canvas></div>
   </div>
 </div>
 
@@ -182,24 +210,22 @@ const MB = {{ member_blocked|safe }};
 const MNS = MT.map((t,i) => t - MD[i] - MI[i] - MB[i]);
 
 Chart.defaults.font.family = "Inter, -apple-system, sans-serif";
-Chart.defaults.color = '#667085';
+Chart.defaults.color = '#64748b';
 
 const donutOpts = (labels, data, colors) => ({
   type: 'doughnut',
-  data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 3, borderColor: '#fff', hoverOffset: 6 }] },
+  data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 3, borderColor: '#fff', hoverOffset: 8 }] },
   options: {
-    cutout: '68%',
+    cutout: '70%',
     plugins: {
-      legend: { position: 'bottom', labels: { padding: 16, font: { size: 12, weight: '600' }, usePointStyle: true, pointStyleWidth: 10 } },
+      legend: { position: 'bottom', labels: { padding: 18, font: { size: 12, weight: '600' }, usePointStyle: true, pointStyleWidth: 10 } },
       tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} tasks` } }
     }
   }
 });
 
-new Chart(document.getElementById('statusChart'),
-  donutOpts(SL, SD, ['#16a34a','#2563eb','#94a3b8','#dc2626']));
-new Chart(document.getElementById('priorityChart'),
-  donutOpts(PL, PD, ['#dc2626','#f59e0b','#16a34a']));
+new Chart(document.getElementById('statusChart'),  donutOpts(SL, SD, ['#16a34a','#2563eb','#94a3b8','#dc2626']));
+new Chart(document.getElementById('priorityChart'), donutOpts(PL, PD, ['#dc2626','#f59e0b','#16a34a']));
 
 new Chart(document.getElementById('memberStackChart'), {
   type: 'bar',
@@ -215,12 +241,12 @@ new Chart(document.getElementById('memberStackChart'), {
   options: {
     indexAxis: 'y',
     plugins: {
-      legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 16 } },
+      legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 18 } },
       tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x}` } }
     },
     scales: {
       x: { stacked: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } },
-      y: { stacked: true, grid: { display: false }, ticks: { font: { size: 13, weight: '700' } } }
+      y: { stacked: true, grid: { display: false }, ticks: { font: { size: 13, weight: '600' } } }
     }
   }
 });
@@ -238,14 +264,134 @@ new Chart(document.getElementById('memberStatusChart'), {
   },
   options: {
     plugins: {
-      legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 16 } },
+      legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 18 } },
       tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}` } }
     },
     scales: {
-      x: { grid: { display: false }, ticks: { font: { size: 12, weight: '700' } } },
+      x: { grid: { display: false }, ticks: { font: { size: 12, weight: '600' } } },
       y: { grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } }
     }
   }
 });
 </script>
+
+<style>
+/* ── Analytics KPI strip ── */
+.an-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.an-kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+  box-shadow: var(--shadow);
+  transition: box-shadow .18s, transform .18s;
+  border-top: 2px solid transparent;
+}
+.an-kpi:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.an-kpi-icon {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 1px;
+}
+.an-kpi-blue   { border-top-color: var(--primary); }
+.an-kpi-green  { border-top-color: var(--success); }
+.an-kpi-orange { border-top-color: var(--warning); }
+.an-kpi-red    { border-top-color: var(--danger);  }
+.an-kpi-slate  { border-top-color: #94a3b8; }
+.an-kpi-blue   .an-kpi-icon { background: #eff6ff; color: var(--primary); }
+.an-kpi-green  .an-kpi-icon { background: #f0fdf4; color: var(--success); }
+.an-kpi-orange .an-kpi-icon { background: #fffbeb; color: var(--warning); }
+.an-kpi-red    .an-kpi-icon { background: #fef2f2; color: var(--danger);  }
+.an-kpi-slate  .an-kpi-icon { background: #f1f5f9; color: #64748b; }
+.an-kpi-val   { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
+.an-kpi-label { font-size: 12px; font-weight: 600; color: var(--text2); margin-top: 4px; }
+.an-kpi-sub   { font-size: 10.5px; color: var(--text4); margin-top: 2px; }
+
+/* ── Progress card ── */
+.an-prog-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 20px;
+  margin-bottom: 24px; box-shadow: var(--shadow);
+}
+.an-prog-label {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 10px;
+}
+.an-prog-pct { font-size: 12px; color: var(--text3); font-weight: 500; }
+.an-prog-pct strong { color: var(--success); }
+.an-prog-track { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.an-prog-fill  { height: 100%; background: linear-gradient(90deg, var(--success), #4ade80); border-radius: 4px; transition: width .6s ease; }
+
+/* ── Section headers ── */
+.an-section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 20px 0 14px; padding-left: 12px;
+  border-left: 3px solid var(--primary);
+}
+.an-section-title {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 700; color: var(--text);
+}
+.an-section-sub { font-size: 11.5px; color: var(--text4); }
+
+/* ── Leaderboard ── */
+.an-leaderboard { display: flex; flex-direction: column; gap: 8px; }
+.an-lb-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: box-shadow .15s, transform .15s;
+}
+.an-lb-row:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.an-lb-rank {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
+}
+.rank-1 { background: #fef3c7; color: #d97706; }
+.rank-2 { background: #f1f5f9; color: #475569; }
+.rank-3 { background: #fff7ed; color: #c2410c; }
+.rank-n { background: var(--bg); color: var(--text4); border: 1px solid var(--border); font-size: 11px; }
+.an-lb-av {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+.an-lb-name { font-size: 13.5px; font-weight: 700; color: var(--text); min-width: 110px; }
+.an-lb-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.an-lb-bar { height: 100%; border-radius: 4px; transition: width .6s ease; }
+.an-lb-pct { font-size: 13px; font-weight: 800; min-width: 44px; text-align: right; }
+.an-lb-counts { font-size: 11.5px; color: var(--text4); min-width: 64px; text-align: right; }
+
+/* ── Charts grid ── */
+.an-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.an-chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: box-shadow .18s;
+}
+.an-chart-card:hover { box-shadow: var(--shadow-md); }
+.an-chart-wide { grid-column: span 2; }
+.an-chart-head {
+  padding: 16px 20px 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  background: var(--surface2);
+}
+.an-chart-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.an-chart-sub   { font-size: 11.5px; color: var(--text3); margin-top: 2px; }
+.an-chart-body  { padding: 20px; position: relative; height: 240px; }
+.an-chart-tall  { height: 240px; }
+
+@media (max-width: 1100px) { .an-kpi-row { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 700px)  { .an-kpi-row { grid-template-columns: 1fr 1fr; } .an-charts-grid { grid-template-columns: 1fr; } .an-chart-wide { grid-column: 1; } }
+</style>
 {% endblock %}
