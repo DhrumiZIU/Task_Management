@@ -3,7 +3,7 @@
 {% block topbar_title %}Edit Task{% endblock %}
 {% block topbar_sub %}{{ task.team_member }} · {{ task.date }}{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Back</a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Back</a>
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
 
     {% if not is_manager %}
     <div class="form-role-note">
-      ℹ️ As a team member, you can update <strong>Status</strong> and <strong>7 PM Update</strong> only.
+      As a team member, you can update <strong>Status</strong> and <strong>7 PM Update</strong> only.
     </div>
     {% endif %}
 

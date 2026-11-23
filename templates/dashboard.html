@@ -8,192 +8,539 @@
 {% endblock %}
 {% block topbar_actions %}
   {% if is_manager %}
-  {# Date view tabs #}
   <div class="view-tabs">
-    <a href="{{ url_for('dashboard', view='today') }}"
-       class="view-tab {% if current_view=='today' %}active{% endif %}">Today</a>
-    <a href="{{ url_for('dashboard', view='tomorrow') }}"
-       class="view-tab {% if current_view=='tomorrow' %}active{% endif %}">Tomorrow</a>
-    <a href="{{ url_for('dashboard', view='all') }}"
-       class="view-tab {% if current_view=='all' %}active{% endif %}">All Dates</a>
+    <a href="{{ url_for('dashboard', view='today') }}"    class="view-tab {% if current_view=='today'    %}active{% endif %}">Today</a>
+    <a href="{{ url_for('dashboard', view='tomorrow') }}" class="view-tab {% if current_view=='tomorrow' %}active{% endif %}">Tomorrow</a>
+    <a href="{{ url_for('dashboard', view='all') }}"      class="view-tab {% if current_view=='all'      %}active{% endif %}">All Dates</a>
   </div>
-  <a href="{{ url_for('meeting') }}" class="btn btn-secondary btn-sm">🌙 7 PM Meeting</a>
+  <a href="{{ url_for('meeting') }}" class="btn btn-secondary btn-sm">7 PM Meeting</a>
   {% endif %}
-  <a href="{{ url_for('add_task') }}" class="btn btn-primary btn-sm">+ Add Task</a>
+  <a href="{{ url_for('add_task') }}" class="btn btn-primary btn-sm">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Task
+  </a>
 {% endblock %}
 
 {% block content %}
 
-{# ── Meeting Summary Banner ── #}
-<div id="meeting-banner" style="display:none;margin-bottom:16px;padding:14px 18px;background:var(--primary-soft,#eff6ff);border:1px solid var(--primary,#2563eb);border-radius:10px">
-  <div style="display:flex;align-items:flex-start;gap:10px">
-    <span style="font-size:18px">🎙️</span>
-    <div>
-      <div style="font-size:12px;font-weight:700;color:var(--primary,#2563eb);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">
-        Latest Meeting Summary · <span id="banner-meta"></span>
-      </div>
-      <div id="banner-summary" style="font-size:14px;line-height:1.6;color:var(--text1)"></div>
+{# ── Meeting Banner ── #}
+<div id="meeting-banner" style="display:none" class="d-banner">
+  <div class="d-banner-inner">
+    <div class="d-banner-dot"></div>
+    <div class="d-banner-body">
+      <span class="d-banner-label">Meeting Summary</span>
+      <span class="d-banner-sep">·</span>
+      <span id="banner-meta" class="d-banner-meta"></span>
+      <div id="banner-summary" class="d-banner-text"></div>
     </div>
+    <button onclick="document.getElementById('meeting-banner').style.display='none'" class="d-banner-close">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
 </div>
-
 <script>
-(function pollMeeting() {
-  fetch('/api/meeting-summary')
-    .then(r => r.json())
-    .then(data => {
-      var m = data.meeting;
-      if (m && m.status === 'done' && m.overall_summary) {
-        document.getElementById('banner-summary').textContent = m.overall_summary;
-        document.getElementById('banner-meta').textContent = m.uploaded_by + ' · ' + m.filename;
-        document.getElementById('meeting-banner').style.display = 'block';
-      }
-    })
-    .catch(function(){});
-  setTimeout(pollMeeting, 5000);
+(function pollMeeting(){
+  fetch('/api/meeting-summary').then(r=>r.json()).then(d=>{
+    var m=d.meeting;
+    if(m&&m.status==='done'&&m.overall_summary){
+      document.getElementById('banner-summary').textContent=m.overall_summary;
+      document.getElementById('banner-meta').textContent=m.uploaded_by+' · '+m.filename;
+      document.getElementById('meeting-banner').style.display='block';
+    }
+  }).catch(function(){});
+  setTimeout(pollMeeting,5000);
 })();
 </script>
 
-{# ── Stats ── #}
+{# ── Compute stats ── #}
 {% set total   = namespace(n=0) %}
 {% set done    = namespace(n=0) %}
 {% set inprog  = namespace(n=0) %}
 {% set blocked = namespace(n=0) %}
-{% for m in members %}
-  {% for t in grouped[m] %}
-    {% set total.n = total.n + 1 %}
-    {% if t.status == 'Done' %}{% set done.n = done.n + 1 %}{% endif %}
-    {% if t.status == 'In progress' %}{% set inprog.n = inprog.n + 1 %}{% endif %}
-    {% if t.status == 'Blocked' %}{% set blocked.n = blocked.n + 1 %}{% endif %}
+{% set pending = namespace(n=0) %}
+{% set all_visible = members + (manager_names if is_manager else []) %}
+{% for m in all_visible %}
+  {% for t in grouped.get(m, []) %}
+    {% set total.n   = total.n + 1 %}
+    {% if t.status == 'Done'        %}{% set done.n    = done.n    + 1 %}{% endif %}
+    {% if t.status == 'In progress' %}{% set inprog.n  = inprog.n  + 1 %}{% endif %}
+    {% if t.status == 'Blocked'     %}{% set blocked.n = blocked.n + 1 %}{% endif %}
+    {% if t.status in ('Pending','Not started') %}{% set pending.n = pending.n + 1 %}{% endif %}
   {% endfor %}
 {% endfor %}
 {% set pct = ((done.n / total.n * 100)|int) if total.n > 0 else 0 %}
 
-<div class="stat-grid">
-  <div class="stat-card c-blue">
-    <div><div class="stat-top">Total Tasks</div><div class="stat-val">{{ total.n }}</div>
-    <div class="stat-sub">{% if current_view=='all' %}All dates{% else %}{{ current_view|capitalize }}{% endif %}</div></div>
-    <div class="stat-emoji">📋</div>
+{# ── KPI Strip ── #}
+<div class="d-kpi-row">
+  <div class="d-kpi d-kpi-blue">
+    <div class="d-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <div class="d-kpi-body">
+      <div class="d-kpi-val">{{ total.n }}</div>
+      <div class="d-kpi-label">Total Tasks</div>
+    </div>
   </div>
-  <div class="stat-card c-green">
-    <div><div class="stat-top">Completed</div><div class="stat-val">{{ done.n }}</div>
-    <div class="stat-sub">{{ pct }}% done</div></div>
-    <div class="stat-emoji">✅</div>
+  <div class="d-kpi d-kpi-green">
+    <div class="d-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="d-kpi-body">
+      <div class="d-kpi-val">{{ done.n }}</div>
+      <div class="d-kpi-label">Completed · {{ pct }}%</div>
+    </div>
   </div>
-  <div class="stat-card c-orange">
-    <div><div class="stat-top">In Progress</div><div class="stat-val">{{ inprog.n }}</div>
-    <div class="stat-sub">Currently active</div></div>
-    <div class="stat-emoji">⚡</div>
+  <div class="d-kpi d-kpi-orange">
+    <div class="d-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="d-kpi-body">
+      <div class="d-kpi-val">{{ inprog.n }}</div>
+      <div class="d-kpi-label">In Progress</div>
+    </div>
   </div>
-  <div class="stat-card c-red">
-    <div><div class="stat-top">Blocked</div><div class="stat-val">{{ blocked.n }}</div>
-    <div class="stat-sub">Need attention</div></div>
-    <div class="stat-emoji">🚫</div>
+  <div class="d-kpi d-kpi-red">
+    <div class="d-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><octagon/><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div class="d-kpi-body">
+      <div class="d-kpi-val">{{ blocked.n }}</div>
+      <div class="d-kpi-label">Blocked</div>
+    </div>
+  </div>
+  <div class="d-kpi d-kpi-slate">
+    <div class="d-kpi-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.22" y1="4.22" x2="19.78" y2="19.78"/></svg>
+    </div>
+    <div class="d-kpi-body">
+      <div class="d-kpi-val">{{ pending.n }}</div>
+      <div class="d-kpi-label">Pending</div>
+    </div>
   </div>
 </div>
 
+{# ── Progress bar ── #}
 {% if total.n > 0 %}
-<div class="progress-wrap">
-  <div class="prog-label">Overall Progress</div>
-  <div class="prog-track"><div class="prog-fill" style="width:{{ pct }}%"></div></div>
-  <div class="prog-pct">{{ done.n }}/{{ total.n }} done ({{ pct }}%)</div>
+<div class="d-prog-wrap">
+  <div class="d-prog-track">
+    <div class="d-prog-seg d-seg-done"    style="width:{{ (done.n    / total.n * 100)|int }}%"></div>
+    <div class="d-prog-seg d-seg-inprog"  style="width:{{ (inprog.n  / total.n * 100)|int }}%"></div>
+    <div class="d-prog-seg d-seg-blocked" style="width:{{ (blocked.n / total.n * 100)|int }}%"></div>
+  </div>
+  <div class="d-prog-legend">
+    <span class="d-leg d-leg-done">Done {{ done.n }}</span>
+    <span class="d-leg d-leg-inprog">In Progress {{ inprog.n }}</span>
+    <span class="d-leg d-leg-blocked">Blocked {{ blocked.n }}</span>
+    <span class="d-leg d-leg-other">Pending {{ pending.n }}</span>
+  </div>
 </div>
 {% endif %}
 
-{# ── Per-member sections ── #}
-{% for member in members %}
-{% set mt = grouped[member] %}
-{% set md = mt|selectattr('status','equalto','Done')|list|length %}
-{% set mp = ((md / mt|length * 100)|int) if mt|length > 0 else 0 %}
+{# ── Member task sections ── #}
+{% for member in all_visible %}
 
-<div class="section-wrap">
-  <div class="section-head">
-    <div class="section-title">
-      <div class="av av{{ loop.index }}">{{ member[0] }}</div>
-      {{ member }}
-    </div>
-    <div class="section-meta">
-      {% if mt|length > 0 %}
-      <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text3)">
-        <div style="width:80px;height:5px;background:var(--border);border-radius:3px;overflow:hidden">
-          <div style="height:100%;width:{{ mp }}%;background:var(--success);border-radius:3px"></div>
+{# Managers divider #}
+{% if is_manager and loop.index0 == members|length and manager_names|length > 0 %}
+<div class="d-divider"><span>Managers</span></div>
+{% endif %}
+
+{% set mt = grouped.get(member, []) %}
+{% set md = mt|selectattr('status','equalto','Done')|list|length %}
+{% set mb = mt|selectattr('status','equalto','Blocked')|list|length %}
+{% set mi = mt|selectattr('status','equalto','In progress')|list|length %}
+{% set mp = ((md / mt|length * 100)|int) if mt|length > 0 else 0 %}
+{% set is_mgr_row = member in manager_names %}
+{% set av_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
+{% set av_col = av_colors[loop.index0 % 8] %}
+
+<div class="d-card">
+  {# ── Card header ── #}
+  <div class="d-card-head" style="border-left:3px solid {{ av_col }}">
+    <div class="d-card-left">
+      <div class="d-av" style="background:{{ av_col }}">{{ member[0]|upper }}</div>
+      <div class="d-card-info">
+        <div class="d-card-name">
+          {{ member }}
+          {% if is_mgr_row and is_manager %}
+          <span class="d-role-chip">Manager</span>
+          {% endif %}
         </div>
-        {{ md }}/{{ mt|length }}
+        <div class="d-card-meta">
+          {% if mt|length > 0 %}
+            <span>{{ mt|length }} task{{ 's' if mt|length != 1 }}</span>
+            {% if md > 0 %}<span class="d-meta-dot"></span><span class="d-meta-green">{{ md }} done</span>{% endif %}
+            {% if mi > 0 %}<span class="d-meta-dot"></span><span class="d-meta-blue">{{ mi }} active</span>{% endif %}
+            {% if mb > 0 %}<span class="d-meta-dot"></span><span class="d-meta-red">{{ mb }} blocked</span>{% endif %}
+          {% else %}
+            <span>No tasks assigned</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="d-card-right">
+      {% if mt|length > 0 %}
+      <div class="d-mini-prog">
+        <div class="d-mini-track">
+          <div class="d-mini-fill" style="width:{{ mp }}%;background:{{ av_col }}"></div>
+        </div>
+        <span class="d-mini-pct">{{ mp }}%</span>
       </div>
       {% endif %}
-      <span class="count-pill">{{ mt|length }} task{{ 's' if mt|length != 1 }}</span>
       {% if is_manager or team_name == member %}
-      <a href="{{ url_for('add_task') }}" class="btn btn-xs btn-secondary">+ Task</a>
+      <a href="{{ url_for('add_task') }}" class="btn btn-xs btn-secondary">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Task
+      </a>
       {% endif %}
     </div>
   </div>
 
   {% if mt %}
-  <table class="task-table">
-    <thead>
-      <tr>
-        {% if current_view == 'all' %}<th>Date</th>{% endif %}
-        <th style="width:{% if current_view=='all' %}30{% else %}36{% endif %}%">Task</th>
-        <th>Priority</th><th>Est.</th><th>Status</th><th>7 PM Update</th>
-        {% if is_manager or team_name == member %}<th style="width:120px">Actions</th>{% endif %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for t in mt %}
-      <tr>
-        {% if current_view == 'all' %}
-        <td style="font-size:12px;color:var(--text3);white-space:nowrap;font-weight:500">
-          {% if t.date == today %}<span style="color:var(--primary);font-weight:700">Today</span>
-          {% elif t.date == tomorrow %}<span style="color:var(--success);font-weight:700">Tomorrow</span>
-          {% else %}{{ t.date.strftime('%b %d') if t.date else '—' }}{% endif %}
-        </td>
-        {% endif %}
-        <td>
-          <div class="task-desc">{{ t.task }}</div>
-          {% if t.done_looks_like %}<div style="font-size:11px;color:var(--text4);margin-top:2px">✓ {{ t.done_looks_like }}</div>{% endif %}
-        </td>
-        <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority or '—' }}</span></td>
-        <td style="color:var(--text3);font-size:12px">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
-        <td>
-          {% if is_manager or team_name == member %}
-          <div class="status-quick" style="display:flex;gap:4px;flex-wrap:wrap">
-            {% for s in [('Not started','not-started','—'),('In progress','in-progress','◉'),('Done','done','✓'),('Blocked','blocked','⚠')] %}
-            <form method="post" action="{{ url_for('quick_status', task_id=t.id) }}" style="margin:0">
-              <input type="hidden" name="status" value="{{ s[0] }}">
-              <button type="submit"
-                class="badge status-{{ s[1] }}"
-                style="border:none;cursor:pointer;opacity:{% if t.status==s[0] %}1{% else %}0.35{% endif %};font-size:11px;padding:2px 7px"
-                title="Mark as {{ s[0] }}">{{ s[2] }} {{ s[0] }}</button>
-            </form>
-            {% endfor %}
-          </div>
-          {% else %}
-          <span class="badge status-{{ (t.status or 'not-started')|lower|replace(' ','-') }}">
-            {% if t.status == 'Done' %}✓ {% elif t.status == 'Blocked' %}⚠ {% elif t.status == 'In progress' %}◉ {% endif %}{{ t.status or 'Not started' }}
-          </span>
+  {# ── Task table ── #}
+  <div class="d-table-wrap">
+    <table class="d-table">
+      <thead>
+        <tr>
+          {% if current_view == 'all' %}<th>Date</th>{% endif %}
+          <th>Task</th>
+          <th>Priority</th>
+          <th>Est.</th>
+          <th>Status</th>
+          <th>Evening Update</th>
+          {% if is_manager or team_name == member %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in mt %}
+        {% set row_class = 'row-done' if t.status == 'Done' else ('row-blocked' if t.status == 'Blocked' else ('row-cf' if t.get('carried_forward') else '')) %}
+        <tr class="{{ row_class }}">
+
+          {% if current_view == 'all' %}
+          <td class="col-date">
+            {% if t.date == today %}<span class="d-chip chip-today">Today</span>
+            {% elif t.date == tomorrow %}<span class="d-chip chip-tomorrow">Tomorrow</span>
+            {% elif t.date and t.date < today %}<span class="d-chip chip-past">{{ t.date.strftime('%b %d') }}</span>
+            {% else %}<span class="d-chip">{{ t.date.strftime('%b %d') if t.date else '—' }}</span>{% endif %}
+          </td>
           {% endif %}
-        </td>
-        <td><div class="task-update">{{ t.update_7pm or '—' }}</div></td>
-        {% if is_manager or team_name == member %}
-        <td>
-          <div class="actions-cell">
-            <a href="{{ url_for('edit_task', task_id=t.id) }}" class="btn btn-xs btn-edit">Edit</a>
-            {% if is_manager %}
-            <form method="post" action="{{ url_for('delete_task_by_id', task_id=t.id) }}"
-                  style="display:inline" onsubmit="return confirm('Delete this task?')">
-              <button type="submit" class="btn btn-xs btn-delete">Del</button>
+
+          <td class="col-task">
+            <div class="d-task {% if t.status == 'Done' %}d-task-done{% endif %}">{{ t.task }}</div>
+            {% if t.get('carried_forward') %}<div class="d-cf">↩ from {{ t.date.strftime('%b %d') if t.date else 'prev' }}</div>{% endif %}
+            {% if t.done_looks_like %}<div class="d-dll">{{ t.done_looks_like }}</div>{% endif %}
+          </td>
+
+          <td class="col-pri">
+            {% set p = (t.priority or 'Medium')|lower %}
+            <span class="d-pri d-pri-{{ p }}">{{ t.priority or 'Medium' }}</span>
+          </td>
+
+          <td class="col-est">
+            <span class="d-est">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</span>
+          </td>
+
+          <td class="col-status">
+            {% if is_manager or team_name == member %}
+            <form method="post" action="{{ url_for('quick_status', task_id=t.id) }}">
+              <label for="s{{ t.id }}" class="sr-only">Status</label>
+              {% set sc = (t.status or 'Not started')|lower|replace(' ','-') %}
+              <select id="s{{ t.id }}" name="status" onchange="this.form.submit()" class="d-sel d-sel-{{ sc }}">
+                {% for s in ['Not started','In progress','Pending','Done','Blocked'] %}
+                <option value="{{ s }}"{% if t.status == s %} selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+              </select>
             </form>
+            {% else %}
+            {% set sc = (t.status or 'Not started')|lower|replace(' ','-') %}
+            <span class="d-status-pill d-sp-{{ sc }}">{{ t.status or 'Not started' }}</span>
             {% endif %}
-          </div>
-        </td>
-        {% endif %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+          </td>
+
+          <td class="col-update">
+            <span class="d-update">{{ t.update_7pm or '—' }}</span>
+          </td>
+
+          {% if is_manager or team_name == member %}
+          <td class="col-actions">
+            <div class="d-actions">
+              <a href="{{ url_for('edit_task', task_id=t.id) }}" class="d-btn-edit" title="Edit">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </a>
+              {% if is_manager %}
+              <form method="post" action="{{ url_for('delete_task_by_id', task_id=t.id) }}"
+                    style="display:inline" onsubmit="return confirm('Delete this task?')">
+                <button type="submit" class="d-btn-del" title="Delete">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+          {% endif %}
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
   {% else %}
-  <div class="no-data">No tasks assigned {% if current_view == 'today' %}for today{% elif current_view == 'tomorrow' %}for tomorrow{% endif %}</div>
+  <div class="d-empty">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text4)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>No tasks{% if current_view == 'today' %} for today{% elif current_view == 'tomorrow' %} for tomorrow{% endif %}</span>
+    {% if is_manager or team_name == member %}
+    <a href="{{ url_for('add_task') }}" class="btn btn-xs btn-secondary">+ Add</a>
+    {% endif %}
+  </div>
   {% endif %}
 </div>
+
 {% endfor %}
+
+<style>
+/* ════════════════════════════════════════════════
+   Dashboard — professional layout
+   ════════════════════════════════════════════════ */
+
+/* ── Meeting banner ── */
+.d-banner { background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; margin-bottom:16px; }
+.d-banner-inner { display:flex; align-items:flex-start; gap:10px; padding:11px 16px; }
+.d-banner-dot { width:7px; height:7px; border-radius:50%; background:var(--primary); flex-shrink:0; margin-top:5px; }
+.d-banner-label { font-size:11px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:.5px; }
+.d-banner-sep { color:var(--text4); margin:0 4px; }
+.d-banner-meta { font-size:11px; color:var(--text3); }
+.d-banner-text { font-size:12px; color:var(--text2); line-height:1.6; margin-top:3px; }
+.d-banner-body { flex:1; min-width:0; }
+.d-banner-close { background:none; border:none; cursor:pointer; color:var(--text3); padding:3px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; }
+.d-banner-close:hover { color:var(--danger); background:var(--danger-lt); }
+
+/* ── KPI strip ── */
+.d-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.d-kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  transition: box-shadow .15s;
+}
+.d-kpi:hover { box-shadow: var(--shadow-md); }
+.d-kpi-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.d-kpi-blue   .d-kpi-icon { background:#eff6ff; color:var(--primary); }
+.d-kpi-green  .d-kpi-icon { background:#f0fdf4; color:var(--success); }
+.d-kpi-orange .d-kpi-icon { background:#fffbeb; color:var(--warning); }
+.d-kpi-red    .d-kpi-icon { background:#fef2f2; color:var(--danger);  }
+.d-kpi-slate  .d-kpi-icon { background:#f1f5f9; color:#64748b; }
+.d-kpi-blue   { border-top: 2px solid var(--primary); }
+.d-kpi-green  { border-top: 2px solid var(--success); }
+.d-kpi-orange { border-top: 2px solid var(--warning); }
+.d-kpi-red    { border-top: 2px solid var(--danger);  }
+.d-kpi-slate  { border-top: 2px solid #94a3b8; }
+.d-kpi-val   { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
+.d-kpi-label { font-size: 11px; color: var(--text3); margin-top: 3px; font-weight: 500; }
+
+/* ── Segmented progress bar ── */
+.d-prog-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:18px; box-shadow:var(--shadow); }
+.d-prog-track { display:flex; height:6px; border-radius:4px; overflow:hidden; background:var(--border); gap:1px; }
+.d-prog-seg { height:100%; transition:width .4s ease; }
+.d-seg-done    { background:var(--success); }
+.d-seg-inprog  { background:var(--primary); }
+.d-seg-blocked { background:var(--danger); }
+.d-prog-legend { display:flex; gap:16px; margin-top:8px; flex-wrap:wrap; }
+.d-leg { font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; }
+.d-leg::before { content:''; width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+.d-leg-done::before    { background:var(--success); }
+.d-leg-inprog::before  { background:var(--primary); }
+.d-leg-blocked::before { background:var(--danger); }
+.d-leg-other::before   { background:var(--border2); }
+.d-leg-done    { color:var(--success); }
+.d-leg-inprog  { color:var(--primary); }
+.d-leg-blocked { color:var(--danger); }
+.d-leg-other   { color:var(--text3); }
+
+/* ── Managers divider ── */
+.d-divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 22px 0 14px; color: var(--text3);
+}
+.d-divider::before, .d-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.d-divider span { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .9px; white-space: nowrap; }
+
+/* ── Member card ── */
+.d-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.d-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent; /* overridden inline */
+  gap: 12px;
+}
+.d-card-left  { display:flex; align-items:center; gap:11px; min-width:0; flex:1; }
+.d-card-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.d-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #fff;
+  flex-shrink: 0; letter-spacing: 0;
+}
+.d-card-info { min-width: 0; }
+.d-card-name {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 7px;
+}
+.d-card-meta {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--text3); margin-top: 2px;
+  flex-wrap: wrap;
+}
+.d-meta-dot   { width:3px; height:3px; border-radius:50%; background:var(--border2); flex-shrink:0; }
+.d-meta-green { color:var(--success); font-weight:600; }
+.d-meta-blue  { color:var(--primary); font-weight:600; }
+.d-meta-red   { color:var(--danger);  font-weight:600; }
+.d-role-chip  {
+  font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;
+  background:var(--purple-lt); color:var(--purple); border:1px solid #ddd6fe;
+  text-transform:uppercase; letter-spacing:.3px;
+}
+.d-mini-prog  { display:flex; align-items:center; gap:7px; }
+.d-mini-track { width:60px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.d-mini-fill  { height:100%; border-radius:2px; transition:width .3s; }
+.d-mini-pct   { font-size:11px; font-weight:700; color:var(--text3); min-width:28px; text-align:right; }
+
+/* ── Table ── */
+.d-table-wrap { overflow-x: auto; }
+.d-table { width:100%; border-collapse:collapse; min-width:560px; }
+.d-table thead tr { background:transparent; }
+.d-table th {
+  padding: 8px 14px;
+  font-size: 10px; font-weight: 700;
+  color: var(--text4); text-transform: uppercase; letter-spacing: .6px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap; text-align: left;
+  background: #fcfcfd;
+}
+.d-table td {
+  padding: 11px 14px;
+  font-size: 13px; color: var(--text2);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.d-table tbody tr:last-child td { border-bottom: none; }
+.d-table tbody tr { transition: background .1s; }
+.d-table tbody tr:hover td { background: #f8faff; }
+
+/* Row states */
+.row-done td   { opacity: .55; }
+.row-blocked   { }
+.row-blocked td { background: #fffafa; }
+.row-cf td     { background: #fdfff4; }
+
+/* Column widths */
+.col-date    { width: 80px; }
+.col-task    { min-width: 200px; }
+.col-pri     { width: 90px; }
+.col-est     { width: 54px; }
+.col-status  { width: 150px; }
+.col-update  { width: 180px; }
+.col-actions { width: 72px; }
+
+/* Task cell */
+.d-task     { font-weight: 600; color: var(--text); line-height: 1.4; word-break: break-word; }
+.d-task-done { text-decoration: line-through; color: var(--text4); font-weight: 500; }
+.d-dll  { font-size: 11px; color: var(--text4); margin-top: 2px; }
+.d-cf   { font-size: 11px; color: #b45309; font-weight: 600; margin-top: 2px; }
+.d-est  { font-size: 12px; color: var(--text3); font-variant-numeric: tabular-nums; }
+.d-update { font-size: 12px; color: var(--text3); font-style: italic; display: block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Priority badges */
+.d-pri { display:inline-flex; align-items:center; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap; border:1px solid transparent; }
+.d-pri-high   { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+.d-pri-medium { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+.d-pri-low    { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
+
+/* Status select */
+.d-sel {
+  appearance: none; -webkit-appearance: none;
+  font: inherit; font-size: 11px; font-weight: 600;
+  padding: 3px 22px 3px 9px; border-radius: 4px;
+  border: 1px solid transparent; cursor: pointer; outline: none;
+  background-repeat: no-repeat; background-position: right 6px center; background-size: 9px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%2394a3b8'/%3E%3C/svg%3E");
+  transition: box-shadow .12s;
+  min-width: 110px;
+}
+.d-sel:focus, .d-sel:hover { box-shadow: 0 0 0 2px rgba(37,99,235,.12); }
+.d-sel-done        { background-color:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
+.d-sel-in-progress { background-color:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.d-sel-blocked     { background-color:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+.d-sel-not-started { background-color:#f8fafc; color:#475569; border-color:#e2e8f0; }
+.d-sel-pending     { background-color:#fffbeb; color:#92400e; border-color:#fde68a; }
+
+/* Status pill (read-only) */
+.d-status-pill { display:inline-flex; align-items:center; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap; border:1px solid transparent; }
+.d-sp-done        { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
+.d-sp-in-progress { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.d-sp-blocked     { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+.d-sp-not-started { background:#f8fafc; color:#475569; border-color:#e2e8f0; }
+.d-sp-pending     { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+
+/* Date chips */
+.d-chip { display:inline-block; font-size:11px; font-weight:600; padding:2px 7px; border-radius:4px; }
+.chip-today    { background:var(--primary-lt); color:var(--primary); }
+.chip-tomorrow { background:var(--success-lt); color:var(--success); }
+.chip-past     { background:var(--surface2);   color:var(--text3);   }
+
+/* Icon-only action buttons */
+.d-actions { display:flex; align-items:center; gap:4px; }
+.d-btn-edit, .d-btn-del {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 6px;
+  border: 1px solid transparent; cursor: pointer;
+  transition: all .12s; text-decoration: none; background: none;
+  color: var(--text3);
+}
+.d-btn-edit { border-color: var(--border); background: var(--surface); }
+.d-btn-edit:hover { background: #eff6ff; border-color: #bfdbfe; color: var(--primary); text-decoration: none; }
+.d-btn-del  { border-color: var(--border); background: var(--surface); }
+.d-btn-del:hover  { background: var(--danger-lt); border-color: #fecaca; color: var(--danger); }
+
+/* Empty state */
+.d-empty {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 20px 16px;
+  color: var(--text4); font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .d-kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 700px) {
+  .d-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
 {% endblock %}

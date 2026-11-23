@@ -46,16 +46,16 @@
                 style="margin-left:auto"
                 onsubmit="return confirm('Delete this note?')">
             <button type="submit"
-                    style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:14px;padding:2px 6px;border-radius:4px;opacity:0.6"
-                    title="Delete note">🗑</button>
+                    style="background:none;border:none;cursor:pointer;color:var(--text4);font-size:12px;padding:3px 7px;border-radius:4px;transition:color .12s"
+                    onmouseenter="this.style.color='var(--danger)'" onmouseleave="this.style.color='var(--text4)'"
+                    title="Delete note">✕</button>
           </form>
         </div>
         <div class="note-body">{{ n.note }}</div>
       </div>
       {% endfor %}
     {% else %}
-    <div class="no-data" style="padding:60px 20px">
-      <div style="font-size:32px;margin-bottom:12px">📝</div>
+    <div class="no-data" style="padding:48px 20px">
       <div style="font-weight:600;color:var(--text2);margin-bottom:4px">No notes yet</div>
       <div style="color:var(--text4);font-size:12px">Your notes are private — only you can see them.</div>
     </div>

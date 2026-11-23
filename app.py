@@ -75,16 +75,28 @@ def dashboard():
     tasks   = db_backup.get_tasks_db(filter_date=filter_date)
     try:
         import excel_utils as xl
-        members = xl.get_team_members()
+        all_users = xl.get_all_users()
     except Exception:
-        members = [u["team_name"] for u in db_backup.get_users_backup()
-                   if u.get("role") == "member" and u.get("team_name")]
-    grouped = {m: [] for m in members}
+        all_users = db_backup.get_users_backup()
+
+    members       = [u["team_name"]    for u in all_users if u.get("role") == "member"  and u.get("team_name")]
+    manager_names = [u["display_name"] for u in all_users if u.get("role") == "manager" and u.get("display_name")]
+
+    # Build grouped for members + managers so manager tasks are tracked
+    all_names = members + [n for n in manager_names if n not in members]
+    grouped = {m: [] for m in all_names}
     for t in tasks:
         if t["team_member"] in grouped:
             grouped[t["team_member"]].append(t)
+        elif t["team_member"]:
+            # Task assigned to someone not in the list yet — still show it to managers
+            grouped[t["team_member"]] = [t]
+            if auth.is_manager() and t["team_member"] not in all_names:
+                all_names.append(t["team_member"])
+
     return render_template(
         "dashboard.html", grouped=grouped, members=members,
+        manager_names=manager_names,
         today=today, tomorrow=tomorrow, current_view=view,
         is_manager=auth.is_manager(), can_edit_task=auth.can_edit_task,
         can_delete=auth.can_delete_task(), team_name=session.get("team_name", ""),

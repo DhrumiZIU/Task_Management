@@ -19,7 +19,7 @@
        class="view-tab {% if current_view=='all' %}active{% endif %}">All Dates</a>
   </div>
   {% endif %}
-  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Home</a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Home</a>
 {% endblock %}
 
 {% block content %}
@@ -92,24 +92,19 @@
 {# ── Stat Strip (5 cards) ── #}
 <div class="stat-grid-5">
   <div class="stat-card c-blue">
-    <div><div class="stat-top">Total Tasks</div><div class="stat-val">{{ total_tasks }}</div><div class="stat-sub">All time</div></div>
-    <div class="stat-emoji">📋</div>
+    <div class="stat-top">Total Tasks</div><div class="stat-val">{{ total_tasks }}</div><div class="stat-sub">All time</div>
   </div>
   <div class="stat-card c-green">
-    <div><div class="stat-top">Completed</div><div class="stat-val">{{ done_count }}</div><div class="stat-sub">{{ done_pct }}% done</div></div>
-    <div class="stat-emoji">✅</div>
+    <div class="stat-top">Completed</div><div class="stat-val">{{ done_count }}</div><div class="stat-sub">{{ done_pct }}% done</div>
   </div>
   <div class="stat-card c-orange">
-    <div><div class="stat-top">In Progress</div><div class="stat-val">{{ inprog_count }}</div><div class="stat-sub">Currently active</div></div>
-    <div class="stat-emoji">⚡</div>
+    <div class="stat-top">In Progress</div><div class="stat-val">{{ inprog_count }}</div><div class="stat-sub">Currently active</div>
   </div>
   <div class="stat-card c-red">
-    <div><div class="stat-top">Blocked</div><div class="stat-val">{{ blocked_count }}</div><div class="stat-sub">Need attention</div></div>
-    <div class="stat-emoji">🚫</div>
+    <div class="stat-top">Blocked</div><div class="stat-val">{{ blocked_count }}</div><div class="stat-sub">Need attention</div>
   </div>
-  <div class="stat-card" style="border-left:4px solid #64748b">
-    <div><div class="stat-top">Not Started</div><div class="stat-val">{{ not_started }}</div><div class="stat-sub">Pending kick-off</div></div>
-    <div class="stat-emoji">🕐</div>
+  <div class="stat-card c-slate">
+    <div class="stat-top">Not Started</div><div class="stat-val">{{ not_started }}</div><div class="stat-sub">Pending kick-off</div>
   </div>
 </div>
 
@@ -123,7 +118,7 @@
 {% endif %}
 
 {# ── Leaderboard — rendered server-side from Python dicts ── #}
-<div class="analytics-section-title">🏆 Member Leaderboard</div>
+<div class="analytics-section-title">Member Leaderboard</div>
 <div class="leaderboard">
   {% for m in members_data %}
   {% set total = md[m].total %}
@@ -131,7 +126,7 @@
   {% set pct   = ((done / total * 100)|int) if total > 0 else 0 %}
   <div class="lb-row">
     <div class="lb-rank {% if loop.index==1 %}r1{% elif loop.index==2 %}r2{% elif loop.index==3 %}r3{% else %}rn{% endif %}">
-      {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+      {{ loop.index }}
     </div>
     <div class="lb-name">{{ m }}</div>
     <div class="lb-bar-wrap">
@@ -144,7 +139,7 @@
 </div>
 
 {# ── Charts ── #}
-<div class="analytics-section-title">📊 Charts</div>
+<div class="analytics-section-title">Charts</div>
 <div class="analytics-grid">
   <div class="chart-card">
     <div class="chart-title">Task Status</div>

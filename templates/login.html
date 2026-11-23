@@ -12,14 +12,19 @@
 <div class="login-page">
   <div class="login-box">
     <div class="login-header">
-      <div class="login-logo">📋</div>
+      <div class="login-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      </div>
       <h1>Team Daily Planner</h1>
       <p>Sign in to access your workspace</p>
     </div>
     <div class="login-card">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for cat, msg in messages %}
-        <div class="flash flash-{{ cat }}" style="margin-bottom:16px">{{ msg }}</div>
+        <div class="flash flash-{{ cat }}" style="margin-bottom:14px">{{ msg }}</div>
         {% endfor %}
       {% endwith %}
       <form method="post">
@@ -28,12 +33,12 @@
           <input id="username" type="text" name="username"
                  placeholder="Enter your username" autocomplete="username" required autofocus>
         </div>
-        <div class="field" style="margin-bottom:20px">
+        <div class="field" style="margin-bottom:18px">
           <label for="password">Password</label>
           <input id="password" type="password" name="password"
                  placeholder="Enter your password" autocomplete="current-password" required>
         </div>
-        <button type="submit" class="btn btn-primary btn-full">Sign In →</button>
+        <button type="submit" class="btn btn-primary btn-full">Sign In</button>
       </form>
     </div>
   </div>

@@ -195,25 +195,81 @@ def _fetchall_dicts(cur) -> list[dict]:
 
 # ── Task CRUD ────────────────────────────────────────────────────────────────
 
+_INCOMPLETE_STATUSES = ("Not started", "Pending", "Blocked", "In progress")
+_COMPLETED_STATUSES  = ("Done", "Completed")
+
 def get_tasks_db(filter_date=None, member: str | None = None) -> list[dict]:
     init_db()
-    q, p = "SELECT * FROM tasks WHERE (is_deleted IS NULL OR is_deleted=0)", []
-    if filter_date:
-        q += " AND task_date=%s"; p.append(str(filter_date))
-    if member:
-        q += " AND team_member=%s"; p.append(member)
-    q += " ORDER BY task_date, team_member"
-    with get_connection() as con:
-        cur = con.cursor()
-        cur.execute(q, p)
-        rows = _fetchall_dicts(cur)
+    today = date.today()
+
     def _parse(ds):
         try: return date.fromisoformat(ds) if ds else None
         except (ValueError, TypeError): return ds
-    return [{"row": r["excel_row"], "id": r["id"], "date": _parse(r["task_date"]), "team_member": r["team_member"],
-             "task": r["task"], "priority": r["priority"], "status": r["status"],
-             "done_looks_like": r["done_looks_like"], "est_hours": r["est_hours"],
-             "update_7pm": r["update_7pm"]} for r in rows]
+
+    def _row_to_dict(r):
+        return {"row": r["excel_row"], "id": r["id"], "date": _parse(r["task_date"]),
+                "team_member": r["team_member"], "task": r["task"], "priority": r["priority"],
+                "status": r["status"], "done_looks_like": r["done_looks_like"],
+                "est_hours": r["est_hours"], "update_7pm": r["update_7pm"]}
+
+    base = "SELECT * FROM tasks WHERE (is_deleted IS NULL OR is_deleted=0)"
+    member_clause = " AND team_member=%s" if member else ""
+
+    with get_connection() as con:
+        cur = con.cursor()
+
+        if filter_date:
+            filter_d = _parse(str(filter_date)) if not isinstance(filter_date, date) else filter_date
+            # Fetch tasks assigned on this date
+            p = [str(filter_date)]
+            if member: p.append(member)
+            cur.execute(base + " AND task_date=%s" + member_clause + " ORDER BY task_date, team_member", p)
+            rows = _fetchall_dicts(cur)
+            result = [_row_to_dict(r) for r in rows]
+
+            # Carry forward: if viewing today (or future), also include incomplete tasks from past dates
+            # that are NOT already re-added for this date (avoid duplicates by task text + member)
+            if filter_d and filter_d >= today:
+                p2 = [str(filter_d)]
+                if member: p2.append(member)
+                # incomplete tasks from before filter_date
+                incomplete_statuses_sql = ",".join(["%s"] * len(_INCOMPLETE_STATUSES))
+                p3 = list(_INCOMPLETE_STATUSES) + [str(filter_d)] + ([] if not member else [member])
+                cur.execute(
+                    base + f" AND status IN ({incomplete_statuses_sql})"
+                    " AND task_date<%s" + member_clause +
+                    " ORDER BY task_date, team_member",
+                    p3
+                )
+                carry_rows = _fetchall_dicts(cur)
+                # Deduplicate: skip if same (member, task) already exists in result for this date
+                existing_keys = {(r["team_member"], r["task"].strip().lower()) for r in result}
+                for r in carry_rows:
+                    key = (r["team_member"], r["task"].strip().lower())
+                    if key not in existing_keys:
+                        d = _row_to_dict(r)
+                        d["carried_forward"] = True  # flag for template use
+                        result.append(d)
+                        existing_keys.add(key)
+            return result
+        else:
+            # "All dates" view: hide completed tasks from past dates
+            if member:
+                cur.execute(
+                    base + " AND NOT (task_date<%s AND status IN (" +
+                    ",".join(["%s"] * len(_COMPLETED_STATUSES)) + "))" +
+                    member_clause + " ORDER BY task_date, team_member",
+                    [str(today)] + list(_COMPLETED_STATUSES) + [member]
+                )
+            else:
+                cur.execute(
+                    base + " AND NOT (task_date<%s AND status IN (" +
+                    ",".join(["%s"] * len(_COMPLETED_STATUSES)) + "))" +
+                    " ORDER BY task_date, team_member",
+                    [str(today)] + list(_COMPLETED_STATUSES)
+                )
+            rows = _fetchall_dicts(cur)
+            return [_row_to_dict(r) for r in rows]
 
 
 def write_task_db(excel_row: int, task_date, team_member: str, task: str,

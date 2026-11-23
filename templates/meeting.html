@@ -3,8 +3,8 @@
 {% block topbar_title %}7 PM Meeting{% endblock %}
 {% block topbar_sub %}Tomorrow's plan · {{ tomorrow.strftime('%A, %B %d, %Y') }}{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('discussion') }}" class="btn btn-secondary btn-sm">💬 Discussion</a>
-  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Home</a>
+  <a href="{{ url_for('discussion') }}" class="btn btn-secondary btn-sm">Notes</a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Home</a>
 {% endblock %}
 
 {% block content %}
@@ -197,7 +197,7 @@
 
 {# ── Header ── #}
 <div class="meeting-header">
-  <div class="meeting-header-icon">🎙️</div>
+  <div class="meeting-header-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
   <div>
     <div class="meeting-header-title">7 PM Dail Updates
     </div>
@@ -223,8 +223,7 @@
           <input type="file" name="recording" id="recording-file"
                  accept=".mp3,.wav,.m4a,.mp4,.mov,.webm,.txt" required>
           <button type="submit" class="btn-process" id="upload-btn">
-            <span id="upload-btn-icon">🤖</span>
-            <span id="upload-btn-text">Process &amp; Auto-Assign</span>
+              <span id="upload-btn-text">Process &amp; Auto-Assign</span>
           </button>
         </div>
         <div class="format-chips" style="margin-top:14px">
@@ -249,20 +248,20 @@
         <span class="result-filename">{{ latest_meeting.filename }}</span>
         <span class="result-by">· {{ latest_meeting.uploaded_by }} · {{ latest_meeting.uploaded_at[:16] if latest_meeting.uploaded_at else '' }}</span>
         <span class="status-badge {{ latest_meeting.status }}">
-          {% if latest_meeting.status == 'done' %}✓ Done
-          {% elif latest_meeting.status == 'failed' %}✕ Failed
-          {% else %}⏳ Processing{% endif %}
+          {% if latest_meeting.status == 'done' %}Done
+          {% elif latest_meeting.status == 'failed' %}Failed
+          {% else %}Processing{% endif %}
         </span>
       </div>
       <div class="result-card-body">
         {% if latest_meeting.status == 'done' and latest_meeting.overall_summary %}
           <div class="result-summary">{{ latest_meeting.overall_summary }}</div>
         {% elif latest_meeting.status == 'processing' %}
-          <div style="color:var(--text3);font-size:13px">⏳ AI is processing your recording… this usually takes 30–60 seconds. Refresh to check.</div>
+          <div style="color:var(--text3);font-size:13px">AI is processing your recording — this usually takes 30–60 seconds. Refresh to check.</div>
         {% elif latest_meeting.status == 'failed' %}
           {% set err = latest_meeting.overall_summary or '' %}
           <div class="error-box">
-            <div class="error-box-title">⚠ Processing Failed</div>
+            <div class="error-box-title">Processing Failed</div>
             {% if 'GEMINI_API_KEY' in err or 'api_key' in err.lower() %}
               <div class="error-box-what">Your Gemini API key is missing or not configured.</div>
               <div class="error-box-fix"><strong>How to fix:</strong> Add <code>GEMINI_API_KEY=your_key_here</code> to your <code>.env</code> file, then restart the app. Get a free key at <strong>aistudio.google.com</strong>.</div>
@@ -296,9 +295,7 @@
 <script>
 document.getElementById('upload-form').addEventListener('submit', function() {
   var btn  = document.getElementById('upload-btn');
-  var icon = document.getElementById('upload-btn-icon');
   var txt  = document.getElementById('upload-btn-text');
-  icon.textContent = '⏳';
   txt.textContent  = 'Processing… please wait';
   btn.disabled = true;
 });
@@ -308,7 +305,7 @@ document.getElementById('upload-form').addEventListener('submit', function() {
 {# ── Summary banner for members ── #}
 {% if not is_manager and latest_meeting and latest_meeting.status == 'done' and latest_meeting.overall_summary %}
 <div class="info-bar" style="background:var(--primary-soft,#eff6ff);border-color:var(--primary,#2563eb)">
-  <div class="info-bar-icon">🎙️</div>
+  <div class="info-bar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg></div>
   <div>
     <div class="info-bar-title" style="color:var(--primary,#2563eb)">Latest Meeting Summary</div>
     <div class="info-bar-sub" style="color:var(--text1)">{{ latest_meeting.overall_summary }}</div>
@@ -318,7 +315,7 @@ document.getElementById('upload-form').addEventListener('submit', function() {
 
 {# ── Section header ── #}
 <div style="font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin:4px 0 16px;display:flex;align-items:center;gap:8px">
-  {% if is_manager %}📋 Plan Tomorrow's Tasks{% else %}✏️ Add Your Tasks for Tomorrow{% endif %}
+  {% if is_manager %}Plan Tomorrow's Tasks{% else %}Add Your Tasks for Tomorrow{% endif %}
   <span style="flex:1;height:1px;background:var(--border);display:block"></span>
 </div>
 
@@ -375,7 +372,7 @@ document.getElementById('upload-form').addEventListener('submit', function() {
   {% endfor %}
 
   <div class="form-actions">
-    <button type="submit" class="btn-save">💾 Save All Tasks for Tomorrow</button>
+    <button type="submit" class="btn-save">Save All Tasks for Tomorrow</button>
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
   </div>
 </form>
@@ -383,7 +380,7 @@ document.getElementById('upload-form').addEventListener('submit', function() {
 {% else %}
 {# ── Member view ── #}
 <div class="info-bar">
-  <div class="info-bar-icon">🌙</div>
+  <div class="info-bar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
   <div>
     <div class="info-bar-title">Plan your tomorrow · {{ tomorrow.strftime('%A, %B %d') }}</div>
     <div class="info-bar-sub">
@@ -441,7 +438,7 @@ document.getElementById('upload-form').addEventListener('submit', function() {
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn-save">💾 Save My Tasks for Tomorrow</button>
+    <button type="submit" class="btn-save">Save My Tasks for Tomorrow</button>
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
   </div>
 </form>
