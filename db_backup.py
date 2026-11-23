@@ -11,14 +11,8 @@ from db_projects import (get_projects, get_project, add_project,
 _DATABASE_URL = os.environ.get("DATABASE_URL", "")
 _USE_SQLITE = not _DATABASE_URL or _DATABASE_URL.startswith("sqlite:")
 
-# Auto-fallback: if DATABASE_URL is set but Postgres is unreachable (e.g. local dev),
-# silently switch to SQLite so plain `python app.py` just works.
-if not _USE_SQLITE:
-    try:
-        import psycopg2 as _pg_test
-        _pg_test.connect(_DATABASE_URL, connect_timeout=3).close()
-    except Exception:
-        _USE_SQLITE = True
+# Auto-fallback only when no DATABASE_URL is configured (local dev).
+# Never silently fall back when a URL is explicitly set — that hides real errors.
 
 if _USE_SQLITE:
     import db_sqlite_adapter as _sqlite_mod
@@ -33,18 +27,10 @@ else:
     import psycopg2.extras
     import psycopg2.pool
 
-    _pool: psycopg2.pool.ThreadedConnectionPool | None = None
-
-    def _get_pool() -> psycopg2.pool.ThreadedConnectionPool:
-        global _pool
-        if _pool is None:
-            _pool = psycopg2.pool.ThreadedConnectionPool(1, 5, _DATABASE_URL)
-        return _pool
-
     @contextmanager
     def get_connection():
-        pool = _get_pool()
-        con = pool.getconn()
+        # Use a fresh connection per request — compatible with Vercel serverless.
+        con = psycopg2.connect(_DATABASE_URL, connect_timeout=10)
         try:
             yield con
             con.commit()
@@ -52,7 +38,7 @@ else:
             con.rollback()
             raise
         finally:
-            pool.putconn(con)
+            con.close()
 
 
 def _onedrive_push():
