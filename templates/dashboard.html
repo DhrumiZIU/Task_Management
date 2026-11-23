@@ -23,6 +23,37 @@
 {% endblock %}
 
 {% block content %}
+
+{# ── Meeting Summary Banner ── #}
+<div id="meeting-banner" style="display:none;margin-bottom:16px;padding:14px 18px;background:var(--primary-soft,#eff6ff);border:1px solid var(--primary,#2563eb);border-radius:10px">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <span style="font-size:18px">🎙️</span>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--primary,#2563eb);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">
+        Latest Meeting Summary · <span id="banner-meta"></span>
+      </div>
+      <div id="banner-summary" style="font-size:14px;line-height:1.6;color:var(--text1)"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function pollMeeting() {
+  fetch('/api/meeting-summary')
+    .then(r => r.json())
+    .then(data => {
+      var m = data.meeting;
+      if (m && m.status === 'done' && m.overall_summary) {
+        document.getElementById('banner-summary').textContent = m.overall_summary;
+        document.getElementById('banner-meta').textContent = m.uploaded_by + ' · ' + m.filename;
+        document.getElementById('meeting-banner').style.display = 'block';
+      }
+    })
+    .catch(function(){});
+  setTimeout(pollMeeting, 5000);
+})();
+</script>
+
 {# ── Stats ── #}
 {% set total   = namespace(n=0) %}
 {% set done    = namespace(n=0) %}
@@ -127,7 +158,7 @@
           {% if is_manager or team_name == member %}
           <div class="status-quick" style="display:flex;gap:4px;flex-wrap:wrap">
             {% for s in [('Not started','not-started','—'),('In progress','in-progress','◉'),('Done','done','✓'),('Blocked','blocked','⚠')] %}
-            <form method="post" action="{{ url_for('quick_status', row_num=t.row) }}" style="margin:0">
+            <form method="post" action="{{ url_for('quick_status', task_id=t.id) }}" style="margin:0">
               <input type="hidden" name="status" value="{{ s[0] }}">
               <button type="submit"
                 class="badge status-{{ s[1] }}"
@@ -146,9 +177,9 @@
         {% if is_manager or team_name == member %}
         <td>
           <div class="actions-cell">
-            <a href="{{ url_for('edit_task', row_num=t.row) }}" class="btn btn-xs btn-edit">Edit</a>
+            <a href="{{ url_for('edit_task', task_id=t.id) }}" class="btn btn-xs btn-edit">Edit</a>
             {% if is_manager %}
-            <form method="post" action="{{ url_for('delete_task', row_num=t.row) }}"
+            <form method="post" action="{{ url_for('delete_task_by_id', task_id=t.id) }}"
                   style="display:inline" onsubmit="return confirm('Delete this task?')">
               <button type="submit" class="btn btn-xs btn-delete">Del</button>
             </form>

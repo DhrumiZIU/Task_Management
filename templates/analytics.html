@@ -7,8 +7,74 @@
 {% endblock %}
 
 {% block content %}
-{# Stat strip #}
-<div class="stat-grid" style="margin-bottom:24px">
+<style>
+.analytics-section-title {
+  font-size: 11px; font-weight: 800; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .7px;
+  margin: 28px 0 14px; display: flex; align-items: center; gap: 8px;
+}
+.analytics-section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.chart-card {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.chart-title { font-size: 15px; font-weight: 800; color: var(--text1); margin-bottom: 2px; }
+.chart-sub   { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+.chart-wrap  { position: relative; height: 220px; }
+.chart-wrap-tall { height: 280px; }
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.chart-card-wide { grid-column: 1 / -1; }
+@media (max-width: 640px) {
+  .analytics-grid { grid-template-columns: 1fr; }
+  .chart-card-wide { grid-column: 1; }
+}
+
+/* Leaderboard */
+.leaderboard { display: flex; flex-direction: column; gap: 10px; }
+.lb-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--bg2);
+  transition: box-shadow .15s;
+}
+.lb-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+.lb-rank {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
+}
+.lb-rank.r1 { background: #fef3c7; color: #d97706; }
+.lb-rank.r2 { background: #f1f5f9; color: #64748b; }
+.lb-rank.r3 { background: #fef2f2; color: #ef4444; }
+.lb-rank.rn { background: var(--bg); color: var(--text3); border: 1px solid var(--border); }
+.lb-name { font-size: 14px; font-weight: 700; color: var(--text1); min-width: 100px; }
+.lb-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.lb-bar { height: 100%; border-radius: 4px; transition: width .6s ease; }
+.lb-pct { font-size: 13px; font-weight: 800; color: var(--text1); min-width: 42px; text-align: right; }
+.lb-counts { font-size: 11px; color: var(--text3); min-width: 80px; text-align: right; }
+
+/* Stat strip enhancements */
+.stat-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media (max-width: 900px) { .stat-grid-5 { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 540px) { .stat-grid-5 { grid-template-columns: 1fr 1fr; } }
+</style>
+
+{# ── Stat Strip (5 cards) ── #}
+<div class="stat-grid-5">
   <div class="stat-card c-blue">
     <div><div class="stat-top">Total Tasks</div><div class="stat-val">{{ total_tasks }}</div><div class="stat-sub">All time</div></div>
     <div class="stat-emoji">📋</div>
@@ -25,8 +91,44 @@
     <div><div class="stat-top">Blocked</div><div class="stat-val">{{ blocked_count }}</div><div class="stat-sub">Need attention</div></div>
     <div class="stat-emoji">🚫</div>
   </div>
+  <div class="stat-card" style="border-left:4px solid #64748b">
+    <div><div class="stat-top">Not Started</div><div class="stat-val">{{ not_started }}</div><div class="stat-sub">Pending kick-off</div></div>
+    <div class="stat-emoji">🕐</div>
+  </div>
 </div>
 
+{# ── Overall progress bar ── #}
+{% if total_tasks > 0 %}
+<div class="progress-wrap" style="margin-bottom:24px">
+  <div class="prog-label">Overall Completion</div>
+  <div class="prog-track"><div class="prog-fill" style="width:{{ done_pct }}%"></div></div>
+  <div class="prog-pct">{{ done_count }}/{{ total_tasks }} tasks done ({{ done_pct }}%)</div>
+</div>
+{% endif %}
+
+{# ── Leaderboard — rendered server-side from Python dicts ── #}
+<div class="analytics-section-title">🏆 Member Leaderboard</div>
+<div class="leaderboard">
+  {% for m in members_data %}
+  {% set total = md[m].total %}
+  {% set done  = md[m].done %}
+  {% set pct   = ((done / total * 100)|int) if total > 0 else 0 %}
+  <div class="lb-row">
+    <div class="lb-rank {% if loop.index==1 %}r1{% elif loop.index==2 %}r2{% elif loop.index==3 %}r3{% else %}rn{% endif %}">
+      {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+    </div>
+    <div class="lb-name">{{ m }}</div>
+    <div class="lb-bar-wrap">
+      <div class="lb-bar" style="width:{{ pct }}%;background:{% if pct>=80 %}#16a34a{% elif pct>=50 %}#2563eb{% elif pct>=25 %}#f59e0b{% else %}#dc2626{% endif %}"></div>
+    </div>
+    <div class="lb-pct">{{ pct }}%</div>
+    <div class="lb-counts">{{ done }}/{{ total }} done</div>
+  </div>
+  {% endfor %}
+</div>
+
+{# ── Charts ── #}
+<div class="analytics-section-title">📊 Charts</div>
 <div class="analytics-grid">
   <div class="chart-card">
     <div class="chart-title">Task Status</div>
@@ -42,14 +144,14 @@
 
   <div class="chart-card chart-card-wide">
     <div class="chart-title">Tasks per Member</div>
-    <div class="chart-sub">Total tasks assigned to each team member</div>
-    <div class="chart-wrap chart-wrap-tall"><canvas id="memberTotalChart"></canvas></div>
+    <div class="chart-sub">Total assigned vs completed per person</div>
+    <div class="chart-wrap chart-wrap-tall"><canvas id="memberStackChart"></canvas></div>
   </div>
 
   <div class="chart-card chart-card-wide">
-    <div class="chart-title">Member Completion</div>
-    <div class="chart-sub">Done vs. remaining per member</div>
-    <div class="chart-wrap chart-wrap-tall"><canvas id="memberDoneChart"></canvas></div>
+    <div class="chart-title">Member Status Breakdown</div>
+    <div class="chart-sub">Done · In Progress · Blocked · Not Started per member</div>
+    <div class="chart-wrap chart-wrap-tall"><canvas id="memberStatusChart"></canvas></div>
   </div>
 </div>
 
@@ -64,10 +166,9 @@ const PD = {{ priority_data|safe }};
 const ML = {{ member_labels|safe }};
 const MT = {{ member_total|safe }};
 const MD = {{ member_done|safe }};
-
-const STATUS_CLR   = ['#16a34a','#2563eb','#94a3b8','#dc2626'];
-const PRIORITY_CLR = ['#dc2626','#f59e0b','#16a34a'];
-const MEMBER_CLR   = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#be185d'];
+const MI = {{ member_inprog|safe }};
+const MB = {{ member_blocked|safe }};
+const MNS = MT.map((t,i) => t - MD[i] - MI[i] - MB[i]);
 
 Chart.defaults.font.family = "Inter, -apple-system, sans-serif";
 Chart.defaults.color = '#667085';
@@ -78,53 +179,60 @@ const donutOpts = (labels, data, colors) => ({
   options: {
     cutout: '68%',
     plugins: {
-      legend: { position: 'bottom', labels: { padding: 18, font: { size: 12, weight: '600' }, usePointStyle: true, pointStyleWidth: 10 } },
+      legend: { position: 'bottom', labels: { padding: 16, font: { size: 12, weight: '600' }, usePointStyle: true, pointStyleWidth: 10 } },
       tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} tasks` } }
     }
   }
 });
 
-new Chart(document.getElementById('statusChart'),   donutOpts(SL, SD, STATUS_CLR));
-new Chart(document.getElementById('priorityChart'), donutOpts(PL, PD, PRIORITY_CLR));
+new Chart(document.getElementById('statusChart'),
+  donutOpts(SL, SD, ['#16a34a','#2563eb','#94a3b8','#dc2626']));
+new Chart(document.getElementById('priorityChart'),
+  donutOpts(PL, PD, ['#dc2626','#f59e0b','#16a34a']));
 
-new Chart(document.getElementById('memberTotalChart'), {
-  type: 'bar',
-  data: {
-    labels: ML,
-    datasets: [{ label: 'Total Tasks', data: MT,
-      backgroundColor: MEMBER_CLR.slice(0, ML.length),
-      borderRadius: 7, borderWidth: 0 }]
-  },
-  options: {
-    indexAxis: 'y',
-    plugins: { legend: { display: false },
-      tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} tasks` } }
-    },
-    scales: {
-      x: { grid: { color: '#f1f5f9' }, ticks: { stepSize: 1, font: { size: 12 } } },
-      y: { grid: { display: false }, ticks: { font: { size: 13, weight: '600' } } }
-    }
-  }
-});
-
-new Chart(document.getElementById('memberDoneChart'), {
+new Chart(document.getElementById('memberStackChart'), {
   type: 'bar',
   data: {
     labels: ML,
     datasets: [
-      { label: 'Done',      data: MD, backgroundColor: '#16a34a', borderRadius: 7, borderWidth: 0, stack: 's' },
-      { label: 'Remaining', data: MT.map((t,i) => t - MD[i]), backgroundColor: '#e2e8f0', borderRadius: 0, borderWidth: 0, stack: 's' }
+      { label: 'Done',        data: MD,  backgroundColor: '#16a34a', borderRadius: 4, stack: 's' },
+      { label: 'In Progress', data: MI,  backgroundColor: '#2563eb', borderRadius: 0, stack: 's' },
+      { label: 'Blocked',     data: MB,  backgroundColor: '#dc2626', borderRadius: 0, stack: 's' },
+      { label: 'Not Started', data: MNS, backgroundColor: '#e2e8f0', borderRadius: 0, stack: 's' }
     ]
   },
   options: {
     indexAxis: 'y',
     plugins: {
-      legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 18 } },
+      legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 16 } },
       tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x}` } }
     },
     scales: {
       x: { stacked: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } },
-      y: { stacked: true, grid: { display: false }, ticks: { font: { size: 13, weight: '600' } } }
+      y: { stacked: true, grid: { display: false }, ticks: { font: { size: 13, weight: '700' } } }
+    }
+  }
+});
+
+new Chart(document.getElementById('memberStatusChart'), {
+  type: 'bar',
+  data: {
+    labels: ML,
+    datasets: [
+      { label: 'Done',        data: MD,  backgroundColor: '#16a34a', borderRadius: 6, borderWidth: 0 },
+      { label: 'In Progress', data: MI,  backgroundColor: '#2563eb', borderRadius: 6, borderWidth: 0 },
+      { label: 'Blocked',     data: MB,  backgroundColor: '#dc2626', borderRadius: 6, borderWidth: 0 },
+      { label: 'Not Started', data: MNS, backgroundColor: '#94a3b8', borderRadius: 6, borderWidth: 0 }
+    ]
+  },
+  options: {
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 16 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}` } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 12, weight: '700' } } },
+      y: { grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } }
     }
   }
 });
