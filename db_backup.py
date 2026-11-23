@@ -1,138 +1,115 @@
-"""SQLite primary store — tasks/users synced from Excel; discussion + activity web-only."""
+"""Postgres primary store — tasks/users/discussion/activity via psycopg2."""
 from __future__ import annotations
-import os, sqlite3, threading
+import os
+from contextlib import contextmanager
 from datetime import date, datetime
-from pathlib import Path
+
+import psycopg2
+import psycopg2.extras
+import psycopg2.pool
+
+# Re-export project helpers so callers import only db_backup
+from db_projects import (get_projects, get_project, add_project,
+                         update_project, delete_project)
+
+_DATABASE_URL = os.environ.get("DATABASE_URL", "")
+_pool: psycopg2.pool.ThreadedConnectionPool | None = None
+
+
+def _get_pool() -> psycopg2.pool.ThreadedConnectionPool:
+    global _pool
+    if _pool is None:
+        _pool = psycopg2.pool.ThreadedConnectionPool(1, 5, _DATABASE_URL)
+    return _pool
+
+
+@contextmanager
+def get_connection():
+    pool = _get_pool()
+    con = pool.getconn()
+    try:
+        yield con
+        con.commit()
+    except Exception:
+        con.rollback()
+        raise
+    finally:
+        pool.putconn(con)
 
 
 def _onedrive_push():
-    """Fire-and-forget OneDrive sync after any data write (no-op if not configured)."""
     try:
         import onedrive_sync
         onedrive_sync.push_to_onedrive()
     except Exception:
         pass
 
-# DATA_DIR: use Railway volume mount if set, otherwise the project directory
-_DATA_DIR  = Path(os.environ.get("DATA_DIR", str(Path(__file__).resolve().parent)))
-_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-DB_PATH    = _DATA_DIR / "team_planner.db"
-EXCEL_PATH = _DATA_DIR / "Team Daily Planner.xlsx"
-_LOCK      = threading.Lock()   # serialises Excel sync
-_DB_WRITE  = threading.Lock()   # serialises concurrent SQLite writes (WAL handles reads)
-
-# Re-export project helpers so callers import only db_backup
-from db_projects import (get_projects, get_project, add_project,
-                         update_project, delete_project)
-
-
-def _conn():
-    con = sqlite3.connect(str(DB_PATH), check_same_thread=False)
-    con.row_factory = sqlite3.Row
-    con.execute("PRAGMA journal_mode=WAL")   # concurrent reads + one writer, no blocking
-    con.execute("PRAGMA foreign_keys=ON")
-    return con
-
 
 def init_db():
-    with _conn() as con:
-        con.executescript("""
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, excel_row INTEGER,
+            id SERIAL PRIMARY KEY, excel_row INTEGER,
             task_date TEXT, team_member TEXT, task TEXT, priority TEXT,
             status TEXT DEFAULT 'Not started', done_looks_like TEXT,
             est_hours REAL, update_7pm TEXT,
-            updated_at TEXT DEFAULT (datetime('now','localtime'))
-        );
+            updated_at TEXT DEFAULT (NOW()::text)
+        )""")
+        cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY, password TEXT, role TEXT,
             display_name TEXT, team_name TEXT
-        );
+        )""")
+        cur.execute("""
         CREATE TABLE IF NOT EXISTS discussion (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT DEFAULT (datetime('now','localtime')),
+            id SERIAL PRIMARY KEY,
+            timestamp TEXT DEFAULT (NOW()::text),
             username TEXT, display_name TEXT, note TEXT
-        );
+        )""")
+        cur.execute("""
         CREATE TABLE IF NOT EXISTS activity_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT DEFAULT (datetime('now','localtime')),
+            id SERIAL PRIMARY KEY,
+            timestamp TEXT DEFAULT (NOW()::text),
             action TEXT, username TEXT, display_name TEXT, details TEXT
-        );
+        )""")
+        cur.execute("""
         CREATE TABLE IF NOT EXISTS projects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL,
+            id SERIAL PRIMARY KEY, name TEXT NOT NULL,
             description TEXT, status TEXT DEFAULT 'Active',
-            created_at TEXT DEFAULT (datetime('now','localtime'))
-        );
+            created_at TEXT DEFAULT (NOW()::text)
+        )""")
+        cur.execute("""
         CREATE TABLE IF NOT EXISTS project_members (
             project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
             team_member TEXT, PRIMARY KEY (project_id, team_member)
-        );
-        CREATE TABLE IF NOT EXISTS sync_meta (
-            id INTEGER PRIMARY KEY, last_sync TEXT, excel_mtime REAL DEFAULT 0
-        );
-        """)
-        con.execute("INSERT OR IGNORE INTO sync_meta (id,last_sync,excel_mtime) VALUES (1,NULL,0)")
-        con.commit()
+        )""")
 
 
-# ── Excel ↔ SQLite sync ──────────────────────────────────────────────────────
-
-def _excel_mtime() -> float:
-    try: return os.path.getmtime(EXCEL_PATH)
-    except OSError: return 0.0
+def _row_to_dict(cur, row) -> dict:
+    cols = [desc[0] for desc in cur.description]
+    return dict(zip(cols, row))
 
 
-def _stored_mtime() -> float:
-    with _conn() as con:
-        row = con.execute("SELECT excel_mtime FROM sync_meta WHERE id=1").fetchone()
-    return row["excel_mtime"] if row else 0.0
+def _fetchall_dicts(cur) -> list[dict]:
+    cols = [desc[0] for desc in cur.description]
+    return [dict(zip(cols, row)) for row in cur.fetchall()]
 
 
-def sync_from_excel() -> tuple[int, int]:
-    import excel_utils as xl
-    init_db()
-    tasks, users, mtime = xl.get_tasks(), xl.get_all_users(), _excel_mtime()
-    with _conn() as con:
-        con.execute("DELETE FROM tasks"); con.execute("DELETE FROM users")
-        for t in tasks:
-            d = t["date"]
-            ds = d.isoformat() if isinstance(d, (date, datetime)) else str(d or "")
-            con.execute("INSERT INTO tasks (excel_row,task_date,team_member,task,priority,"
-                        "status,done_looks_like,est_hours,update_7pm) VALUES(?,?,?,?,?,?,?,?,?)",
-                        (t["row"],ds,t["team_member"],t["task"],t["priority"],
-                         t["status"],t["done_looks_like"],t["est_hours"],t["update_7pm"]))
-        for u in users:
-            con.execute("INSERT OR REPLACE INTO users (username,password,role,display_name,team_name)"
-                        " VALUES(?,?,?,?,?)",
-                        (u["username"],u["password"],u["role"],u["display_name"],u["team_name"]))
-        con.execute("UPDATE sync_meta SET last_sync=datetime('now','localtime'),excel_mtime=? WHERE id=1", (mtime,))
-    return len(tasks), len(users)
-
-
-def sync_if_excel_changed():
-    if _excel_mtime() > _stored_mtime():
-        threading.Thread(target=_safe_sync, daemon=True).start()
-
-
-def _safe_sync():
-    with _LOCK:
-        try: sync_from_excel()
-        except Exception: pass
-
-
-# ── Task CRUD (SQLite as source of truth for web app) ────────────────────────
+# ── Task CRUD ────────────────────────────────────────────────────────────────
 
 def get_tasks_db(filter_date=None, member: str | None = None) -> list[dict]:
     init_db()
     q, p = "SELECT * FROM tasks WHERE 1=1", []
     if filter_date:
-        q += " AND task_date=?"; p.append(str(filter_date))
+        q += " AND task_date=%s"; p.append(str(filter_date))
     if member:
-        q += " AND team_member=?"; p.append(member)
+        q += " AND team_member=%s"; p.append(member)
     q += " ORDER BY task_date, team_member"
-    with _conn() as con:
-        rows = con.execute(q, p).fetchall()
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute(q, p)
+        rows = _fetchall_dicts(cur)
     def _parse(ds):
         try: return date.fromisoformat(ds) if ds else None
         except (ValueError, TypeError): return ds
@@ -145,94 +122,129 @@ def get_tasks_db(filter_date=None, member: str | None = None) -> list[dict]:
 def write_task_db(excel_row: int, task_date, team_member: str, task: str,
                   priority: str, status: str, done_looks_like: str, est_hours, update_7pm: str):
     init_db()
-    with _DB_WRITE, _conn() as con:
-        con.execute("DELETE FROM tasks WHERE excel_row=?", (excel_row,))
-        con.execute("INSERT INTO tasks (excel_row,task_date,team_member,task,priority,"
-                    "status,done_looks_like,est_hours,update_7pm) VALUES(?,?,?,?,?,?,?,?,?)",
-                    (excel_row, str(task_date), team_member, task, priority,
-                     status, done_looks_like, est_hours, update_7pm))
-        con.commit()
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("DELETE FROM tasks WHERE excel_row=%s", (excel_row,))
+        cur.execute(
+            "INSERT INTO tasks (excel_row,task_date,team_member,task,priority,"
+            "status,done_looks_like,est_hours,update_7pm) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (excel_row, str(task_date), team_member, task, priority,
+             status, done_looks_like, est_hours, update_7pm))
     _onedrive_push()
+
 
 def update_task_status_db(excel_row: int, status: str, update_7pm: str):
     init_db()
-    with _DB_WRITE, _conn() as con:
-        con.execute("UPDATE tasks SET status=?,update_7pm=? WHERE excel_row=?",
-                    (status, update_7pm, excel_row)); con.commit()
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("UPDATE tasks SET status=%s, update_7pm=%s WHERE excel_row=%s",
+                    (status, update_7pm, excel_row))
     _onedrive_push()
+
 
 def delete_task_db(excel_row: int):
     init_db()
-    with _DB_WRITE, _conn() as con:
-        con.execute("DELETE FROM tasks WHERE excel_row=?", (excel_row,)); con.commit()
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("DELETE FROM tasks WHERE excel_row=%s", (excel_row,))
     _onedrive_push()
 
 
-# ── Discussion ───────────────────────────────────────────────────────────────
+# ── Discussion / Notes ───────────────────────────────────────────────────────
 
 def get_notes(username: str) -> list[dict]:
-    """Return only the notes belonging to this user."""
     init_db()
-    with _conn() as con:
-        return [dict(r) for r in con.execute(
-            "SELECT * FROM discussion WHERE username=? ORDER BY id DESC", (username,)).fetchall()]
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM discussion WHERE username=%s ORDER BY id DESC", (username,))
+        return _fetchall_dicts(cur)
 
 
 def add_note(username: str, display_name: str, note: str):
     init_db()
-    with _DB_WRITE, _conn() as con:
-        con.execute("INSERT INTO discussion (username,display_name,note) VALUES(?,?,?)",
-                    (username, display_name, note)); con.commit()
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("INSERT INTO discussion (username,display_name,note) VALUES(%s,%s,%s)",
+                    (username, display_name, note))
 
 
 def delete_note(note_id: int, username: str) -> bool:
-    """Delete a note only if it belongs to the given user. Returns True if deleted."""
     init_db()
-    with _DB_WRITE, _conn() as con:
-        cur = con.execute("DELETE FROM discussion WHERE id=? AND username=?", (note_id, username))
-        con.commit()
-    return cur.rowcount > 0
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("DELETE FROM discussion WHERE id=%s AND username=%s", (note_id, username))
+        return cur.rowcount > 0
+
 
 def log_activity(action: str, username: str, display_name: str, details: str = ""):
     init_db()
-    with _DB_WRITE, _conn() as con:
-        con.execute("INSERT INTO activity_log (action,username,display_name,details) VALUES(?,?,?,?)",
-                    (action, username, display_name, details)); con.commit()
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("INSERT INTO activity_log (action,username,display_name,details) VALUES(%s,%s,%s,%s)",
+                    (action, username, display_name, details))
+
 
 def get_activity_log(limit: int = 100) -> list[dict]:
     init_db()
-    with _conn() as con:
-        return [dict(r) for r in con.execute(
-            "SELECT * FROM activity_log ORDER BY id DESC LIMIT ?", (limit,)).fetchall()]
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM activity_log ORDER BY id DESC LIMIT %s", (limit,))
+        return _fetchall_dicts(cur)
+
+
+# ── Users ────────────────────────────────────────────────────────────────────
 
 def get_user_db(username: str) -> dict | None:
-    """Read one user from SQLite — used by auth (works without Excel on Render)."""
     init_db()
-    with _conn() as con:
-        row = con.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
-    return dict(row) if row else None
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM users WHERE username=%s", (username,))
+        row = cur.fetchone()
+        return _row_to_dict(cur, row) if row else None
 
 
 def update_profile_db(old_username: str, new_username: str, new_display_name: str, new_password: str | None = None):
-    """Rename username, display_name, and optionally password in SQLite."""
     init_db()
-    with _DB_WRITE, _conn() as con:
+    with get_connection() as con:
+        cur = con.cursor()
         if new_password:
-            con.execute(
-                "UPDATE users SET username=?,display_name=?,team_name=CASE WHEN role='member' THEN ? ELSE team_name END,password=? WHERE username=?",
+            cur.execute(
+                "UPDATE users SET username=%s, display_name=%s, "
+                "team_name=CASE WHEN role='member' THEN %s ELSE team_name END, "
+                "password=%s WHERE username=%s",
                 (new_username, new_display_name, new_display_name, new_password, old_username))
         else:
-            con.execute(
-                "UPDATE users SET username=?,display_name=?,team_name=CASE WHEN role='member' THEN ? ELSE team_name END WHERE username=?",
+            cur.execute(
+                "UPDATE users SET username=%s, display_name=%s, "
+                "team_name=CASE WHEN role='member' THEN %s ELSE team_name END "
+                "WHERE username=%s",
                 (new_username, new_display_name, new_display_name, old_username))
-        # Keep task records in sync with the new display_name (member tasks use team_name)
-        con.execute("UPDATE tasks SET team_member=? WHERE team_member=?",
+        cur.execute("UPDATE tasks SET team_member=%s WHERE team_member=%s",
                     (new_display_name, new_display_name))
-        con.commit()
+
+
+def get_users_backup() -> list[dict]:
+    init_db()
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM users ORDER BY role, display_name")
+        return _fetchall_dicts(cur)
+
+
+def get_tasks_backup() -> list[dict]:
+    init_db()
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM tasks ORDER BY task_date, team_member")
+        return _fetchall_dicts(cur)
+
+
+def last_sync_time() -> str:
+    return "N/A (Postgres)"
 
 
 def seed_users():
-    """Insert/update default users on every startup so credential changes deploy automatically."""
+    """Insert default users on startup; skip if already present."""
     init_db()
     defaults = [
         ("AdityaNaik",     "Aditya@123",  "manager", "Aditya Naik",     ""),
@@ -243,30 +255,12 @@ def seed_users():
         ("HarshMarodia",   "Harsh@123",   "member",  "Harsh Marodia",   "Harsh Marodia"),
         ("MohitJain",      "Mohit@123",   "member",  "Mohit Jain",      "Mohit Jain"),
     ]
-    old_usernames = ["manager1","manager2","member1","member2","member3","member4","member5"]
-    with _conn() as con:
-        # Remove old default accounts if still present
-        con.executemany("DELETE FROM users WHERE username=?", [(u,) for u in old_usernames])
-        con.executemany(
-            "INSERT OR IGNORE INTO users (username,password,role,display_name,team_name)"
-            " VALUES (?,?,?,?,?)", defaults)
-        con.commit()
-
-
-def get_tasks_backup() -> list[dict]:
-    init_db()
-    with _conn() as con:
-        return [dict(r) for r in con.execute(
-            "SELECT * FROM tasks ORDER BY task_date,team_member").fetchall()]
-
-def get_users_backup() -> list[dict]:
-    init_db()
-    with _conn() as con:
-        return [dict(r) for r in con.execute(
-            "SELECT * FROM users ORDER BY role,display_name").fetchall()]
-
-def last_sync_time() -> str:
-    init_db()
-    with _conn() as con:
-        row = con.execute("SELECT last_sync FROM sync_meta WHERE id=1").fetchone()
-    return row["last_sync"] if row and row["last_sync"] else "Never"
+    old_usernames = ["manager1", "manager2", "member1", "member2", "member3", "member4", "member5"]
+    with get_connection() as con:
+        cur = con.cursor()
+        for u in old_usernames:
+            cur.execute("DELETE FROM users WHERE username=%s", (u,))
+        for row in defaults:
+            cur.execute(
+                "INSERT INTO users (username,password,role,display_name,team_name)"
+                " VALUES (%s,%s,%s,%s,%s) ON CONFLICT (username) DO NOTHING", row)

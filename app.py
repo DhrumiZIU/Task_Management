@@ -1,6 +1,6 @@
 """Task Management Web App — Flask entry point."""
 from __future__ import annotations
-import json, os, subprocess, threading, time
+import json, os
 from datetime import date, timedelta
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 import auth
@@ -10,42 +10,10 @@ app = Flask(__name__)
 # SECRET_KEY from environment variable on Render; fallback for local dev only
 app.secret_key = os.environ.get("SECRET_KEY", "local-dev-only-change-on-render")
 
-# Startup: init SQLite, seed default users, sync from Excel if available
+# Startup: init Postgres tables and seed default users
 with app.app_context():
     db_backup.init_db()
-    db_backup.seed_users()          # no-op if users already exist
-    try:
-        import excel_utils as xl
-        db_backup.sync_from_excel()
-    except Exception:
-        pass                        # Excel not present on Render — that's fine
-
-
-def _excel_watcher():
-    """Background thread: auto-sync SQLite when manager saves the Excel file."""
-    last_mtime = db_backup._excel_mtime()
-    pending    = False   # mtime changed, waiting for Excel to finish writing
-    changed_at = 0.0
-    DEBOUNCE   = 3.0     # seconds to wait after last change before syncing
-
-    while True:
-        time.sleep(2)
-        try:
-            current = db_backup._excel_mtime()
-            if current != last_mtime:
-                last_mtime = current
-                pending    = True
-                changed_at = time.time()
-            if pending and (time.time() - changed_at) >= DEBOUNCE:
-                pending = False
-                db_backup.sync_from_excel()   # Excel fully written — safe to sync
-        except Exception:
-            pass
-
-
-# Start watcher only once (not inside Flask's reloader child process)
-_watcher = threading.Thread(target=_excel_watcher, daemon=True)
-_watcher.start()
+    db_backup.seed_users()
 
 # Register route modules
 import routes_tasks; routes_tasks.register(app)
@@ -149,5 +117,4 @@ def analytics():
 
 
 if __name__ == "__main__":
-    subprocess.run("lsof -ti:5001 | xargs kill -9 2>/dev/null", shell=True)
     app.run(debug=True, port=5001, use_reloader=False, threaded=True)

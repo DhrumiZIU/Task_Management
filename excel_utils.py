@@ -7,7 +7,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 WORKBOOK_PATH = Path(__file__).resolve().parent / "Team Daily Planner.xlsx"
-EXCEL_AVAILABLE = WORKBOOK_PATH.exists()
+EXCEL_AVAILABLE = False  # always False on Vercel; Excel path is not writable
 LOCK = threading.RLock()
 TASK_COLS = {"date":1,"team_member":2,"task":3,"priority":4,
              "status":5,"done_looks_like":6,"est_hours":7,"update_7pm":8}
@@ -71,11 +71,15 @@ def _next_empty_user_row(ws) -> int:
 
 def add_user(username: str, password: str, role: str, display_name: str, team_name: str = ""):
     if not EXCEL_AVAILABLE:
-        import db_backup, sqlite3
-        with db_backup._DB_WRITE, db_backup._conn() as con:
-            con.execute("INSERT OR REPLACE INTO users (username,password,role,display_name,team_name)"
-                        " VALUES (?,?,?,?,?)", (username, password, role, display_name, team_name))
-            con.commit()
+        import db_backup
+        with db_backup.get_connection() as con:
+            cur = con.cursor()
+            cur.execute(
+                "INSERT INTO users (username,password,role,display_name,team_name)"
+                " VALUES (%s,%s,%s,%s,%s) ON CONFLICT (username) DO UPDATE SET"
+                " password=EXCLUDED.password, role=EXCLUDED.role,"
+                " display_name=EXCLUDED.display_name, team_name=EXCLUDED.team_name",
+                (username, password, role, display_name, team_name))
         return
     with LOCK:
         wb = _load(); ws = wb["Users"]
@@ -89,8 +93,8 @@ def add_user(username: str, password: str, role: str, display_name: str, team_na
 def delete_user(username: str):
     if not EXCEL_AVAILABLE:
         import db_backup
-        with db_backup._DB_WRITE, db_backup._conn() as con:
-            con.execute("DELETE FROM users WHERE username=?", (username,)); con.commit()
+        with db_backup.get_connection() as con:
+            con.cursor().execute("DELETE FROM users WHERE username=%s", (username,))
         return
     with LOCK:
         wb = _load(); ws = wb["Users"]
@@ -106,9 +110,8 @@ def delete_user(username: str):
 def update_user_password(username: str, new_password: str):
     if not EXCEL_AVAILABLE:
         import db_backup
-        with db_backup._DB_WRITE, db_backup._conn() as con:
-            con.execute("UPDATE users SET password=? WHERE username=?", (new_password, username))
-            con.commit()
+        with db_backup.get_connection() as con:
+            con.cursor().execute("UPDATE users SET password=%s WHERE username=%s", (new_password, username))
         return
     with LOCK:
         wb = _load(); ws = wb["Users"]
@@ -149,11 +152,12 @@ def _remove_team_member(wb, name: str):
 def get_team_members() -> list[str]:
     if not EXCEL_AVAILABLE:
         import db_backup
-        with db_backup._conn() as con:
-            rows = con.execute(
+        with db_backup.get_connection() as con:
+            cur = con.cursor()
+            cur.execute(
                 "SELECT DISTINCT team_name FROM users WHERE role='member' AND team_name!='' ORDER BY team_name"
-            ).fetchall()
-        return [r[0] for r in rows]
+            )
+            return [r[0] for r in cur.fetchall()]
     with LOCK:
         wb = _load(); ws = wb["Team"]
         return [r[0] for r in ws.iter_rows(min_row=DATA_START, max_row=51, values_only=True) if r[0]]
@@ -182,8 +186,10 @@ def add_task(task_date: date, team_member: str, task: str, priority: str,
              done_looks_like: str = "", est_hours: float | None = None) -> int:
     if not EXCEL_AVAILABLE:
         import db_backup
-        with db_backup._conn() as con:
-            row = con.execute("SELECT MAX(excel_row) FROM tasks").fetchone()
+        with db_backup.get_connection() as con:
+            cur = con.cursor()
+            cur.execute("SELECT MAX(excel_row) FROM tasks")
+            row = cur.fetchone()
             row_num = (row[0] or 1) + 1
         db_backup.write_task_db(row_num, task_date, team_member, task, priority,
                                 "Not started", done_looks_like, est_hours, "")
@@ -207,11 +213,11 @@ def update_task_full(row_num: int, task: str, priority: str, status: str,
                      done_looks_like: str, est_hours: float | None, update_7pm: str):
     if not EXCEL_AVAILABLE:
         import db_backup
-        with db_backup._DB_WRITE, db_backup._conn() as con:
-            con.execute("UPDATE tasks SET task=?,priority=?,status=?,done_looks_like=?,"
-                        "est_hours=?,update_7pm=? WHERE excel_row=?",
-                        (task, priority, status, done_looks_like, est_hours, update_7pm, row_num))
-            con.commit()
+        with db_backup.get_connection() as con:
+            con.cursor().execute(
+                "UPDATE tasks SET task=%s, priority=%s, status=%s, done_looks_like=%s,"
+                " est_hours=%s, update_7pm=%s WHERE excel_row=%s",
+                (task, priority, status, done_looks_like, est_hours, update_7pm, row_num))
         return
     with LOCK:
         wb = _load(); ws = wb["Tasks"]
