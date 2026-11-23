@@ -96,13 +96,34 @@ def dashboard():
 @app.route("/analytics")
 @auth.login_required
 def analytics():
-    tasks = db_backup.get_tasks_db()
+    from datetime import date, timedelta
+    is_mgr = auth.is_manager()
+
+    # Manager gets a view tab (today/tomorrow/all); members always see today only
+    if is_mgr:
+        current_view = request.args.get("view", "today")
+        if current_view not in ("today", "tomorrow", "all"):
+            current_view = "today"
+    else:
+        current_view = "today"
+
+    today    = date.today()
+    tomorrow = today + timedelta(days=1)
+
+    if current_view == "today":
+        tasks = db_backup.get_tasks_db(filter_date=today)
+    elif current_view == "tomorrow":
+        tasks = db_backup.get_tasks_db(filter_date=tomorrow)
+    else:
+        tasks = db_backup.get_tasks_db()
+
     try:
         import excel_utils as xl
         members = xl.get_team_members()
     except Exception:
         members = [u["team_name"] for u in db_backup.get_users_backup()
                    if u.get("role") == "member" and u.get("team_name")]
+
     sc = {"Done": 0, "In progress": 0, "Not started": 0, "Blocked": 0}
     pc = {"High": 0, "Medium": 0, "Low": 0}
     md = {m: {"total": 0, "done": 0, "inprog": 0, "blocked": 0, "not_started": 0} for m in members}
@@ -114,17 +135,15 @@ def analytics():
         if p in pc: pc[p] += 1
         if m in md:
             md[m]["total"] += 1
-            if s == "Done":        md[m]["done"] += 1
+            if s == "Done":          md[m]["done"] += 1
             elif s == "In progress": md[m]["inprog"] += 1
-            elif s == "Blocked":   md[m]["blocked"] += 1
-            else:                  md[m]["not_started"] += 1
-    done_pct = int(sc["Done"] / len(tasks) * 100) if tasks else 0
+            elif s == "Blocked":     md[m]["blocked"] += 1
+            else:                    md[m]["not_started"] += 1
+
+    done_pct    = int(sc["Done"] / len(tasks) * 100) if tasks else 0
     not_started = sc.get("Not started", 0)
-    # Completion rate per member (for leaderboard)
-    member_pct = []
-    for m in members:
-        total = md[m]["total"]
-        member_pct.append(int(md[m]["done"] / total * 100) if total > 0 else 0)
+    member_pct  = [int(md[m]["done"] / md[m]["total"] * 100) if md[m]["total"] > 0 else 0 for m in members]
+
     return render_template("analytics.html",
         total_tasks=len(tasks), done_count=sc["Done"],
         inprog_count=sc["In progress"], blocked_count=sc["Blocked"],
@@ -132,12 +151,14 @@ def analytics():
         status_labels=json.dumps(list(sc.keys())),   status_data=json.dumps(list(sc.values())),
         priority_labels=json.dumps(list(pc.keys())), priority_data=json.dumps(list(pc.values())),
         member_labels=json.dumps(members),
-        member_total=json.dumps([md[m]["total"]     for m in members]),
-        member_done=json.dumps([md[m]["done"]        for m in members]),
-        member_inprog=json.dumps([md[m]["inprog"]    for m in members]),
-        member_blocked=json.dumps([md[m]["blocked"]  for m in members]),
+        member_total=json.dumps([md[m]["total"]   for m in members]),
+        member_done=json.dumps([md[m]["done"]      for m in members]),
+        member_inprog=json.dumps([md[m]["inprog"]  for m in members]),
+        member_blocked=json.dumps([md[m]["blocked"] for m in members]),
         member_pct=json.dumps(member_pct),
         members_data=members, md=md,
+        is_manager=is_mgr, current_view=current_view,
+        today=today, tomorrow=tomorrow,
     )
 
 

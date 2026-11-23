@@ -1,8 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Analytics — Team Planner{% endblock %}
 {% block topbar_title %}Analytics{% endblock %}
-{% block topbar_sub %}Visual overview of team progress and task distribution{% endblock %}
+{% block topbar_sub %}
+  {% if is_manager %}
+    {% if current_view == 'today' %}Today · {{ today.strftime('%A, %B %d, %Y') }}
+    {% elif current_view == 'tomorrow' %}Tomorrow · {{ tomorrow.strftime('%A, %B %d, %Y') }}
+    {% else %}All Dates{% endif %}
+  {% else %}Today · {{ today.strftime('%A, %B %d, %Y') }}{% endif %}
+{% endblock %}
 {% block topbar_actions %}
+  {% if is_manager %}
+  <div class="view-tabs">
+    <a href="{{ url_for('analytics', view='today') }}"
+       class="view-tab {% if current_view=='today' %}active{% endif %}">Today</a>
+    <a href="{{ url_for('analytics', view='tomorrow') }}"
+       class="view-tab {% if current_view=='tomorrow' %}active{% endif %}">Tomorrow</a>
+    <a href="{{ url_for('analytics', view='all') }}"
+       class="view-tab {% if current_view=='all' %}active{% endif %}">All Dates</a>
+  </div>
+  {% endif %}
   <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">← Home</a>
 {% endblock %}
 
