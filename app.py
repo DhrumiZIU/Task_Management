@@ -2,6 +2,9 @@
 from __future__ import annotations
 import json, os
 from datetime import date, timedelta
+from dotenv import load_dotenv
+# override=False keeps DATABASE_URL from shell env (empty = SQLite locally)
+load_dotenv(override=False)
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 import auth
 import db_backup
@@ -93,7 +96,7 @@ def dashboard():
 @app.route("/analytics")
 @auth.login_required
 def analytics():
-    tasks   = db_backup.get_tasks_db()
+    tasks = db_backup.get_tasks_db()
     try:
         import excel_utils as xl
         members = xl.get_team_members()
@@ -102,7 +105,7 @@ def analytics():
                    if u.get("role") == "member" and u.get("team_name")]
     sc = {"Done": 0, "In progress": 0, "Not started": 0, "Blocked": 0}
     pc = {"High": 0, "Medium": 0, "Low": 0}
-    md = {m: {"total": 0, "done": 0} for m in members}
+    md = {m: {"total": 0, "done": 0, "inprog": 0, "blocked": 0, "not_started": 0} for m in members}
     for t in tasks:
         s = t.get("status") or "Not started"
         p = t.get("priority") or "Medium"
@@ -111,16 +114,30 @@ def analytics():
         if p in pc: pc[p] += 1
         if m in md:
             md[m]["total"] += 1
-            if s == "Done": md[m]["done"] += 1
+            if s == "Done":        md[m]["done"] += 1
+            elif s == "In progress": md[m]["inprog"] += 1
+            elif s == "Blocked":   md[m]["blocked"] += 1
+            else:                  md[m]["not_started"] += 1
     done_pct = int(sc["Done"] / len(tasks) * 100) if tasks else 0
+    not_started = sc.get("Not started", 0)
+    # Completion rate per member (for leaderboard)
+    member_pct = []
+    for m in members:
+        total = md[m]["total"]
+        member_pct.append(int(md[m]["done"] / total * 100) if total > 0 else 0)
     return render_template("analytics.html",
         total_tasks=len(tasks), done_count=sc["Done"],
-        inprog_count=sc["In progress"], blocked_count=sc["Blocked"], done_pct=done_pct,
+        inprog_count=sc["In progress"], blocked_count=sc["Blocked"],
+        not_started=not_started, done_pct=done_pct,
         status_labels=json.dumps(list(sc.keys())),   status_data=json.dumps(list(sc.values())),
         priority_labels=json.dumps(list(pc.keys())), priority_data=json.dumps(list(pc.values())),
         member_labels=json.dumps(members),
-        member_total=json.dumps([md[m]["total"] for m in members]),
-        member_done=json.dumps([md[m]["done"]  for m in members]),
+        member_total=json.dumps([md[m]["total"]     for m in members]),
+        member_done=json.dumps([md[m]["done"]        for m in members]),
+        member_inprog=json.dumps([md[m]["inprog"]    for m in members]),
+        member_blocked=json.dumps([md[m]["blocked"]  for m in members]),
+        member_pct=json.dumps(member_pct),
+        members_data=members, md=md,
     )
 
 

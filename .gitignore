@@ -1,3 +1,6 @@
+# Environment variables — never commit
+.env
+
 # Virtual environment
 .venv/
 
@@ -21,6 +24,12 @@ __pycache__/
 # PDF and generated files
 project_summary.pdf
 make_pdf.py
+
+# Audio/video test files
+*.mp3
+*.wav
+*.m4a
+*.mp4
 
 # Backup files
 Team Daily Planner.backup.xlsx

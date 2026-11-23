@@ -8,30 +8,346 @@
 {% endblock %}
 
 {% block content %}
+<style>
+/* ── Meeting Page ── */
+.meeting-header {
+  display: flex; align-items: center; gap: 20px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+  border-radius: 16px; color: #fff; margin-bottom: 24px;
+  box-shadow: 0 6px 24px rgba(37,99,235,.25);
+}
+.meeting-header-icon {
+  width: 56px; height: 56px; background: rgba(255,255,255,.18);
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0;
+}
+.meeting-header-title { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+.meeting-header-sub   { font-size: 13px; opacity: .8; margin-top: 4px; line-height: 1.4; }
+.meeting-header-date  {
+  margin-left: auto; text-align: right; flex-shrink: 0;
+  font-size: 12px; opacity: .75; line-height: 1.6;
+}
+
+/* ── Upload Panel ── */
+.upload-panel {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.upload-panel-top {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.upload-panel-label {
+  font-size: 11px; font-weight: 800; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .7px; margin-bottom: 2px;
+}
+.upload-panel-title {
+  font-size: 16px; font-weight: 800; color: var(--text1);
+}
+.upload-panel-body { padding: 20px 24px; }
+
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  background: var(--bg2);
+  transition: border-color .2s, background .2s;
+  margin-bottom: 16px;
+}
+.upload-zone:hover { border-color: var(--primary); background: var(--primary-soft, #eff6ff); }
+.upload-zone-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.upload-zone input[type=file] {
+  flex: 1; min-width: 200px; font-size: 13px; color: var(--text1);
+  padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px;
+  background: var(--bg); cursor: pointer;
+}
+.upload-zone input[type=file]:focus { outline: none; border-color: var(--primary); }
+
+.btn-process {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px; font-size: 13px; font-weight: 700;
+  background: var(--primary, #2563eb); color: #fff;
+  border: none; border-radius: 9px; cursor: pointer; white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(37,99,235,.30);
+  transition: background .15s, transform .1s;
+}
+.btn-process:hover  { background: #1d4ed8; transform: translateY(-1px); }
+.btn-process:active { transform: translateY(0); }
+.btn-process:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+.format-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.format-chip {
+  font-size: 11px; font-weight: 600; padding: 3px 10px;
+  border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text3);
+}
+.format-chip.audio { border-color: #bfdbfe; color: #1d4ed8; background: #eff6ff; }
+.format-chip.video { border-color: #bbf7d0; color: #15803d; background: #f0fdf4; }
+.format-chip.text  { border-color: #fed7aa; color: #c2410c; background: #fff7ed; }
+
+/* ── Last Upload Result ── */
+.result-card {
+  border-radius: 10px; overflow: hidden;
+  border: 1.5px solid var(--border);
+}
+.result-card-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.result-label { font-size: 11px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; flex: 1; }
+.result-filename { font-size: 12px; font-weight: 600; color: var(--text2); }
+.result-by      { font-size: 11px; color: var(--text3); }
+.status-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; letter-spacing: .3px; white-space: nowrap;
+}
+.status-badge.done       { background: #dcfce7; color: #15803d; }
+.status-badge.failed     { background: #fee2e2; color: #b91c1c; }
+.status-badge.processing { background: #fef9c3; color: #92400e; }
+
+.result-card-body { padding: 16px; }
+.result-summary { font-size: 14px; line-height: 1.65; color: var(--text1); }
+
+/* Error box — human-readable */
+.error-box {
+  background: #fff5f5; border: 1.5px solid #fecaca; border-radius: 10px; padding: 16px;
+}
+.error-box-title {
+  font-size: 13px; font-weight: 800; color: #b91c1c; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.error-box-what  { font-size: 13px; color: #991b1b; margin-bottom: 10px; line-height: 1.5; }
+.error-box-fix   {
+  font-size: 12px; color: #7f1d1d; padding: 10px 12px;
+  background: #fee2e2; border-radius: 7px; line-height: 1.6;
+}
+.error-box-fix strong { display: block; margin-bottom: 2px; }
+
+/* ── Member sections ── */
+.member-block {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 14px; margin-bottom: 14px; overflow: hidden;
+}
+.member-block-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; background: var(--bg2); border-bottom: 1px solid var(--border);
+}
+.member-block-name { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: var(--text1); }
+.m-av {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.already-tasks-wrap { padding: 0 20px 2px; border-bottom: 1px solid var(--border); }
+.already-tasks-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; padding: 10px 0 6px; display: block; }
+.add-tasks-wrap { padding: 16px 20px; }
+.add-tasks-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+.task-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.task-num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--bg2);
+  border: 1.5px solid var(--border); font-size: 11px; font-weight: 700;
+  color: var(--text3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.task-row input[type=text] {
+  flex: 1; min-width: 200px; padding: 9px 13px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 13px; color: var(--text1); background: var(--bg);
+}
+.task-row input[type=text]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+.task-row select {
+  padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 13px; color: var(--text1); background: var(--bg); min-width: 105px;
+}
+
+.form-actions {
+  display: flex; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap;
+}
+.btn-save {
+  padding: 11px 26px; font-size: 14px; font-weight: 800;
+  background: linear-gradient(135deg, #059669, #047857);
+  color: #fff; border: none; border-radius: 10px; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(5,150,105,.25); transition: transform .15s;
+}
+.btn-save:hover { transform: translateY(-1px); }
+
+.info-bar {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 20px; border-radius: 12px;
+  background: var(--bg2); border: 1.5px solid var(--border);
+  margin-bottom: 20px;
+}
+.info-bar-icon { font-size: 26px; flex-shrink: 0; }
+.info-bar-title { font-size: 15px; font-weight: 800; color: var(--text1); margin-bottom: 3px; }
+.info-bar-sub   { font-size: 13px; color: var(--text3); line-height: 1.5; }
+
+@media (max-width: 600px) {
+  .meeting-header { flex-wrap: wrap; }
+  .meeting-header-date { margin-left: 0; text-align: left; }
+  .upload-zone-row { flex-direction: column; align-items: stretch; }
+  .btn-process { justify-content: center; }
+}
+</style>
+
+{# ── Header ── #}
+<div class="meeting-header">
+  <div class="meeting-header-icon">🎙️</div>
+  <div>
+    <div class="meeting-header-title">7 PM Daily Standup</div>
+    <div class="meeting-header-sub">Upload today's recording · Gemini AI understands Hindi, Gujarati &amp; English · Auto-assigns tomorrow's tasks</div>
+  </div>
+  <div class="meeting-header-date">
+    Tomorrow<br>
+    <strong>{{ tomorrow.strftime('%b %d, %Y') }}</strong>
+  </div>
+</div>
+
+{# ── Upload Panel (Manager only) ── #}
 {% if is_manager %}
-{# Manager view: add tasks for all members #}
+<div class="upload-panel">
+  <div class="upload-panel-top">
+    <div class="upload-panel-label">AI Meeting Processor</div>
+    <div class="upload-panel-title">Upload Meeting Recording</div>
+  </div>
+  <div class="upload-panel-body">
+    <form method="post" action="{{ url_for('upload_meeting') }}" enctype="multipart/form-data" id="upload-form">
+      <div class="upload-zone">
+        <div class="upload-zone-row">
+          <input type="file" name="recording" id="recording-file"
+                 accept=".mp3,.wav,.m4a,.mp4,.mov,.webm,.txt" required>
+          <button type="submit" class="btn-process" id="upload-btn">
+            <span id="upload-btn-icon">🤖</span>
+            <span id="upload-btn-text">Process &amp; Auto-Assign</span>
+          </button>
+        </div>
+        <div class="format-chips" style="margin-top:14px">
+          <span style="font-size:11px;color:var(--text3);font-weight:600;align-self:center">Audio:</span>
+          <span class="format-chip audio">MP3</span>
+          <span class="format-chip audio">WAV</span>
+          <span class="format-chip audio">M4A</span>
+          <span style="font-size:11px;color:var(--text3);font-weight:600;align-self:center;margin-left:4px">Video:</span>
+          <span class="format-chip video">MP4</span>
+          <span class="format-chip video">MOV</span>
+          <span class="format-chip video">WEBM</span>
+          <span style="font-size:11px;color:var(--text3);font-weight:600;align-self:center;margin-left:4px">Text:</span>
+          <span class="format-chip text">TXT</span>
+        </div>
+      </div>
+    </form>
+
+    {% if latest_meeting %}
+    <div class="result-card">
+      <div class="result-card-head">
+        <span class="result-label">Last Upload</span>
+        <span class="result-filename">{{ latest_meeting.filename }}</span>
+        <span class="result-by">· {{ latest_meeting.uploaded_by }} · {{ latest_meeting.uploaded_at[:16] if latest_meeting.uploaded_at else '' }}</span>
+        <span class="status-badge {{ latest_meeting.status }}">
+          {% if latest_meeting.status == 'done' %}✓ Done
+          {% elif latest_meeting.status == 'failed' %}✕ Failed
+          {% else %}⏳ Processing{% endif %}
+        </span>
+      </div>
+      <div class="result-card-body">
+        {% if latest_meeting.status == 'done' and latest_meeting.overall_summary %}
+          <div class="result-summary">{{ latest_meeting.overall_summary }}</div>
+        {% elif latest_meeting.status == 'processing' %}
+          <div style="color:var(--text3);font-size:13px">⏳ AI is processing your recording… this usually takes 30–60 seconds. Refresh to check.</div>
+        {% elif latest_meeting.status == 'failed' %}
+          {% set err = latest_meeting.overall_summary or '' %}
+          <div class="error-box">
+            <div class="error-box-title">⚠ Processing Failed</div>
+            {% if 'GEMINI_API_KEY' in err or 'api_key' in err.lower() %}
+              <div class="error-box-what">Your Gemini API key is missing or not configured.</div>
+              <div class="error-box-fix"><strong>How to fix:</strong> Add <code>GEMINI_API_KEY=your_key_here</code> to your <code>.env</code> file, then restart the app. Get a free key at <strong>aistudio.google.com</strong>.</div>
+            {% elif 'unavailable' in err.lower() or '503' in err or 'All Gemini models' in err %}
+              <div class="error-box-what">Google's Gemini API is temporarily overloaded. All models were tried and none responded.</div>
+              <div class="error-box-fix"><strong>What to do:</strong> This is Google's side, not yours. Wait 2–5 minutes and upload again. The free tier gets busy during peak hours.</div>
+            {% elif 'quota' in err.lower() or '429' in err %}
+              <div class="error-box-what">Your Gemini API free quota has been reached for today.</div>
+              <div class="error-box-fix"><strong>What to do:</strong> Wait until your quota resets (usually midnight IST), or upload a text transcript (.txt) instead — that uses fewer API credits.</div>
+            {% elif 'timed out' in err.lower() %}
+              <div class="error-box-what">The file took too long to process — Gemini's servers were slow.</div>
+              <div class="error-box-fix"><strong>What to do:</strong> Try a shorter recording (under 10 minutes), or upload a text transcript (.txt file) for faster processing.</div>
+            {% elif 'empty' in err.lower() %}
+              <div class="error-box-what">The uploaded file appears to be empty or contains no speech.</div>
+              <div class="error-box-fix"><strong>What to do:</strong> Make sure the audio file has clear speech. Try playing it first to verify it recorded correctly.</div>
+            {% elif 'JSON' in err or 'json' in err %}
+              <div class="error-box-what">Gemini processed the audio but returned an unexpected format.</div>
+              <div class="error-box-fix"><strong>What to do:</strong> Try uploading again — this usually resolves itself. If it keeps failing, try a text transcript (.txt) instead.</div>
+            {% else %}
+              <div class="error-box-what">{{ err[:300] }}</div>
+              <div class="error-box-fix"><strong>What to do:</strong> Try uploading again. If the problem persists, try a shorter audio clip or a text (.txt) transcript.</div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.getElementById('upload-form').addEventListener('submit', function() {
+  var btn  = document.getElementById('upload-btn');
+  var icon = document.getElementById('upload-btn-icon');
+  var txt  = document.getElementById('upload-btn-text');
+  icon.textContent = '⏳';
+  txt.textContent  = 'Processing… please wait';
+  btn.disabled = true;
+});
+</script>
+{% endif %}
+
+{# ── Summary banner for members ── #}
+{% if not is_manager and latest_meeting and latest_meeting.status == 'done' and latest_meeting.overall_summary %}
+<div class="info-bar" style="background:var(--primary-soft,#eff6ff);border-color:var(--primary,#2563eb)">
+  <div class="info-bar-icon">🎙️</div>
+  <div>
+    <div class="info-bar-title" style="color:var(--primary,#2563eb)">Latest Meeting Summary</div>
+    <div class="info-bar-sub" style="color:var(--text1)">{{ latest_meeting.overall_summary }}</div>
+  </div>
+</div>
+{% endif %}
+
+{# ── Section header ── #}
+<div style="font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin:4px 0 16px;display:flex;align-items:center;gap:8px">
+  {% if is_manager %}📋 Plan Tomorrow's Tasks{% else %}✏️ Add Your Tasks for Tomorrow{% endif %}
+  <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+</div>
+
+{# ── Task entry form ── #}
+{% if is_manager %}
 <form method="post">
   {% for member in members %}
-  <div class="section-wrap">
-    <div class="section-head">
-      <div class="section-title">
-        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;background:var(--primary)">{{ member[0] }}</div>
+  {% set av_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#be185d','#64748b'] %}
+  <div class="member-block">
+    <div class="member-block-head">
+      <div class="member-block-name">
+        <div class="m-av" style="background:{{ av_colors[loop.index0 % av_colors|length] }}">{{ member[0] }}</div>
         {{ member }}
       </div>
       {% if grouped_next[member] %}
       <span class="count-pill">{{ grouped_next[member]|length }} already planned</span>
+      {% else %}
+      <span style="font-size:11px;color:var(--text4)">No tasks yet</span>
       {% endif %}
     </div>
 
     {% if grouped_next[member] %}
-    <div style="padding:0 18px;border-bottom:1px solid var(--border)">
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 6px">Already planned for tomorrow</div>
-      <table class="task-table" style="margin-bottom:12px">
+    <div class="already-tasks-wrap">
+      <span class="already-tasks-label">Already planned for tomorrow</span>
+      <table class="task-table" style="margin-bottom:14px">
         <thead><tr><th>Task</th><th>Priority</th><th>Est.</th></tr></thead>
         <tbody>
           {% for t in grouped_next[member] %}
           <tr>
-            <td class="task-desc">{{ t.task }}</td>
+            <td style="font-weight:500">{{ t.task }}</td>
             <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority }}</span></td>
             <td style="font-size:12px;color:var(--text3)">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
           </tr>
@@ -41,14 +357,14 @@
     </div>
     {% endif %}
 
-    <div class="meeting-add">
-      <div class="meeting-add-label">Add new tasks for {{ member }}</div>
+    <div class="add-tasks-wrap">
+      <div class="add-tasks-label">Add new tasks for {{ member }}</div>
       {% for i in range(3) %}
-      <div class="task-input-row">
+      <div class="task-row">
+        <div class="task-num">{{ i + 1 }}</div>
         <input type="text" name="tasks_{{ member }}"
-               placeholder="Task {{ i+1 }} description (leave blank to skip)"
-               aria-label="Task {{ i+1 }} for {{ member }}">
-        <select name="priorities_{{ member }}" aria-label="Priority for task {{ i+1 }}">
+               placeholder="Task {{ i+1 }} description (leave blank to skip)">
+        <select name="priorities_{{ member }}">
           {% for p in priorities %}<option>{{ p }}</option>{% endfor %}
         </select>
       </div>
@@ -57,28 +373,31 @@
   </div>
   {% endfor %}
 
-  <div class="btn-row" style="margin-top:4px">
-    <button type="submit" class="btn btn-primary">Save All Tasks for Tomorrow →</button>
+  <div class="form-actions">
+    <button type="submit" class="btn-save">💾 Save All Tasks for Tomorrow</button>
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
   </div>
 </form>
 
 {% else %}
-{# Member view: see + add their own tomorrow tasks #}
-<div class="meeting-info-banner">
-  <span class="meeting-info-icon">🌙</span>
+{# ── Member view ── #}
+<div class="info-bar">
+  <div class="info-bar-icon">🌙</div>
   <div>
-    <div class="meeting-info-title">Plan your tomorrow · {{ tomorrow.strftime('%A, %B %d') }}</div>
-    <div class="meeting-info-sub">Add your own tasks for tomorrow, then share updates in <a href="{{ url_for('discussion') }}" style="color:var(--primary)">Discussion</a>.</div>
+    <div class="info-bar-title">Plan your tomorrow · {{ tomorrow.strftime('%A, %B %d') }}</div>
+    <div class="info-bar-sub">
+      Add your tasks for tomorrow, then share updates in
+      <a href="{{ url_for('discussion') }}" style="color:var(--primary);font-weight:600">Discussion</a>.
+    </div>
   </div>
 </div>
 
 {% set my_tasks = grouped_next[team_name] if team_name in grouped_next else [] %}
 <form method="post">
-  <div class="section-wrap">
-    <div class="section-head">
-      <div class="section-title">
-        <div class="user-avatar" style="width:26px;height:26px;font-size:11px;background:var(--primary)">{{ (team_name or 'M')[0] }}</div>
+  <div class="member-block">
+    <div class="member-block-head">
+      <div class="member-block-name">
+        <div class="m-av" style="background:var(--primary,#2563eb)">{{ (team_name or 'M')[0] }}</div>
         {{ team_name }}
       </div>
       {% if my_tasks %}
@@ -87,14 +406,14 @@
     </div>
 
     {% if my_tasks %}
-    <div style="padding:0 18px;border-bottom:1px solid var(--border)">
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 6px">Already planned for tomorrow</div>
-      <table class="task-table" style="margin-bottom:12px">
+    <div class="already-tasks-wrap">
+      <span class="already-tasks-label">Already planned for tomorrow</span>
+      <table class="task-table" style="margin-bottom:14px">
         <thead><tr><th>Task</th><th>Priority</th><th>Est.</th><th>Done looks like</th></tr></thead>
         <tbody>
           {% for t in my_tasks %}
           <tr>
-            <td class="task-desc">{{ t.task }}</td>
+            <td style="font-weight:500">{{ t.task }}</td>
             <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority }}</span></td>
             <td style="font-size:12px;color:var(--text3)">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
             <td style="font-size:12px;color:var(--text3);font-style:italic">{{ t.done_looks_like or '—' }}</td>
@@ -105,14 +424,14 @@
     </div>
     {% endif %}
 
-    <div class="meeting-add">
-      <div class="meeting-add-label">Add new tasks for tomorrow</div>
+    <div class="add-tasks-wrap">
+      <div class="add-tasks-label">Add new tasks for tomorrow</div>
       {% for i in range(3) %}
-      <div class="task-input-row">
+      <div class="task-row">
+        <div class="task-num">{{ i + 1 }}</div>
         <input type="text" name="tasks_{{ team_name }}"
-               placeholder="Task {{ i+1 }} description (leave blank to skip)"
-               aria-label="Task {{ i+1 }}">
-        <select name="priorities_{{ team_name }}" aria-label="Priority">
+               placeholder="Task {{ i+1 }} description (leave blank to skip)">
+        <select name="priorities_{{ team_name }}">
           {% for p in priorities %}<option>{{ p }}</option>{% endfor %}
         </select>
       </div>
@@ -120,8 +439,8 @@
     </div>
   </div>
 
-  <div class="btn-row" style="margin-top:4px">
-    <button type="submit" class="btn btn-primary">Save My Tasks for Tomorrow →</button>
+  <div class="form-actions">
+    <button type="submit" class="btn-save">💾 Save My Tasks for Tomorrow</button>
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
   </div>
 </form>
