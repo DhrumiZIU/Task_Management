@@ -2,117 +2,317 @@
 {% block title %}Manage Users — ZIU AI{% endblock %}
 {% block topbar_icon %}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>{% endblock %}
 {% block topbar_title %}Manage Users{% endblock %}
-{% block topbar_sub %}Add or remove team members and managers{% endblock %}
+{% block topbar_sub %}{{ users|length }} user{% if users|length != 1 %}s{% endif %} · team directory{% endblock %}
 
 {% block content %}
-<div class="users-layout">
+<div class="um-layout">
 
-  <!-- Add user form -->
-  <div class="form-card" style="animation:fadeUp .2s ease both">
-    <h3>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;color:var(--primary)"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-      Add New User
-    </h3>
-    <form method="post" action="{{ url_for('add_user') }}">
-      <div class="field">
-        <label for="u-display">Display Name</label>
-        <input id="u-display" type="text" name="display_name" placeholder="e.g. John Smith" required>
-      </div>
-      <div class="field">
-        <label for="u-username">Username</label>
-        <input id="u-username" type="text" name="username" placeholder="e.g. john" required>
-        <div class="field-hint">Used to login. Lowercase, no spaces.</div>
-      </div>
-      <div class="field">
-        <label for="u-password">Password</label>
-        <input id="u-password" type="text" name="password" placeholder="Initial password" required>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="u-role">Role</label>
-          <select id="u-role" name="role">
-            {% for r in roles %}<option value="{{ r }}">{{ r|capitalize }}</option>{% endfor %}
-          </select>
+  <!-- Left: Add user form -->
+  <aside class="um-aside" style="animation:fadeUp .18s ease both">
+    <div class="um-form-card">
+      <div class="um-form-hd">
+        <div class="um-form-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         </div>
-        <div class="field">
-          <label for="u-team">Team Name</label>
-          <input id="u-team" type="text" name="team_name" placeholder="e.g. Member 6">
-          <div class="field-hint">For members only.</div>
+        <div>
+          <div class="um-form-title">Add New User</div>
+          <div class="um-form-sub">Create login credentials</div>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary btn-full">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add User
-      </button>
-    </form>
-  </div>
-
-  <!-- Users table -->
-  <div class="section-wrap" style="animation:fadeUp .2s .06s ease both">
-    <div class="section-head">
-      <div class="section-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        All Users
-      </div>
-      <span class="count-pill">{{ users|length }} total</span>
+      <form method="post" action="{{ url_for('add_user') }}">
+        <div class="um-field">
+          <label for="u-display">Display Name</label>
+          <input id="u-display" type="text" name="display_name" placeholder="e.g. John Smith" required>
+        </div>
+        <div class="um-field">
+          <label for="u-username">Username</label>
+          <input id="u-username" type="text" name="username" placeholder="e.g. john" required autocomplete="off">
+          <span class="um-hint">Lowercase, no spaces. Used to login.</span>
+        </div>
+        <div class="um-field">
+          <label for="u-password">Password</label>
+          <input id="u-password" type="text" name="password" placeholder="Initial password" required autocomplete="off">
+        </div>
+        <div class="um-row">
+          <div class="um-field">
+            <label for="u-role">Role</label>
+            <select id="u-role" name="role">
+              {% for r in roles %}<option value="{{ r }}">{{ r|capitalize }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="um-field">
+            <label for="u-team">Team Name</label>
+            <input id="u-team" type="text" name="team_name" placeholder="e.g. Member 6">
+            <span class="um-hint">Members only.</span>
+          </div>
+        </div>
+        <button type="submit" class="um-add-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add User
+        </button>
+      </form>
     </div>
-    <table class="task-table">
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Role</th>
-          <th>Team Name</th>
-          <th style="min-width:240px">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for u in users %}
-        <tr>
-          <td>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div class="user-avatar" style="width:32px;height:32px;font-size:12px;background:{% if u.role=='manager' %}var(--purple){% else %}var(--primary){% endif %}">
-                {{ u.display_name[0]|upper }}
+
+    <!-- Team stats -->
+    <div class="um-team-stats">
+      {% set managers = users|selectattr('role','equalto','manager')|list %}
+      {% set members  = users|selectattr('role','equalto','member')|list %}
+      <div class="um-stat">
+        <div class="um-stat-num" style="color:var(--purple)">{{ managers|length }}</div>
+        <div class="um-stat-label">Managers</div>
+      </div>
+      <div class="um-stat-sep"></div>
+      <div class="um-stat">
+        <div class="um-stat-num" style="color:var(--primary)">{{ members|length }}</div>
+        <div class="um-stat-label">Members</div>
+      </div>
+      <div class="um-stat-sep"></div>
+      <div class="um-stat">
+        <div class="um-stat-num">{{ users|length }}</div>
+        <div class="um-stat-label">Total</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Right: Users table -->
+  <div class="um-main" style="animation:fadeUp .18s .05s ease both">
+    <div class="um-table-card">
+      <div class="um-table-hd">
+        <div class="um-table-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Team Directory
+        </div>
+        <div class="um-search-wrap">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="user-search" placeholder="Search users…" class="um-search">
+        </div>
+      </div>
+
+      <table class="um-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Team Name</th>
+            <th>Reset Password</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="user-tbody">
+          {% set av_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
+          {% for u in users %}
+          <tr class="um-row-item" data-search="{{ u.display_name|lower }} {{ u.username|lower }} {{ u.role }}">
+            <td>
+              <div class="um-user-cell">
+                <div class="um-av" style="background:{% if u.role=='manager' %}var(--purple){% else %}{{ av_colors[loop.index0 % 8] }}{% endif %}">
+                  {{ u.display_name[0]|upper }}
+                </div>
+                <div>
+                  <div class="um-name">{{ u.display_name }}</div>
+                  <div class="um-username">@{{ u.username }}</div>
+                </div>
               </div>
-              <div>
-                <div style="font-weight:600;font-size:13px;color:var(--text)">{{ u.display_name }}</div>
-                <code style="font-size:11px">{{ u.username }}</code>
-              </div>
-            </div>
-          </td>
-          <td><span class="role-{{ u.role }}">{{ u.role|capitalize }}</span></td>
-          <td style="color:var(--text3);font-size:12.5px">{{ u.team_name or '—' }}</td>
-          <td>
-            <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-              <form method="post" action="{{ url_for('reset_password', username=u.username) }}" class="inline-form">
-                <input class="inline-input" type="text" name="new_password" placeholder="New password">
+            </td>
+            <td>
+              <span class="um-role-badge um-role-{{ u.role }}">
+                {% if u.role == 'manager' %}
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                {% else %}
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                {% endif %}
+                {{ u.role|capitalize }}
+              </span>
+            </td>
+            <td class="um-team">{{ u.team_name or '—' }}</td>
+            <td>
+              <form method="post" action="{{ url_for('reset_password', username=u.username) }}" class="um-reset-form">
+                <input class="um-pw-input" type="text" name="new_password" placeholder="New password…" autocomplete="off">
                 <button type="submit" class="btn btn-xs btn-secondary">Reset</button>
               </form>
+            </td>
+            <td class="um-actions-cell">
               {% if u.username != current_username %}
               <form method="post" action="{{ url_for('delete_user', username=u.username) }}"
-                    style="display:inline" onsubmit="return confirm('Remove {{ u.display_name }}?')">
-                <button type="submit" class="btn btn-xs btn-delete">Remove</button>
+                    data-no-loading="1"
+                    onsubmit="return confirm('Remove {{ u.display_name }}?')">
+                <button type="submit" class="um-del-btn" title="Remove user">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                </button>
               </form>
               {% else %}
-              <span style="font-size:11px;color:var(--text4);padding:2px 6px">(you)</span>
+              <span class="um-you-badge">You</span>
               {% endif %}
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
+
 </div>
 
 <style>
-.users-layout {
+/* ── Layout ──────────────────────────────────────────── */
+.um-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 22px;
+  grid-template-columns: 280px 1fr;
+  gap: 18px;
   align-items: start;
 }
+
+/* ── Form card ───────────────────────────────────────── */
+.um-aside { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 72px; }
+.um-form-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow-md);
+}
+.um-form-hd {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.um-form-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,.30);
+}
+.um-form-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.um-form-sub   { font-size: 11px; color: var(--text4); margin-top: 1px; }
+.um-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 13px; }
+.um-field label {
+  font-size: 11.5px; font-weight: 700; color: var(--text2);
+}
+.um-field input, .um-field select {
+  border: 1.5px solid var(--border2); border-radius: var(--radius-sm);
+  padding: 8px 11px; font-size: 13px; font-family: inherit;
+  color: var(--text); background: var(--surface);
+  transition: border-color .15s, box-shadow .15s; outline: none; width: 100%;
+}
+.um-field input:focus, .um-field select:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+}
+.um-hint { font-size: 10.5px; color: var(--text4); }
+.um-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.um-add-btn {
+  width: 100%; padding: 10px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none; color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-family: inherit; transition: all .15s;
+  box-shadow: 0 2px 8px rgba(37,99,235,.28);
+}
+.um-add-btn:hover { background: linear-gradient(135deg,#2563eb,#1d4ed8); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.35); }
+
+/* ── Team stats ──────────────────────────────────────── */
+.um-team-stats {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  display: flex; gap: 0; box-shadow: var(--shadow);
+}
+.um-stat { flex: 1; text-align: center; }
+.um-stat-num   { font-size: 22px; font-weight: 900; line-height: 1; }
+.um-stat-label { font-size: 10px; color: var(--text4); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-top: 4px; }
+.um-stat-sep   { width: 1px; background: var(--border); flex-shrink: 0; }
+
+/* ── Table card ──────────────────────────────────────── */
+.um-table-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-md);
+}
+.um-table-hd {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.um-table-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 7px;
+}
+.um-search-wrap {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 6px 11px; color: var(--text4);
+}
+.um-search {
+  border: none; outline: none; font-size: 12.5px; color: var(--text);
+  background: transparent; font-family: inherit; width: 160px;
+}
+.um-table { width: 100%; border-collapse: collapse; }
+.um-table th {
+  padding: 9px 16px; text-align: left;
+  font-size: 10.5px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .5px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2); white-space: nowrap;
+}
+.um-table td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.um-table tbody tr:last-child td { border-bottom: none; }
+.um-table tbody tr { transition: background .15s; }
+.um-table tbody tr:hover td { background: #f5f8ff; }
+.um-row-item.hidden { display: none; }
+
+.um-user-cell { display: flex; align-items: center; gap: 10px; }
+.um-av {
+  width: 34px; height: 34px; border-radius: 50%;
+  color: #fff; font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,.14);
+}
+.um-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.um-username { font-size: 11px; color: var(--text4); margin-top: 1px; font-family: monospace; }
+.um-team { font-size: 12.5px; color: var(--text3); }
+
+.um-role-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+  border: 1px solid transparent;
+}
+.um-role-manager { background: var(--purple-lt); color: var(--purple); border-color: #ddd6fe; }
+.um-role-member  { background: var(--primary-lt); color: var(--primary); border-color: #bfdbfe; }
+
+.um-reset-form {
+  display: flex; gap: 6px; align-items: center; min-width: 0;
+}
+.um-pw-input {
+  flex: 1; min-width: 0; padding: 5px 9px;
+  border: 1.5px solid var(--border2); border-radius: 6px;
+  font-size: 12px; font-family: inherit; color: var(--text);
+  transition: border-color .15s; outline: none; width: 130px;
+}
+.um-pw-input:focus { border-color: var(--primary); }
+
+.um-actions-cell { text-align: right; }
+.um-del-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text4); padding: 6px 8px; border-radius: 6px;
+  transition: color .12s, background .12s; display: inline-flex; align-items: center;
+}
+.um-del-btn:hover { color: var(--danger); background: var(--danger-lt); }
+.um-you-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+  background: #f1f5f9; color: var(--text4); border: 1px solid var(--border);
+}
+
 @media (max-width: 860px) {
-  .users-layout { grid-template-columns: 1fr; }
+  .um-layout { grid-template-columns: 1fr; }
+  .um-aside  { position: static; }
 }
 </style>
+
+<script>
+(function(){
+  var si = document.getElementById('user-search');
+  if(!si) return;
+  si.addEventListener('input', function(){
+    var q = si.value.toLowerCase();
+    document.querySelectorAll('.um-row-item').forEach(function(r){
+      r.classList.toggle('hidden', q && !r.dataset.search.includes(q));
+    });
+  });
+})();
+</script>
+
 {% endblock %}

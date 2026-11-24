@@ -2,81 +2,304 @@
 {% block title %}My Notes — ZIU AI{% endblock %}
 {% block topbar_icon %}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>{% endblock %}
 {% block topbar_title %}My Notes{% endblock %}
-{% block topbar_sub %}Personal notes — only visible to you{% endblock %}
+{% block topbar_sub %}Private · visible only to you{% endblock %}
+{% block topbar_actions %}
+  <span class="notes-count-badge">{{ notes|length }} note{% if notes|length != 1 %}s{% endif %}</span>
+{% endblock %}
 
 {% block content %}
-<div class="discussion-layout">
-  <!-- Post note form -->
-  <div class="discussion-compose">
-    <div class="compose-card" style="animation:fadeUp .2s ease both">
-      <div class="compose-header">
-        <div class="user-avatar" style="width:36px;height:36px;font-size:14px;background:var(--primary);flex-shrink:0">
-          {{ (session.display_name or 'U')[0]|upper }}
-        </div>
+<div class="notes-shell">
+
+  <!-- Left: compose + stats -->
+  <aside class="notes-aside">
+
+    <!-- Compose -->
+    <div class="notes-compose" style="animation:fadeUp .18s ease both">
+      <div class="notes-compose-hd">
+        <div class="notes-compose-av">{{ (session.display_name or 'U')[0]|upper }}</div>
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text)">{{ session.display_name }}</div>
-          <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px">
-            <span style="width:5px;height:5px;border-radius:50%;background:#22c55e;display:inline-block"></span>
-            Private note
+          <div class="notes-compose-name">{{ session.display_name }}</div>
+          <div class="notes-compose-sub">
+            <span class="notes-live-dot"></span> Private note
           </div>
         </div>
       </div>
-      <form method="post">
-        <div class="field" style="margin-bottom:12px">
-          <textarea name="note" rows="4"
-            placeholder="Write a personal note, reminder, or action item…"
-            style="resize:vertical;line-height:1.65"
-            required></textarea>
+      <form method="post" id="note-form">
+        <div class="notes-field">
+          <textarea name="note" id="note-input" rows="5"
+            placeholder="Jot down a task, idea, reminder…"
+            required maxlength="1000"></textarea>
+          <div class="notes-char-row">
+            <span class="notes-char" id="nc">0 / 1000</span>
+          </div>
         </div>
-        <div class="btn-row">
-          <button type="submit" class="btn btn-primary btn-sm">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            Save Note
-          </button>
-        </div>
+        <button type="submit" class="notes-save-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save Note
+        </button>
       </form>
     </div>
-  </div>
 
-  <!-- Notes feed -->
-  <div class="discussion-feed">
+    <!-- Mini stats -->
+    <div class="notes-stats" style="animation:fadeUp .18s .05s ease both">
+      <div class="notes-stat">
+        <div class="notes-stat-num">{{ notes|length }}</div>
+        <div class="notes-stat-label">Total</div>
+      </div>
+      <div class="notes-stat">
+        <div class="notes-stat-num">{{ notes|selectattr('note')|list|length }}</div>
+        <div class="notes-stat-label">Active</div>
+      </div>
+      <div class="notes-stat">
+        <div class="notes-stat-num">{{ session.display_name.split()[0] if session.display_name else '—' }}</div>
+        <div class="notes-stat-label">Author</div>
+      </div>
+    </div>
+
+    <!-- Tips card -->
+    <div class="notes-tips" style="animation:fadeUp .18s .10s ease both">
+      <div class="notes-tips-title">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Tips
+      </div>
+      <ul class="notes-tips-list">
+        <li>Start with an action verb: "Review", "Call", "Fix"</li>
+        <li>Keep each note to one idea</li>
+        <li>Add a deadline: "by EOD Friday"</li>
+      </ul>
+    </div>
+
+  </aside>
+
+  <!-- Right: notes feed -->
+  <div class="notes-feed">
+
     {% if notes %}
+    <!-- Search bar -->
+    <div class="notes-search-row" style="animation:fadeUp .18s ease both">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="note-search" placeholder="Search notes…" class="notes-search-input">
+    </div>
+
+    <div class="notes-list" id="notes-list">
       {% for n in notes %}
-      <div class="note-card" style="animation:fadeUp .2s {{ (loop.index0 * 0.04)|round(2) }}s ease both;position:relative">
-        <div class="note-header">
-          <div class="note-avatar">{{ (n.display_name or 'U')[0]|upper }}</div>
-          <div class="note-meta">
-            <span class="note-author">{{ n.display_name }}</span>
-            <span class="note-time">{{ n.timestamp or '' }}</span>
+      <div class="note-item" data-text="{{ n.note|lower }}"
+           style="animation:fadeUp .18s {{ (loop.index0 * 0.04)|round(2) }}s ease both">
+        <div class="note-item-hd">
+          <div class="note-item-av">{{ (n.display_name or 'U')[0]|upper }}</div>
+          <div class="note-item-meta">
+            <span class="note-item-author">{{ n.display_name }}</span>
+            <span class="note-item-time">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {{ n.timestamp or 'Just now' }}
+            </span>
           </div>
-          <form method="post" action="{{ url_for('delete_note', note_id=n.id) }}"
-                style="margin-left:auto" data-no-loading="1"
-                onsubmit="return confirm('Delete this note?')">
-            <button type="submit" class="note-del-btn" title="Delete note">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </form>
+          <div class="note-item-actions">
+            <form method="post" action="{{ url_for('delete_note', note_id=n.id) }}"
+                  data-no-loading="1"
+                  onsubmit="return confirm('Delete this note?')">
+              <button type="submit" class="note-del" title="Delete">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+              </button>
+            </form>
+          </div>
         </div>
-        <div class="note-body">{{ n.note }}</div>
+        <div class="note-item-body">{{ n.note }}</div>
       </div>
       {% endfor %}
+    </div>
+
     {% else %}
-    <div class="no-data" style="padding:60px 20px;animation:fadeUp .22s ease both">
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text4);margin:0 auto 14px;display:block"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      <div style="font-weight:700;font-size:15px;color:var(--text2);margin-bottom:5px">No notes yet</div>
-      <div style="color:var(--text4);font-size:12.5px">Your notes are private — only you can see them.</div>
+    <div class="notes-empty" style="animation:fadeUp .22s ease both">
+      <div class="notes-empty-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <div class="notes-empty-title">No notes yet</div>
+      <div class="notes-empty-sub">Write your first note — it's private and only you can see it.</div>
     </div>
     {% endif %}
+
   </div>
 </div>
 
 <style>
-.note-del-btn {
-  background: none; border: none; cursor: pointer;
-  color: var(--text4); padding: 4px 7px; border-radius: 5px;
-  transition: color .12s, background .12s;
-  display: flex; align-items: center;
+/* ── Notes shell ──────────────────────────────────────────────── */
+.notes-count-badge {
+  font-size: 11.5px; font-weight: 600; color: var(--text3);
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 4px 11px; border-radius: 20px;
 }
-.note-del-btn:hover { color: var(--danger); background: var(--danger-lt); }
+.notes-shell {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  gap: 18px;
+  align-items: start;
+  max-width: 1100px;
+}
+
+/* ── Compose ──────────────────────────────────────────────────── */
+.notes-aside { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 72px; }
+.notes-compose {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  box-shadow: var(--shadow-md);
+}
+.notes-compose-hd {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; padding-bottom: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.notes-compose-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff; font-size: 14px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(37,99,235,.30);
+}
+.notes-compose-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.notes-compose-sub  { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.notes-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; display: inline-block; }
+.notes-field { position: relative; margin-bottom: 10px; }
+.notes-field textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--border2); border-radius: var(--radius-sm);
+  font-size: 13px; font-family: inherit; color: var(--text);
+  background: var(--surface2); resize: vertical; min-height: 110px;
+  transition: border-color .15s, box-shadow .15s; outline: none;
+  line-height: 1.65;
+}
+.notes-field textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.10); }
+.notes-char-row { display: flex; justify-content: flex-end; margin-top: 4px; }
+.notes-char { font-size: 10.5px; color: var(--text4); font-variant-numeric: tabular-nums; }
+.notes-char.warn { color: var(--warning); }
+.notes-save-btn {
+  width: 100%; padding: 10px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none; color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-family: inherit; transition: all .15s;
+  box-shadow: 0 2px 8px rgba(37,99,235,.28);
+}
+.notes-save-btn:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.36); }
+
+/* ── Stats ────────────────────────────────────────────────────── */
+.notes-stats {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+  box-shadow: var(--shadow);
+}
+.notes-stat { text-align: center; padding: 0 8px; }
+.notes-stat + .notes-stat { border-left: 1px solid var(--border); }
+.notes-stat-num   { font-size: 20px; font-weight: 900; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
+.notes-stat-label { font-size: 10px; color: var(--text4); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-top: 4px; }
+
+/* ── Tips ─────────────────────────────────────────────────────── */
+.notes-tips {
+  background: linear-gradient(135deg, #f0f7ff, #f8faff);
+  border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 13px 16px;
+}
+.notes-tips-title {
+  font-size: 10.5px; font-weight: 700; color: var(--primary);
+  text-transform: uppercase; letter-spacing: .5px;
+  display: flex; align-items: center; gap: 5px; margin-bottom: 9px;
+}
+.notes-tips-list {
+  list-style: none; display: flex; flex-direction: column; gap: 6px;
+  font-size: 11.5px; color: var(--text3); line-height: 1.5; padding: 0;
+}
+.notes-tips-list li::before { content: '→ '; color: var(--primary); font-weight: 700; }
+
+/* ── Feed ─────────────────────────────────────────────────────── */
+.notes-feed { display: flex; flex-direction: column; gap: 0; }
+.notes-search-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 12px;
+  margin-bottom: 10px; color: var(--text4);
+  box-shadow: var(--shadow);
+}
+.notes-search-input {
+  flex: 1; border: none; outline: none; font-size: 13px;
+  color: var(--text); background: transparent; font-family: inherit;
+}
+.notes-list { display: flex; flex-direction: column; gap: 10px; }
+
+.note-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 15px 18px;
+  box-shadow: var(--shadow);
+  transition: box-shadow .18s, transform .18s;
+  border-left: 3px solid var(--primary);
+}
+.note-item:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.note-item-hd {
+  display: flex; align-items: center; gap: 9px;
+  margin-bottom: 10px;
+}
+.note-item-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff; font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.note-item-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.note-item-author { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.note-item-time   { font-size: 11px; color: var(--text4); display: flex; align-items: center; gap: 4px; }
+.note-item-actions { margin-left: auto; }
+.note-del {
+  background: none; border: none; cursor: pointer;
+  color: var(--text4); padding: 5px 7px; border-radius: 6px;
+  transition: color .12s, background .12s; display: flex; align-items: center;
+}
+.note-del:hover { color: var(--danger); background: var(--danger-lt); }
+.note-item-body {
+  font-size: 13px; color: var(--text2); line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+/* ── Empty ────────────────────────────────────────────────────── */
+.notes-empty {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 60px 24px;
+  text-align: center; box-shadow: var(--shadow);
+}
+.notes-empty-icon { color: var(--text4); margin-bottom: 14px; }
+.notes-empty-icon svg { display: block; margin: 0 auto; }
+.notes-empty-title { font-size: 15px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.notes-empty-sub   { font-size: 12.5px; color: var(--text4); line-height: 1.6; }
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .notes-shell { grid-template-columns: 1fr; }
+  .notes-aside { position: static; }
+}
 </style>
+
+<script>
+/* char counter */
+(function(){
+  var ta = document.getElementById('note-input');
+  var nc = document.getElementById('nc');
+  if(!ta||!nc) return;
+  ta.addEventListener('input', function(){
+    var l = ta.value.length;
+    nc.textContent = l + ' / 1000';
+    nc.classList.toggle('warn', l > 850);
+  });
+})();
+
+/* search */
+(function(){
+  var si = document.getElementById('note-search');
+  if(!si) return;
+  si.addEventListener('input', function(){
+    var q = si.value.toLowerCase();
+    document.querySelectorAll('.note-item').forEach(function(el){
+      el.style.display = !q || el.dataset.text.includes(q) ? '' : 'none';
+    });
+  });
+})();
+</script>
+
 {% endblock %}
