@@ -74,47 +74,52 @@
 <div class="d-kpi-row">
   <div class="d-kpi d-kpi-blue">
     <div class="d-kpi-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     </div>
     <div class="d-kpi-body">
       <div class="d-kpi-val">{{ total.n }}</div>
       <div class="d-kpi-label">Total Tasks</div>
+      <div class="d-kpi-sub">All members</div>
     </div>
   </div>
   <div class="d-kpi d-kpi-green">
     <div class="d-kpi-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
     <div class="d-kpi-body">
       <div class="d-kpi-val">{{ done.n }}</div>
-      <div class="d-kpi-label">Completed · {{ pct }}%</div>
+      <div class="d-kpi-label">Completed</div>
+      <div class="d-kpi-sub">{{ pct }}% completion rate</div>
     </div>
   </div>
   <div class="d-kpi d-kpi-orange">
     <div class="d-kpi-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     </div>
     <div class="d-kpi-body">
       <div class="d-kpi-val">{{ inprog.n }}</div>
       <div class="d-kpi-label">In Progress</div>
+      <div class="d-kpi-sub">Currently active</div>
     </div>
   </div>
   <div class="d-kpi d-kpi-red">
     <div class="d-kpi-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><octagon/><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     </div>
     <div class="d-kpi-body">
       <div class="d-kpi-val">{{ blocked.n }}</div>
       <div class="d-kpi-label">Blocked</div>
+      <div class="d-kpi-sub">Need attention</div>
     </div>
   </div>
   <div class="d-kpi d-kpi-slate">
     <div class="d-kpi-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.22" y1="4.22" x2="19.78" y2="19.78"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.22" y1="4.22" x2="19.78" y2="19.78"/></svg>
     </div>
     <div class="d-kpi-body">
       <div class="d-kpi-val">{{ pending.n }}</div>
-      <div class="d-kpi-label">Pending</div>
+      <div class="d-kpi-label">Not Started</div>
+      <div class="d-kpi-sub">Pending kick-off</div>
     </div>
   </div>
 </div>
@@ -122,16 +127,23 @@
 {# ── Progress bar ── #}
 {% if total.n > 0 %}
 <div class="d-prog-wrap">
-  <div class="d-prog-track">
-    <div class="d-prog-seg d-seg-done"    style="width:{{ (done.n    / total.n * 100)|int }}%"></div>
-    <div class="d-prog-seg d-seg-inprog"  style="width:{{ (inprog.n  / total.n * 100)|int }}%"></div>
-    <div class="d-prog-seg d-seg-blocked" style="width:{{ (blocked.n / total.n * 100)|int }}%"></div>
+  <div class="d-prog-left">
+    <div class="d-prog-title">Overall Completion</div>
+    <div class="d-prog-track">
+      <div class="d-prog-seg d-seg-done"    style="width:{{ (done.n    / total.n * 100)|int }}%"></div>
+      <div class="d-prog-seg d-seg-inprog"  style="width:{{ (inprog.n  / total.n * 100)|int }}%"></div>
+      <div class="d-prog-seg d-seg-blocked" style="width:{{ (blocked.n / total.n * 100)|int }}%"></div>
+    </div>
+    <div class="d-prog-legend">
+      <span class="d-leg d-leg-done">Done {{ done.n }}</span>
+      <span class="d-leg d-leg-inprog">In Progress {{ inprog.n }}</span>
+      <span class="d-leg d-leg-blocked">Blocked {{ blocked.n }}</span>
+      <span class="d-leg d-leg-other">Pending {{ pending.n }}</span>
+    </div>
   </div>
-  <div class="d-prog-legend">
-    <span class="d-leg d-leg-done">Done {{ done.n }}</span>
-    <span class="d-leg d-leg-inprog">In Progress {{ inprog.n }}</span>
-    <span class="d-leg d-leg-blocked">Blocked {{ blocked.n }}</span>
-    <span class="d-leg d-leg-other">Pending {{ pending.n }}</span>
+  <div class="d-prog-right">
+    <div class="d-prog-pct-big">{{ pct }}%</div>
+    <div class="d-prog-pct-label">{{ done.n }}/{{ total.n }} tasks</div>
   </div>
 </div>
 {% endif %}
@@ -194,6 +206,16 @@
       {% endif %}
     </div>
   </div>
+
+  {% if not mt %}
+  <div class="d-empty-row">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    No tasks assigned{% if current_view == 'today' %} for today{% elif current_view == 'tomorrow' %} for tomorrow{% endif %}
+    {% if is_manager or team_name == member %}
+    <a href="{{ url_for('add_task') }}" class="d-empty-add">+ Assign Task</a>
+    {% endif %}
+  </div>
+  {% endif %}
 
   {% if mt %}
   {# ── Task table ── #}
@@ -316,49 +338,69 @@
 .d-kpi-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 .d-kpi {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
+  border-radius: 12px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   box-shadow: var(--shadow);
-  transition: box-shadow .15s;
+  transition: box-shadow .18s, transform .18s;
+  position: relative;
+  overflow: hidden;
 }
-.d-kpi:hover { box-shadow: var(--shadow-md); }
+.d-kpi::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 12px 12px 0 0;
+}
+.d-kpi-blue::after   { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+.d-kpi-green::after  { background: linear-gradient(90deg, #16a34a, #4ade80); }
+.d-kpi-orange::after { background: linear-gradient(90deg, #d97706, #fbbf24); }
+.d-kpi-red::after    { background: linear-gradient(90deg, #dc2626, #f87171); }
+.d-kpi-slate::after  { background: linear-gradient(90deg, #64748b, #94a3b8); }
+.d-kpi:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .d-kpi-icon {
-  width: 34px; height: 34px;
-  border-radius: 8px;
+  width: 42px; height: 42px;
+  border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.d-kpi-blue   .d-kpi-icon { background:#eff6ff; color:var(--primary); }
-.d-kpi-green  .d-kpi-icon { background:#f0fdf4; color:var(--success); }
-.d-kpi-orange .d-kpi-icon { background:#fffbeb; color:var(--warning); }
-.d-kpi-red    .d-kpi-icon { background:#fef2f2; color:var(--danger);  }
-.d-kpi-slate  .d-kpi-icon { background:#f1f5f9; color:#64748b; }
-.d-kpi-blue   { border-top: 2px solid var(--primary); }
-.d-kpi-green  { border-top: 2px solid var(--success); }
-.d-kpi-orange { border-top: 2px solid var(--warning); }
-.d-kpi-red    { border-top: 2px solid var(--danger);  }
-.d-kpi-slate  { border-top: 2px solid #94a3b8; }
-.d-kpi-val   { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
-.d-kpi-label { font-size: 11px; color: var(--text3); margin-top: 3px; font-weight: 500; }
+.d-kpi-blue   .d-kpi-icon { background: linear-gradient(135deg, #dbeafe, #eff6ff); color:var(--primary); }
+.d-kpi-green  .d-kpi-icon { background: linear-gradient(135deg, #dcfce7, #f0fdf4); color:var(--success); }
+.d-kpi-orange .d-kpi-icon { background: linear-gradient(135deg, #fef3c7, #fffbeb); color:var(--warning); }
+.d-kpi-red    .d-kpi-icon { background: linear-gradient(135deg, #fee2e2, #fef2f2); color:var(--danger);  }
+.d-kpi-slate  .d-kpi-icon { background: linear-gradient(135deg, #e2e8f0, #f1f5f9); color:#64748b; }
+.d-kpi-val   { font-size: 30px; font-weight: 800; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.d-kpi-label { font-size: 12px; color: var(--text2); margin-top: 3px; font-weight: 600; }
+.d-kpi-sub   { font-size: 10.5px; color: var(--text4); margin-top: 2px; font-weight: 400; }
 
 /* ── Segmented progress bar ── */
-.d-prog-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:18px; box-shadow:var(--shadow); }
-.d-prog-track { display:flex; height:6px; border-radius:4px; overflow:hidden; background:var(--border); gap:1px; }
-.d-prog-seg { height:100%; transition:width .4s ease; }
-.d-seg-done    { background:var(--success); }
-.d-seg-inprog  { background:var(--primary); }
-.d-seg-blocked { background:var(--danger); }
-.d-prog-legend { display:flex; gap:16px; margin-top:8px; flex-wrap:wrap; }
-.d-leg { font-size:11px; font-weight:600; display:flex; align-items:center; gap:5px; }
+.d-prog-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 20px;
+}
+.d-prog-left { flex: 1; }
+.d-prog-right { text-align: right; flex-shrink: 0; }
+.d-prog-pct-big { font-size: 32px; font-weight: 800; color: var(--success); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.d-prog-pct-label { font-size: 11px; color: var(--text4); margin-top: 2px; }
+.d-prog-title { font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
+.d-prog-track { display:flex; height:8px; border-radius:6px; overflow:hidden; background:var(--border); gap:1px; }
+.d-prog-seg { height:100%; transition:width .5s cubic-bezier(.4,0,.2,1); }
+.d-seg-done    { background: linear-gradient(90deg, #16a34a, #4ade80); }
+.d-seg-inprog  { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+.d-seg-blocked { background: linear-gradient(90deg, #dc2626, #f87171); }
+.d-prog-legend { display:flex; gap:16px; margin-top:10px; flex-wrap:wrap; }
+.d-leg { font-size:11.5px; font-weight:600; display:flex; align-items:center; gap:5px; }
 .d-leg::before { content:''; width:8px; height:8px; border-radius:2px; flex-shrink:0; }
 .d-leg-done::before    { background:var(--success); }
 .d-leg-inprog::before  { background:var(--primary); }
@@ -383,72 +425,76 @@
 .d-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  margin-bottom: 14px;
   overflow: hidden;
   box-shadow: var(--shadow);
+  transition: box-shadow .18s, transform .18s;
 }
+.d-card:hover { box-shadow: var(--shadow-md); }
 .d-card-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 18px;
-  background: var(--surface2);
+  padding: 14px 20px;
+  background: linear-gradient(to right, var(--surface2), var(--surface));
   border-bottom: 1px solid var(--border);
-  border-left: 3px solid transparent; /* overridden inline */
+  border-left: 4px solid transparent;
   gap: 12px;
 }
-.d-card-left  { display:flex; align-items:center; gap:11px; min-width:0; flex:1; }
-.d-card-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.d-card-left  { display:flex; align-items:center; gap:14px; min-width:0; flex:1; }
+.d-card-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
 .d-av {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 800; color: #fff;
+  font-size: 14px; font-weight: 800; color: #fff;
   flex-shrink: 0; letter-spacing: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
 .d-card-info { min-width: 0; }
 .d-card-name {
-  font-size: 13px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 7px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
 }
 .d-card-meta {
   display: flex; align-items: center; gap: 5px;
-  font-size: 11px; color: var(--text3); margin-top: 2px;
+  font-size: 11.5px; color: var(--text3); margin-top: 3px;
   flex-wrap: wrap;
 }
 .d-meta-dot   { width:3px; height:3px; border-radius:50%; background:var(--border2); flex-shrink:0; }
+.d-meta-empty { color: var(--text4); font-style: italic; }
 .d-meta-green { color:var(--success); font-weight:600; }
 .d-meta-blue  { color:var(--primary); font-weight:600; }
 .d-meta-red   { color:var(--danger);  font-weight:600; }
 .d-role-chip  {
-  font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px;
+  font-size:10px; font-weight:700; padding:2px 8px; border-radius:5px;
   background:var(--purple-lt); color:var(--purple); border:1px solid #ddd6fe;
   text-transform:uppercase; letter-spacing:.3px;
 }
-.d-mini-prog  { display:flex; align-items:center; gap:7px; }
-.d-mini-track { width:60px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
-.d-mini-fill  { height:100%; border-radius:2px; transition:width .3s; }
-.d-mini-pct   { font-size:11px; font-weight:700; color:var(--text3); min-width:28px; text-align:right; }
+.d-mini-prog  { display:flex; align-items:center; gap:8px; }
+.d-mini-track { width:72px; height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
+.d-mini-fill  { height:100%; border-radius:3px; transition:width .4s ease; }
+.d-mini-pct   { font-size:12px; font-weight:700; color:var(--text3); min-width:30px; text-align:right; }
 
 /* ── Table ── */
 .d-table-wrap { overflow-x: auto; }
 .d-table { width:100%; border-collapse:collapse; min-width:560px; }
 .d-table thead tr { background:transparent; }
 .d-table th {
-  padding: 8px 14px;
-  font-size: 10px; font-weight: 700;
+  padding: 9px 16px;
+  font-size: 10.5px; font-weight: 700;
   color: var(--text4); text-transform: uppercase; letter-spacing: .6px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap; text-align: left;
-  background: #fcfcfd;
+  background: #fafbfd;
 }
 .d-table td {
-  padding: 11px 14px;
+  padding: 12px 16px;
   font-size: 13px; color: var(--text2);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
 .d-table tbody tr:last-child td { border-bottom: none; }
-.d-table tbody tr { transition: background .1s; }
-.d-table tbody tr:hover td { background: #f8faff; }
+.d-table tbody tr { transition: background .12s; }
+.d-table tbody tr:hover td { background: #f4f8ff; }
 
 /* Row states */
 .row-done td   { opacity: .55; }
@@ -531,6 +577,20 @@
   padding: 20px 16px;
   color: var(--text4); font-size: 12px;
 }
+.d-empty-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 18px;
+  font-size: 12px; color: var(--text4);
+  font-style: italic;
+}
+.d-empty-add {
+  margin-left: 10px; font-style: normal; font-size: 12px; font-weight: 600;
+  color: var(--primary); text-decoration: none;
+  padding: 3px 10px; border: 1px solid var(--primary-lt);
+  border-radius: 5px; background: var(--primary-lt);
+  transition: background .12s;
+}
+.d-empty-add:hover { background: #dbeafe; text-decoration: none; }
 
 /* Responsive */
 @media (max-width: 1100px) {
@@ -538,6 +598,8 @@
 }
 @media (max-width: 700px) {
   .d-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .d-prog-wrap { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .d-prog-right { text-align: left; }
 }
 </style>
 

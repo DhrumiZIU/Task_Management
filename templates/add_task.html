@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Add Task — Team Planner</title>
+<title>Assign Task — Team Planner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,17 +14,21 @@
   --surface:  #ffffff;
   --primary:  #2563eb;
   --primary-dark: #1d4ed8;
+  --primary-lt: #eff6ff;
   --text:     #0f172a;
   --text2:    #334155;
   --text3:    #64748b;
   --text4:    #94a3b8;
   --border:   #e2e8f0;
+  --border2:  #cbd5e1;
+  --success:  #16a34a;
+  --warning:  #d97706;
+  --danger:   #dc2626;
   --radius:   10px;
   --shadow:   0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
   --shadow-md:0 4px 16px rgba(0,0,0,.10);
   --shadow-lg:0 12px 40px rgba(0,0,0,.14);
 }
-
 body {
   font-family: 'Inter', -apple-system, sans-serif;
   background: var(--bg);
@@ -32,13 +36,13 @@ body {
   display: flex;
   flex-direction: column;
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ── Top bar ── */
 .at-topbar {
-  height: 56px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  height: 58px;
+  background: #0d1526;
   display: flex;
   align-items: center;
   padding: 0 28px;
@@ -46,134 +50,215 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: var(--shadow);
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
 }
 .at-brand {
-  display: flex; align-items: center; gap: 9px;
-  font-weight: 800; font-size: 15px; color: var(--primary);
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 800; font-size: 15px; color: #f1f5f9;
   text-decoration: none;
 }
 .at-brand-icon {
-  width: 30px; height: 30px; border-radius: 8px;
-  background: var(--primary); display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 9px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(37,99,235,.4);
 }
+.at-breadcrumb {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #64748b;
+}
+.at-breadcrumb a { color: #94a3b8; text-decoration: none; transition: color .15s; }
+.at-breadcrumb a:hover { color: #e2e8f0; }
+.at-breadcrumb-sep { color: #334155; }
+.at-breadcrumb-cur { color: #e2e8f0; font-weight: 600; }
 .at-sep { flex: 1; }
 .at-back {
   display: flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600; color: var(--text3);
+  font-size: 12.5px; font-weight: 600; color: #64748b;
   text-decoration: none; padding: 7px 14px; border-radius: 7px;
-  border: 1px solid var(--border); background: var(--surface);
-  transition: background .15s, color .15s;
+  border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04);
+  transition: all .15s;
 }
-.at-back:hover { background: var(--bg); color: var(--text); }
+.at-back:hover { background: rgba(255,255,255,.08); color: #e2e8f0; }
 
-/* ── Page body ── */
+/* ── Steps bar ── */
+.at-steps {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+}
+.at-step {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px 14px 0;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--text4);
+  position: relative;
+  white-space: nowrap;
+}
+.at-step + .at-step::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--border);
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+.at-step.active { color: var(--primary); }
+.at-step.done { color: var(--success); }
+.at-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+  background: var(--border); color: var(--text4);
+  flex-shrink: 0;
+  transition: all .2s;
+}
+.at-step.active .at-step-num { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,.35); }
+.at-step.done .at-step-num   { background: var(--success); color: #fff; }
+
+/* ── Layout ── */
 .at-body {
   flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 40px 20px 60px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 24px 60px;
+  gap: 24px;
+  align-items: start;
 }
 
-.at-card {
+/* ── Left: form ── */
+.at-form-panel {
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+.at-section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 760px;
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow: var(--shadow);
   animation: cardIn .22s ease both;
 }
 @keyframes cardIn {
-  from { opacity:0; transform:translateY(16px); }
+  from { opacity:0; transform:translateY(12px); }
   to   { opacity:1; transform:translateY(0); }
 }
+.at-section:nth-child(2) { animation-delay: .05s; }
+.at-section:nth-child(3) { animation-delay: .1s; }
 
-.at-card-head {
-  padding: 28px 32px 24px;
+.at-section-head {
+  padding: 18px 24px 16px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+  background: linear-gradient(to right, #f8faff, #fff);
+  display: flex; align-items: center; gap: 12px;
 }
-.at-card-head h1 {
-  font-size: 20px; font-weight: 800; color: var(--text);
-  display: flex; align-items: center; gap: 10px;
-}
-.at-head-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: #eff6ff; color: var(--primary);
+.at-section-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primary); color: #fff;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(37,99,235,.30);
 }
-.at-card-head p {
-  font-size: 13px; color: var(--text3); margin-top: 6px; padding-left: 46px;
-}
+.at-section-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.at-section-subtitle { font-size: 12px; color: var(--text3); margin-top: 1px; }
+.at-section-body { padding: 20px 24px 24px; }
 
-.at-form { padding: 28px 32px 32px; }
-
-/* ── Person selector ── */
-.at-section-label {
-  font-size: 12px; font-weight: 700; color: var(--text3);
-  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px;
-  display: flex; align-items: center; gap: 7px;
-}
-.at-section-label span { display: inline-block; width: 18px; height: 2px; background: var(--primary); border-radius: 2px; }
-
+/* ── Person grid ── */
 .at-person-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
-  margin-bottom: 24px;
 }
 .at-person-card {
   border: 2px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 10px 12px;
+  border-radius: 12px;
+  padding: 16px 10px 14px;
   text-align: center;
   cursor: pointer;
-  transition: border-color .15s, box-shadow .15s, transform .12s, background .15s;
-  user-select: none;
+  transition: all .15s;
   background: var(--surface);
   position: relative;
+  user-select: none;
 }
 .at-person-card:hover {
   border-color: #93c5fd;
   box-shadow: 0 0 0 3px #eff6ff;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 .at-person-card.selected {
   border-color: var(--primary);
-  background: #eff6ff;
-  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  background: linear-gradient(135deg, #f0f7ff, #fff);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12), var(--shadow-md);
+  transform: translateY(-2px);
 }
 .at-person-card.selected::after {
   content: '✓';
-  position: absolute; top: 6px; right: 8px;
-  font-size: 11px; font-weight: 800; color: var(--primary);
+  position: absolute; top: 7px; right: 9px;
+  font-size: 11px; font-weight: 900; color: #fff;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  line-height: 18px;
 }
 .at-pav {
-  width: 44px; height: 44px; border-radius: 50%;
+  width: 46px; height: 46px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px; font-weight: 800; color: #fff;
-  margin: 0 auto 9px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  font-size: 18px; font-weight: 800; color: #fff;
+  margin: 0 auto 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.2);
+  position: relative;
 }
-.at-pname {
-  font-size: 12.5px; font-weight: 700; color: var(--text);
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.at-pname { font-size: 12.5px; font-weight: 700; color: var(--text); line-height: 1.3; word-break: break-word; }
+.at-prole  { font-size: 11px; color: var(--text4); margin-top: 3px; }
+.at-err { font-size: 12px; color: #dc2626; margin-top: 10px; display: none; align-items: center; gap: 5px; }
+.at-err.show { display: flex; }
+
+/* ── Priority picker ── */
+.at-pri-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 0;
 }
-.at-prole { font-size: 11px; color: var(--text4); margin-top: 3px; }
+.at-pri-opt {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.at-pri-opt input[type=radio] { display: none; }
+.at-pri-opt-icon { font-size: 18px; margin-bottom: 5px; display: block; }
+.at-pri-opt-label { font-size: 12px; font-weight: 700; display: block; }
+.at-pri-opt-desc  { font-size: 10.5px; color: var(--text4); margin-top: 2px; display: block; }
+
+.at-pri-opt[data-pri="High"]:hover,
+.at-pri-opt[data-pri="High"].selected {
+  border-color: #fca5a5; background: #fef2f2;
+}
+.at-pri-opt[data-pri="High"].selected .at-pri-opt-label { color: #b91c1c; }
+.at-pri-opt[data-pri="Medium"]:hover,
+.at-pri-opt[data-pri="Medium"].selected {
+  border-color: #fcd34d; background: #fffbeb;
+}
+.at-pri-opt[data-pri="Medium"].selected .at-pri-opt-label { color: #92400e; }
+.at-pri-opt[data-pri="Low"]:hover,
+.at-pri-opt[data-pri="Low"].selected {
+  border-color: #86efac; background: #f0fdf4;
+}
+.at-pri-opt[data-pri="Low"].selected .at-pri-opt-label { color: #15803d; }
 
 /* ── Form fields ── */
-.at-fields { display: flex; flex-direction: column; gap: 18px; }
-.at-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.at-fields { display: flex; flex-direction: column; gap: 16px; }
+.at-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .at-field { display: flex; flex-direction: column; gap: 6px; }
 .at-field label {
   font-size: 12px; font-weight: 700; color: var(--text2);
@@ -200,67 +285,132 @@ body {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37,99,235,.10);
 }
-.at-field textarea { resize: vertical; min-height: 72px; }
-
-/* ── Description box ── */
-.at-assignee-info {
-  background: #f8faff;
-  border: 1.5px solid #c7d9ff;
-  border-radius: 10px;
-  padding: 14px 16px;
-  display: none;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+.at-field input:hover:not(:focus),
+.at-field select:hover:not(:focus),
+.at-field textarea:hover:not(:focus) {
+  border-color: var(--border2);
 }
-.at-assignee-info.visible { display: flex; }
-.at-ai-av {
-  width: 36px; height: 36px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0;
-}
-.at-ai-text { font-size: 13px; color: var(--text2); font-weight: 500; }
-.at-ai-name { font-weight: 700; color: var(--primary); }
+.at-field textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+.at-field-hint { font-size: 11px; color: var(--text4); margin-top: 3px; }
 
-/* ── Submit ── */
+/* ── Actions ── */
 .at-actions {
-  display: flex; gap: 12px; margin-top: 28px; justify-content: flex-end;
-  padding-top: 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 12px; align-items: center;
+  padding-top: 4px;
 }
-.btn-at-cancel {
-  padding: 11px 22px; border-radius: 8px;
+.btn-cancel {
+  padding: 11px 22px; border-radius: 9px;
   border: 1.5px solid var(--border); background: var(--surface);
-  font-size: 14px; font-weight: 600; color: var(--text3);
+  font-size: 13.5px; font-weight: 600; color: var(--text3);
   cursor: pointer; text-decoration: none;
   display: inline-flex; align-items: center; gap: 7px;
-  transition: background .15s, color .15s;
+  transition: all .15s; font-family: inherit;
 }
-.btn-at-cancel:hover { background: var(--bg); color: var(--text); }
-.btn-at-submit {
-  padding: 11px 28px; border-radius: 8px;
-  background: var(--primary); border: none;
-  font-size: 14px; font-weight: 700; color: #fff;
+.btn-cancel:hover { background: var(--bg); color: var(--text); border-color: var(--border2); }
+.btn-submit {
+  padding: 11px 28px; border-radius: 9px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  font-size: 13.5px; font-weight: 700; color: #fff;
   cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
-  transition: background .15s, transform .12s, box-shadow .15s;
-  box-shadow: 0 1px 4px rgba(37,99,235,.30);
+  transition: all .15s;
+  box-shadow: 0 2px 8px rgba(37,99,235,.35), 0 1px 2px rgba(37,99,235,.2);
+  font-family: inherit; letter-spacing: -.1px;
 }
-.btn-at-submit:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,.35); }
-.btn-at-submit:active { transform: translateY(0); }
-
-.at-err {
-  font-size: 12px; color: #dc2626; margin-top: 4px;
-  display: none;
+.btn-submit:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37,99,235,.4);
 }
-.at-err.show { display: block; }
+.btn-submit:active { transform: translateY(0); }
 
-@media (max-width: 600px) {
+/* ── Right: preview panel ── */
+.at-preview-panel {
+  position: sticky;
+  top: 100px;
+  display: flex; flex-direction: column; gap: 16px;
+  animation: cardIn .3s ease both;
+  animation-delay: .15s;
+}
+
+.at-preview-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.at-preview-head {
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex; align-items: center; gap: 10px;
+}
+.at-preview-head-title { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .6px; }
+.at-preview-body { padding: 18px 20px; }
+
+.pv-empty {
+  text-align: center;
+  padding: 24px 0;
+}
+.pv-empty-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+.pv-empty-text { font-size: 12.5px; color: var(--text4); line-height: 1.6; }
+
+.pv-assignee {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.pv-av {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.pv-av-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.pv-av-role { font-size: 11px; color: var(--text4); margin-top: 1px; }
+
+.pv-row {
+  display: flex; align-items: flex-start;
+  gap: 10px; margin-bottom: 10px;
+  font-size: 12.5px;
+}
+.pv-row-label {
+  font-size: 10.5px; font-weight: 700; color: var(--text4);
+  text-transform: uppercase; letter-spacing: .4px;
+  min-width: 70px; padding-top: 1px;
+}
+.pv-row-val { color: var(--text2); font-weight: 500; line-height: 1.5; flex: 1; }
+.pv-task-text { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.5; }
+
+.pv-pri {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 10px; border-radius: 5px; font-size: 11px; font-weight: 700;
+  border: 1px solid transparent;
+}
+.pv-pri-high   { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+.pv-pri-medium { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+.pv-pri-low    { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
+
+.at-tips-card {
+  background: linear-gradient(135deg, #f0f7ff, #f8faff);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.at-tips-title { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
+.at-tips-list { display: flex; flex-direction: column; gap: 7px; }
+.at-tip { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text3); line-height: 1.5; }
+.at-tip-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 5px; }
+
+@media (max-width: 860px) {
+  .at-body { grid-template-columns: 1fr; padding: 20px 16px 40px; }
+  .at-preview-panel { position: static; }
+  .at-steps { padding: 0 16px; }
   .at-topbar { padding: 0 16px; }
-  .at-body { padding: 20px 12px 40px; }
-  .at-card-head, .at-form { padding: 20px 16px; }
   .at-row { grid-template-columns: 1fr; }
   .at-person-grid { grid-template-columns: repeat(3, 1fr); }
-  .at-actions { flex-direction: column-reverse; }
-  .btn-at-cancel, .btn-at-submit { width: 100%; justify-content: center; }
 }
 </style>
 </head>
@@ -270,38 +420,58 @@ body {
 <header class="at-topbar">
   <a class="at-brand" href="{{ url_for('dashboard') }}">
     <div class="at-brand-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
     </div>
     Team Planner
   </a>
+  <div class="at-breadcrumb">
+    <span class="at-breadcrumb-sep">/</span>
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <span class="at-breadcrumb-sep">/</span>
+    <span class="at-breadcrumb-cur">Assign Task</span>
+  </div>
   <div class="at-sep"></div>
   <a class="at-back" href="{{ url_for('dashboard') }}">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    Back to Dashboard
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
   </a>
 </header>
 
-<!-- Main -->
-<main class="at-body">
-  <div class="at-card">
+<!-- Steps bar -->
+<div class="at-steps">
+  <div class="at-step active" id="step1-indicator">
+    <div class="at-step-num">1</div>
+    Choose Member
+  </div>
+  <div class="at-step" id="step2-indicator">
+    <div class="at-step-num">2</div>
+    Task Details
+  </div>
+  <div class="at-step" id="step3-indicator">
+    <div class="at-step-num">3</div>
+    Review & Assign
+  </div>
+</div>
 
-    <div class="at-card-head">
-      <h1>
-        <div class="at-head-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+<!-- Main layout -->
+<div class="at-body">
+
+  <!-- Left: form -->
+  <form method="post" action="{{ url_for('add_task') }}" id="at-form" class="at-form-panel">
+    <input type="hidden" name="team_member" id="hidden-member">
+    <input type="hidden" name="priority" id="hidden-priority" value="Medium">
+
+    <!-- Section 1: Assign To -->
+    <div class="at-section">
+      <div class="at-section-head">
+        <div class="at-section-num">1</div>
+        <div>
+          <div class="at-section-title">Assign To</div>
+          <div class="at-section-subtitle">Select the team member who will own this task</div>
         </div>
-        Assign New Task
-      </h1>
-      <p>Select a team member, fill in the task details, and assign it.</p>
-    </div>
-
-    <div class="at-form">
-      <form method="post" action="{{ url_for('add_task') }}" id="at-form">
-        <input type="hidden" name="team_member" id="hidden-member">
-
-        <!-- Person selector -->
+      </div>
+      <div class="at-section-body">
         {% set av_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d','#b45309','#0f766e'] %}
-        <div class="at-section-label"><span></span> Assign To <span style="color:#dc2626;font-size:13px;margin-left:2px">*</span></div>
         <div class="at-person-grid" id="person-grid">
           {% for m in members %}
           {% set ac = av_colors[loop.index0 % 10] %}
@@ -314,29 +484,62 @@ body {
           </div>
           {% endfor %}
         </div>
-        <div class="at-err" id="member-err">Please select a team member.</div>
-
-        <!-- Assignee confirmation banner -->
-        <div class="at-assignee-info" id="assignee-info">
-          <div class="at-ai-av" id="assignee-av"></div>
-          <div class="at-ai-text">Assigning task to <span class="at-ai-name" id="assignee-name"></span></div>
+        <div class="at-err" id="member-err">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Please select a team member before continuing.
         </div>
+      </div>
+    </div>
 
+    <!-- Section 2: Task Details -->
+    <div class="at-section">
+      <div class="at-section-head">
+        <div class="at-section-num">2</div>
+        <div>
+          <div class="at-section-title">Task Details</div>
+          <div class="at-section-subtitle">Define what needs to be done and when</div>
+        </div>
+      </div>
+      <div class="at-section-body">
         <div class="at-fields">
-          <!-- Task date + Priority row -->
+
+          <!-- Priority visual picker -->
+          <div class="at-field">
+            <label>Priority <span class="req">*</span></label>
+            <div class="at-pri-row" id="pri-row">
+              <label class="at-pri-opt" data-pri="High" onclick="selectPriority(this)">
+                <input type="radio" name="_priority_visual" value="High">
+                <span class="at-pri-opt-icon">🔴</span>
+                <span class="at-pri-opt-label">High</span>
+                <span class="at-pri-opt-desc">Urgent / critical</span>
+              </label>
+              <label class="at-pri-opt selected" data-pri="Medium" onclick="selectPriority(this)">
+                <input type="radio" name="_priority_visual" value="Medium" checked>
+                <span class="at-pri-opt-icon">🟡</span>
+                <span class="at-pri-opt-label">Medium</span>
+                <span class="at-pri-opt-desc">Normal priority</span>
+              </label>
+              <label class="at-pri-opt" data-pri="Low" onclick="selectPriority(this)">
+                <input type="radio" name="_priority_visual" value="Low">
+                <span class="at-pri-opt-icon">🟢</span>
+                <span class="at-pri-opt-label">Low</span>
+                <span class="at-pri-opt-desc">When time permits</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Date + Est hours row -->
           <div class="at-row">
             <div class="at-field">
               <label for="task_date">Date <span class="req">*</span></label>
               <input type="date" name="task_date" id="task_date"
-                     value="{{ today }}" required>
+                     value="{{ today }}" required oninput="updatePreview()">
             </div>
             <div class="at-field">
-              <label for="priority">Priority <span class="req">*</span></label>
-              <select name="priority" id="priority" required>
-                {% for p in priorities %}
-                <option value="{{ p }}">{{ p }}</option>
-                {% endfor %}
-              </select>
+              <label for="est_hours">Estimated Hours</label>
+              <input type="number" name="est_hours" id="est_hours"
+                     min="0.25" max="24" step="0.25" placeholder="e.g. 2.5"
+                     oninput="updatePreview()">
             </div>
           </div>
 
@@ -344,65 +547,169 @@ body {
           <div class="at-field">
             <label for="task">Task Description <span class="req">*</span></label>
             <textarea name="task" id="task" rows="3"
-                      placeholder="What needs to be done? Be specific and actionable." required></textarea>
+                      placeholder="What needs to be done? Be specific and actionable."
+                      required oninput="updatePreview()"></textarea>
+            <span class="at-field-hint">Be clear and specific — good tasks start with a verb: "Build", "Review", "Send", "Fix".</span>
           </div>
 
           <!-- Done looks like -->
           <div class="at-field">
-            <label for="done_looks_like">Done Looks Like</label>
+            <label for="done_looks_like">Definition of Done</label>
             <textarea name="done_looks_like" id="done_looks_like" rows="2"
-                      placeholder="What does success look like? How will you know it's complete?"></textarea>
+                      placeholder="How will you know this is complete? What's the measurable outcome?"
+                      oninput="updatePreview()"></textarea>
+            <span class="at-field-hint">Optional but highly recommended — it removes ambiguity.</span>
           </div>
 
-          <!-- Est. hours -->
-          <div class="at-field" style="max-width:200px">
-            <label for="est_hours">Estimated Hours</label>
-            <input type="number" name="est_hours" id="est_hours"
-                   min="0.25" max="24" step="0.25" placeholder="e.g. 2">
-          </div>
         </div>
+      </div>
+    </div>
 
+    <!-- Section 3: Submit -->
+    <div class="at-section">
+      <div class="at-section-head">
+        <div class="at-section-num">3</div>
+        <div>
+          <div class="at-section-title">Review & Assign</div>
+          <div class="at-section-subtitle">Double-check the preview on the right, then assign</div>
+        </div>
+      </div>
+      <div class="at-section-body">
         <div class="at-actions">
-          <a class="btn-at-cancel" href="{{ url_for('dashboard') }}">
+          <a class="btn-cancel" href="{{ url_for('dashboard') }}">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Cancel
           </a>
-          <button type="submit" class="btn-at-submit">
+          <button type="submit" class="btn-submit" id="submit-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             Assign Task
           </button>
         </div>
+      </div>
+    </div>
 
-      </form>
+  </form>
+
+  <!-- Right: preview panel -->
+  <div class="at-preview-panel">
+
+    <div class="at-preview-card">
+      <div class="at-preview-head">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div class="at-preview-head-title">Task Preview</div>
+      </div>
+      <div class="at-preview-body" id="preview-body">
+        <div class="pv-empty">
+          <span class="pv-empty-icon">📋</span>
+          <div class="pv-empty-text">Select a member and fill in task details to see a live preview here.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="at-tips-card">
+      <div class="at-tips-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Tips for great tasks
+      </div>
+      <div class="at-tips-list">
+        <div class="at-tip"><div class="at-tip-dot"></div>Start the description with an action verb</div>
+        <div class="at-tip"><div class="at-tip-dot"></div>Keep scope to what can be done in one day</div>
+        <div class="at-tip"><div class="at-tip-dot"></div>Use "Definition of Done" to remove guesswork</div>
+        <div class="at-tip"><div class="at-tip-dot"></div>Estimate hours realistically — not optimistically</div>
+      </div>
     </div>
 
   </div>
-</main>
+
+</div>
 
 <script>
+var _member = '', _memberColor = '';
+
 function selectPerson(card) {
   document.querySelectorAll('.at-person-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
-  const name  = card.dataset.name;
-  const color = card.dataset.color;
-  document.getElementById('hidden-member').value = name;
-  // Update banner
-  const info = document.getElementById('assignee-info');
-  document.getElementById('assignee-av').style.background = color;
-  document.getElementById('assignee-av').textContent = name[0].toUpperCase();
-  document.getElementById('assignee-name').textContent = name;
-  info.classList.add('visible');
+  _member = card.dataset.name;
+  _memberColor = card.dataset.color;
+  document.getElementById('hidden-member').value = _member;
   document.getElementById('member-err').classList.remove('show');
+  document.getElementById('step1-indicator').classList.add('done');
+  document.getElementById('step1-indicator').classList.remove('active');
+  document.getElementById('step2-indicator').classList.add('active');
+  updatePreview();
+}
+
+function selectPriority(label) {
+  document.querySelectorAll('.at-pri-opt').forEach(l => l.classList.remove('selected'));
+  label.classList.add('selected');
+  document.getElementById('hidden-priority').value = label.dataset.pri;
+  updatePreview();
+}
+
+function updatePreview() {
+  var task   = (document.getElementById('task').value || '').trim();
+  var dll    = (document.getElementById('done_looks_like').value || '').trim();
+  var date   = document.getElementById('task_date').value || '';
+  var hrs    = document.getElementById('est_hours').value || '';
+  var pri    = document.getElementById('hidden-priority').value || 'Medium';
+  var priMap = {High:'🔴 High', Medium:'🟡 Medium', Low:'🟢 Low'};
+  var priCls = {High:'pv-pri-high', Medium:'pv-pri-medium', Low:'pv-pri-low'};
+
+  if (!_member && !task) {
+    document.getElementById('preview-body').innerHTML = '<div class="pv-empty"><span class="pv-empty-icon">📋</span><div class="pv-empty-text">Select a member and fill in task details to see a live preview here.</div></div>';
+    return;
+  }
+
+  var html = '';
+  if (_member) {
+    html += '<div class="pv-assignee">';
+    html += '<div class="pv-av" style="background:'+_memberColor+'">'+_member[0].toUpperCase()+'</div>';
+    html += '<div><div class="pv-av-name">'+_member+'</div><div class="pv-av-role">Team Member</div></div>';
+    html += '</div>';
+  }
+  if (task) {
+    html += '<div class="pv-task-text" style="margin-bottom:14px">'+escHtml(task)+'</div>';
+  }
+  if (date || pri) {
+    html += '<div class="pv-row"><span class="pv-row-label">Priority</span><span class="pv-row-val"><span class="pv-pri '+priCls[pri]+'">'+priMap[pri]+'</span></span></div>';
+  }
+  if (date) {
+    html += '<div class="pv-row"><span class="pv-row-label">Date</span><span class="pv-row-val">'+formatDate(date)+'</span></div>';
+  }
+  if (hrs) {
+    html += '<div class="pv-row"><span class="pv-row-label">Est.</span><span class="pv-row-val">'+hrs+' hour'+(parseFloat(hrs)===1?'':'s')+'</span></div>';
+  }
+  if (dll) {
+    html += '<div class="pv-row" style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9"><span class="pv-row-label">Done When</span><span class="pv-row-val">'+escHtml(dll)+'</span></div>';
+  }
+
+  if (!_member && !task) {
+    document.getElementById('preview-body').innerHTML = '<div class="pv-empty"><span class="pv-empty-icon">📋</span><div class="pv-empty-text">Fill in the form to see a preview.</div></div>';
+  } else {
+    document.getElementById('preview-body').innerHTML = html;
+    document.getElementById('step3-indicator').classList.add('active');
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function formatDate(d) {
+  if (!d) return '';
+  var dt = new Date(d+'T12:00:00');
+  return dt.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
 }
 
 document.getElementById('at-form').addEventListener('submit', function(e) {
   if (!document.getElementById('hidden-member').value) {
     e.preventDefault();
     document.getElementById('member-err').classList.add('show');
-    document.getElementById('person-grid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('person-grid').scrollIntoView({ behavior:'smooth', block:'center' });
   }
 });
-</script>
 
+// Init medium selected
+document.querySelector('.at-pri-opt[data-pri="Medium"]').classList.add('selected');
+</script>
 </body>
 </html>
