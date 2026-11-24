@@ -111,6 +111,10 @@ def register(app):
         db_backup.log_activity("status_change", session.get("username", ""),
                                session.get("display_name", ""),
                                f"ID {task_id} → {new_status}")
+        # AJAX callers send X-Requested-With header
+        from flask import jsonify
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"ok": True, "status": new_status})
         return redirect(request.referrer or url_for("dashboard"))
 
     @app.route("/task/delete/<int:row_num>", methods=["POST"])

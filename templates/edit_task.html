@@ -1,75 +1,336 @@
 {% extends "base.html" %}
 {% block title %}Edit Task — ZIU AI{% endblock %}
 {% block topbar_icon %}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>{% endblock %}
-{% block topbar_title %}Edit Task{% endblock %}
+{% block topbar_title %}{% if is_manager %}Edit Task{% else %}Update Status{% endif %}{% endblock %}
 {% block topbar_sub %}{{ task.team_member }} · {{ task.date }}{% endblock %}
 {% block topbar_actions %}
-  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Back</a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </a>
 {% endblock %}
 
 {% block content %}
-<div class="form-page">
-  <div class="form-card">
-    <h3>
-      {% if is_manager %}Edit Task{% else %}Update Status{% endif %}
-    </h3>
+<div class="et-wrap">
+
+  <div class="et-main">
 
     {% if not is_manager %}
-    <div class="form-role-note">
-      As a team member, you can update <strong>Status</strong> and <strong>7 PM Update</strong> only.
+    <div class="et-role-notice">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      As a team member you can update <strong>Status</strong> and <strong>7 PM Update</strong> only.
     </div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" id="et-form">
       <input type="hidden" name="back" value="{{ back }}">
+
       {% if is_manager %}
-      <div class="field">
-        <label for="f-task">Task Description</label>
-        <input id="f-task" type="text" name="task" value="{{ task.task or '' }}" required>
-      </div>
-      <div class="field">
-        <label for="f-dll">Done looks like</label>
-        <input id="f-dll" type="text" name="done_looks_like" value="{{ task.done_looks_like or '' }}">
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="f-priority">Priority</label>
-          <select id="f-priority" name="priority">
-            {% for p in priorities %}
-            <option value="{{ p }}" {% if task.priority == p %}selected{% endif %}>{{ p }}</option>
-            {% endfor %}
-          </select>
+      <!-- Section: Task Details -->
+      <div class="et-section">
+        <div class="et-section-head">
+          <div class="et-section-num">1</div>
+          <div>
+            <div class="et-section-title">Task Details</div>
+            <div class="et-section-sub">Edit the task description and metadata</div>
+          </div>
         </div>
-        <div class="field">
-          <label for="f-hours">Est. Hours</label>
-          <input id="f-hours" type="number" name="est_hours" step="0.5" min="0" value="{{ task.est_hours or '' }}">
+        <div class="et-section-body">
+          <div class="et-fields">
+
+            <div class="et-field">
+              <label for="f-task">Task Description <span class="req">*</span></label>
+              <textarea id="f-task" name="task" rows="3" required>{{ task.task or '' }}</textarea>
+            </div>
+
+            <div class="et-field">
+              <label for="f-dll">Definition of Done</label>
+              <textarea id="f-dll" name="done_looks_like" rows="2" placeholder="How will you know this is complete?">{{ task.done_looks_like or '' }}</textarea>
+            </div>
+
+            <div class="et-row">
+              <div class="et-field">
+                <label for="f-priority">Priority</label>
+                <select id="f-priority" name="priority">
+                  {% for p in priorities %}
+                  <option value="{{ p }}" {% if task.priority == p %}selected{% endif %}>{{ p }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="et-field">
+                <label for="f-hours">Est. Hours</label>
+                <input id="f-hours" type="number" name="est_hours" step="0.25" min="0" value="{{ task.est_hours or '' }}" placeholder="e.g. 2.5">
+              </div>
+            </div>
+
+          </div>
         </div>
-      </div>
-      {% else %}
-      <div class="readonly-box" style="margin-bottom:16px">
-        <span class="readonly-label">Task</span>
-        <span style="font-size:14px;font-weight:500;color:var(--text)">{{ task.task }}</span>
       </div>
       {% endif %}
 
-      <div class="field">
-        <label for="f-status">Status</label>
-        <select id="f-status" name="status">
-          {% for s in statuses %}
-          <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
-          {% endfor %}
-        </select>
+      <!-- Section: Status & Update -->
+      <div class="et-section">
+        <div class="et-section-head">
+          <div class="et-section-num">{% if is_manager %}2{% else %}1{% endif %}</div>
+          <div>
+            <div class="et-section-title">Status & Progress</div>
+            <div class="et-section-sub">Update the current status and your end-of-day note</div>
+          </div>
+        </div>
+        <div class="et-section-body">
+
+          {% if not is_manager %}
+          <div class="et-readonly-block">
+            <div class="et-readonly-label">Task</div>
+            <div class="et-readonly-val">{{ task.task }}</div>
+          </div>
+          {% endif %}
+
+          <div class="et-fields">
+            <div class="et-field">
+              <label for="f-status">Status</label>
+              <select id="f-status" name="status" class="et-status-sel et-status-{{ task.status|lower|replace(' ','-') }}">
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="et-field">
+              <label for="f-update">7 PM Update</label>
+              <textarea id="f-update" name="update_7pm" rows="3"
+                placeholder="What did you accomplish? What's remaining?">{{ task.update_7pm or '' }}</textarea>
+              <span class="et-field-hint">Share your progress so the team stays aligned at the 7 PM review.</span>
+            </div>
+          </div>
+
+        </div>
       </div>
-      <div class="field">
-        <label for="f-update">7 PM Update</label>
-        <textarea id="f-update" name="update_7pm" rows="3" placeholder="What did you accomplish? What's remaining?">{{ task.update_7pm or '' }}</textarea>
+
+      <!-- Actions -->
+      <div class="et-actions">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Cancel
+        </a>
+        <button type="submit" class="btn btn-primary et-submit" id="et-submit-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Changes
+        </button>
       </div>
-      <hr class="divider">
-      <div class="btn-row">
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
-      </div>
+
     </form>
   </div>
+
+  <!-- Right: task summary card -->
+  <div class="et-sidebar">
+    <div class="et-info-card">
+      <div class="et-info-head">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Task Info</span>
+      </div>
+      <div class="et-info-body">
+        <div class="et-info-row">
+          <span class="et-info-label">Assignee</span>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div class="et-av">{{ task.team_member[0]|upper }}</div>
+            <span class="et-info-val">{{ task.team_member }}</span>
+          </div>
+        </div>
+        <div class="et-info-row">
+          <span class="et-info-label">Due Date</span>
+          <span class="et-info-val">{{ task.date }}</span>
+        </div>
+        {% if task.priority %}
+        <div class="et-info-row">
+          <span class="et-info-label">Priority</span>
+          <span class="et-pri-badge et-pri-{{ task.priority|lower }}">{{ task.priority }}</span>
+        </div>
+        {% endif %}
+        {% if task.est_hours %}
+        <div class="et-info-row">
+          <span class="et-info-label">Est. Hours</span>
+          <span class="et-info-val">{{ task.est_hours }} hr{% if task.est_hours|float != 1 %}s{% endif %}</span>
+        </div>
+        {% endif %}
+        <div class="et-info-row">
+          <span class="et-info-label">Task ID</span>
+          <span class="et-info-val" style="color:var(--text4);font-family:monospace">#{{ task.id }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+<style>
+.et-wrap {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
+  max-width: 900px;
+}
+.et-main { display: flex; flex-direction: column; gap: 16px; }
+
+.et-role-notice {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--warning-lt); border: 1px solid #fcd34d;
+  border-radius: var(--radius); padding: 11px 15px;
+  font-size: 12.5px; color: #92400e; line-height: 1.5;
+  animation: fadeUp .22s ease both;
+}
+
+.et-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: fadeUp .22s ease both;
+}
+.et-section:nth-child(2) { animation-delay: .05s; }
+.et-section:nth-child(3) { animation-delay: .08s; }
+
+.et-section-head {
+  padding: 15px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex; align-items: center; gap: 12px;
+}
+.et-section-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff; font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(37,99,235,.30);
+}
+.et-section-title { font-size: 13.5px; font-weight: 700; color: var(--text); letter-spacing: -.1px; }
+.et-section-sub { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
+.et-section-body { padding: 18px 20px 20px; }
+
+.et-fields { display: flex; flex-direction: column; gap: 16px; }
+.et-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.et-field  { display: flex; flex-direction: column; gap: 5px; }
+.et-field label {
+  font-size: 12px; font-weight: 700; color: var(--text2);
+  display: flex; align-items: center; gap: 4px;
+}
+.et-field label .req { color: var(--primary); }
+.et-field input,
+.et-field select,
+.et-field textarea {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color .15s, box-shadow .15s;
+  outline: none; width: 100%;
+}
+.et-field input:focus,
+.et-field select:focus,
+.et-field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+}
+.et-field textarea { resize: vertical; min-height: 72px; line-height: 1.65; }
+.et-field-hint { font-size: 11px; color: var(--text4); margin-top: 2px; line-height: 1.5; }
+
+.et-readonly-block {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.et-readonly-label { font-size: 10.5px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
+.et-readonly-val { font-size: 13.5px; font-weight: 500; color: var(--text); line-height: 1.55; }
+
+/* Status select colours */
+.et-status-sel {
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  transition: all .15s;
+}
+.et-status-done        { background:#f0fdf4; color:#15803d; border-color:#86efac !important; }
+.et-status-in-progress { background:#eff6ff; color:#1d4ed8; border-color:#93c5fd !important; }
+.et-status-blocked     { background:#fef2f2; color:#b91c1c; border-color:#fca5a5 !important; }
+.et-status-not-started { background:#f8fafc; color:#475569; border-color:#cbd5e1 !important; }
+.et-status-pending     { background:#fffbeb; color:#92400e; border-color:#fcd34d !important; }
+
+.et-actions {
+  display: flex; gap: 10px; align-items: center;
+  animation: fadeUp .22s .12s ease both;
+}
+.et-actions .btn { padding: 11px 22px; font-size: 13px; }
+.et-submit { flex: 1; justify-content: center; }
+
+/* Right sidebar */
+.et-sidebar { position: sticky; top: 80px; animation: fadeUp .28s .15s ease both; }
+.et-info-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.et-info-head {
+  padding: 12px 16px;
+  background: #0f172a;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .6px;
+}
+.et-info-body { padding: 4px 0; }
+.et-info-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.et-info-row:last-child { border-bottom: none; }
+.et-info-label { font-size: 11px; font-weight: 600; color: var(--text4); text-transform: uppercase; letter-spacing: .3px; }
+.et-info-val   { font-size: 13px; font-weight: 600; color: var(--text2); }
+.et-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.et-pri-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 5px;
+  font-size: 11.5px; font-weight: 700;
+  border: 1px solid transparent;
+}
+.et-pri-high   { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+.et-pri-medium { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+.et-pri-low    { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
+
+@media (max-width: 720px) {
+  .et-wrap { grid-template-columns: 1fr; }
+  .et-sidebar { position: static; }
+  .et-row { grid-template-columns: 1fr; }
+}
+</style>
+
+<script>
+/* Update status select colour on change */
+(function(){
+  var sel = document.getElementById('f-status');
+  if(!sel) return;
+  sel.addEventListener('change', function(){
+    ['done','in-progress','blocked','not-started','pending'].forEach(function(c){ sel.classList.remove('et-status-'+c); });
+    sel.classList.add('et-status-' + sel.value.toLowerCase().replace(/\s+/g,'-'));
+  });
+
+  /* Loading state on submit */
+  document.getElementById('et-form').addEventListener('submit', function(){
+    var btn = document.getElementById('et-submit-btn');
+    if(btn){ btn.disabled = true; btn.style.opacity = '.7'; }
+  });
+})();
+</script>
+
 {% endblock %}

@@ -669,23 +669,50 @@
     });
   });
 
-  /* Status select: show loading state on change */
+  /* Status select: AJAX update — no page reload */
+  var STATUS_CLS = {
+    'Done':        'd-sel-done',
+    'In progress': 'd-sel-in-progress',
+    'Blocked':     'd-sel-blocked',
+    'Not started': 'd-sel-not-started',
+    'Pending':     'd-sel-pending'
+  };
   document.querySelectorAll('.d-sel').forEach(function(sel){
     sel.addEventListener('change', function(){
+      var newStatus = sel.value;
+      var form      = sel.closest('form');
+      var url       = form.action;
       sel.classList.add('d-sel-loading');
-      sel.closest('form').submit();
+      var fd = new FormData();
+      fd.append('status', newStatus);
+      fetch(url, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: fd
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data.ok){
+          // Update select colour class
+          Object.values(STATUS_CLS).forEach(function(c){ sel.classList.remove(c); });
+          var sc = newStatus.toLowerCase().replace(/\s+/g,'-');
+          sel.classList.add('d-sel-' + sc);
+          // Update row style
+          var row = sel.closest('tr');
+          if(row){
+            row.classList.remove('row-done','row-blocked');
+            if(newStatus === 'Done' || newStatus === 'Completed') row.classList.add('row-done');
+            if(newStatus === 'Blocked') row.classList.add('row-blocked');
+            // Brief flash
+            row.style.transition = 'background .3s';
+            row.style.background = 'rgba(37,99,235,.06)';
+            setTimeout(function(){ row.style.background = ''; }, 600);
+          }
+        }
+      })
+      .catch(function(){ form.submit(); }) // fallback
+      .finally(function(){ sel.classList.remove('d-sel-loading'); });
     });
-  });
-
-  /* Smooth row highlight after status update (flash on page return) */
-  var flash = sessionStorage.getItem('statusUpdated');
-  if(flash){
-    sessionStorage.removeItem('statusUpdated');
-    var rows = document.querySelectorAll('.d-task-row');
-    rows.forEach(function(r){ r.style.transition = 'background .4s'; });
-  }
-  document.querySelectorAll('form[action*="quick-status"]').forEach(function(f){
-    f.addEventListener('submit', function(){ sessionStorage.setItem('statusUpdated','1'); });
   });
 })();
 </script>
