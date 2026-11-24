@@ -12,6 +12,10 @@ import db_backup
 app = Flask(__name__)
 # SECRET_KEY from environment variable on Render; fallback for local dev only
 app.secret_key = os.environ.get("SECRET_KEY", "local-dev-only-change-on-render")
+# Secure session cookies on production (HTTPS); SameSite=Lax blocks CSRF
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") != "development"
 
 _db_ready = False
 
@@ -25,6 +29,15 @@ def _ensure_db():
 @app.before_request
 def before_request():
     _ensure_db()
+
+@app.after_request
+def add_no_cache(response):
+    """Prevent Vercel/CDN from caching authenticated pages."""
+    if "username" in session or request.endpoint in ("login", "logout"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 # Register route modules
 import routes_tasks; routes_tasks.register(app)
@@ -94,12 +107,20 @@ def dashboard():
             if auth.is_manager() and t["team_member"] not in all_names:
                 all_names.append(t["team_member"])
 
+    history_tasks = db_backup.get_history_tasks(days=14)
+
+    # Add-task drawer: always show all team members so anyone can assign to anyone
+    drawer_members = [u["display_name"] or u["username"] for u in all_users
+                      if u.get("display_name") or u.get("username")]
+
     return render_template(
         "dashboard.html", grouped=grouped, members=members,
         manager_names=manager_names,
         today=today, tomorrow=tomorrow, current_view=view,
         is_manager=auth.is_manager(), can_edit_task=auth.can_edit_task,
         can_delete=auth.can_delete_task(), team_name=session.get("team_name", ""),
+        history_tasks=history_tasks, drawer_members=drawer_members,
+        priorities=["High", "Medium", "Low"],
     )
 
 
