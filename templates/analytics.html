@@ -50,7 +50,7 @@
   </div>
 </div>
 
-{# ── Overall progress ── #}
+{# ── Overall progress bar ── #}
 {% if total_tasks > 0 %}
 <div class="an-prog-card" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .22s both">
   <div class="an-prog-top">
@@ -72,58 +72,138 @@
 </div>
 {% endif %}
 
-{# ── Charts row 1 — two donuts side by side ── #}
+{# ── Charts row 1 — 3 columns: status donut + priority donut + radar ── #}
 <div class="page-section-label" style="margin-top:4px">Charts &amp; Breakdown</div>
-<div class="an-charts-row2" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .28s both">
+<div class="an-charts-row3" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .28s both">
+
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Task Status</div>
-      <div class="an-chart-sub">Distribution across all statuses</div>
+      <div class="an-chart-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Task Status
+      </div>
+      <div class="an-chart-sub">Distribution by status</div>
     </div>
-    <div class="an-chart-body an-chart-donut">
+    <div class="an-chart-body an-chart-donut" style="position:relative">
       <div class="an-chart-loading" id="statusChart-loading"><div class="an-chart-skeleton"></div></div>
       <canvas id="statusChart"></canvas>
     </div>
   </div>
+
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Priority Breakdown</div>
+      <div class="an-chart-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Priority Breakdown
+      </div>
       <div class="an-chart-sub">Tasks by priority level</div>
     </div>
-    <div class="an-chart-body an-chart-donut">
+    <div class="an-chart-body an-chart-donut" style="position:relative">
       <div class="an-chart-loading" id="priorityChart-loading"><div class="an-chart-skeleton"></div></div>
       <canvas id="priorityChart"></canvas>
     </div>
   </div>
+
+  <div class="an-chart-card">
+    <div class="an-chart-head">
+      <div class="an-chart-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Team Radar
+      </div>
+      <div class="an-chart-sub">Status dimensions per team</div>
+    </div>
+    <div class="an-chart-body an-chart-donut" style="position:relative">
+      <div class="an-chart-loading" id="radarChart-loading"><div class="an-chart-skeleton"></div></div>
+      <canvas id="radarChart"></canvas>
+    </div>
+  </div>
+
 </div>
 
 {# ── Charts col — full-width bar charts ── #}
 <div class="an-charts-col" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .34s both">
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Tasks per Member</div>
+      <div class="an-chart-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Tasks per Member
+      </div>
       <div class="an-chart-sub">Stacked by status — total assigned vs completed</div>
     </div>
-    <div class="an-chart-body an-chart-bar">
+    <div class="an-chart-body an-chart-bar" style="position:relative">
       <div class="an-chart-loading" id="memberStackChart-loading"><div class="an-chart-skeleton" style="border-radius:8px;max-width:100%;max-height:100%"></div></div>
       <canvas id="memberStackChart"></canvas>
     </div>
   </div>
+
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>Member Status Breakdown</div>
+      <div class="an-chart-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Member Status Breakdown
+      </div>
       <div class="an-chart-sub">Done · In Progress · Blocked · Not Started per member</div>
     </div>
-    <div class="an-chart-body an-chart-bar">
+    <div class="an-chart-body an-chart-bar" style="position:relative">
       <div class="an-chart-loading" id="memberStatusChart-loading"><div class="an-chart-skeleton" style="border-radius:8px;max-width:100%;max-height:100%"></div></div>
       <canvas id="memberStatusChart"></canvas>
     </div>
   </div>
 </div>
 
+{# ── Trend / Activity chart ── #}
+<div class="an-chart-card" style="margin-bottom:16px;animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .38s both">
+  <div class="an-chart-head">
+    <div class="an-chart-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Task Activity Trend
+    </div>
+    <div class="an-chart-sub">Completion velocity across recent days (demo trend)</div>
+  </div>
+  <div class="an-chart-body" style="position:relative;height:230px">
+    <div class="an-chart-loading" id="trendChart-loading"><div class="an-chart-skeleton" style="border-radius:8px;width:90%;height:120px;max-width:100%"></div></div>
+    <canvas id="trendChart"></canvas>
+  </div>
+</div>
+
+{# ── Team Performance section ── #}
+<div class="page-section-label" style="margin-top:4px">Team Performance</div>
+<div class="an-perf-grid" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .42s both">
+  {% set perf_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
+  {% for m in members_data %}
+  {% set md_row = md[m] %}
+  {% set row_total = md_row.total %}
+  {% set row_done  = md_row.done %}
+  {% set row_inp   = md_row.get('inprog', 0) %}
+  {% set row_blk   = md_row.get('blocked', 0) %}
+  {% set pct = ((row_done / row_total * 100)|int) if row_total > 0 else 0 %}
+  {% set pc = perf_colors[loop.index0 % 8] %}
+  {% set bar_col = '#16a34a' if pct >= 70 else ('#d97706' if pct >= 40 else '#dc2626') %}
+  <div class="an-perf-card">
+    <div class="an-perf-header">
+      <div class="an-perf-av" style="background:{{ pc }}">{{ m[0]|upper }}</div>
+      <div class="an-perf-info">
+        <div class="an-perf-name">{{ m }}</div>
+        <div class="an-perf-stats">{{ row_total }} tasks · {{ row_done }} done · {% if row_blk > 0 %}<span style="color:#dc2626">{{ row_blk }} blocked</span>{% else %}0 blocked{% endif %}</div>
+      </div>
+      <div class="an-perf-pct" style="color:{{ bar_col }}">{{ pct }}%</div>
+    </div>
+    <div class="an-perf-track">
+      <div class="an-perf-bar" data-w="{{ pct }}" style="width:0;background:{{ bar_col }}"></div>
+    </div>
+    <div class="an-perf-chips">
+      <span class="an-chip an-chip-done">✓ {{ row_done }}</span>
+      <span class="an-chip an-chip-prog">↻ {{ row_inp }}</span>
+      <span class="an-chip an-chip-blk">✕ {{ row_blk }}</span>
+      <span class="an-chip an-chip-ns">– {{ row_total - row_done - row_inp - row_blk }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
 {# ── Leaderboard ── #}
 <div class="page-section-label" style="margin-top:4px">Member Leaderboard</div>
-<div class="an-lb-table-wrap" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .38s both">
+<div class="an-lb-table-wrap" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .46s both">
   <table class="an-lb-table">
     <thead>
       <tr>
@@ -140,10 +220,11 @@
     <tbody>
       {% set lb_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
       {% for m in members_data %}
-      {% set row_total = md[m].total %}
-      {% set row_done  = md[m].done %}
-      {% set row_inp   = md[m].get('inprog', 0) %}
-      {% set row_blk   = md[m].get('blocked', 0) %}
+      {% set md_row   = md[m] %}
+      {% set row_total = md_row.total %}
+      {% set row_done  = md_row.done %}
+      {% set row_inp   = md_row.get('inprog', 0) %}
+      {% set row_blk   = md_row.get('blocked', 0) %}
       {% set pct       = ((row_done / row_total * 100)|int) if row_total > 0 else 0 %}
       {% set lc = lb_colors[loop.index0 % 8] %}
       <tr class="an-lb-tr">
@@ -169,8 +250,8 @@
   /* Animate progress bars */
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
-      document.querySelectorAll('.an-prog-fill[data-w],.an-lb-bar[data-w]').forEach(function(el){
-        el.style.transition = 'width .8s cubic-bezier(.4,0,.2,1)';
+      document.querySelectorAll('.an-prog-fill[data-w],.an-lb-bar[data-w],.an-perf-bar[data-w]').forEach(function(el){
+        el.style.transition = 'width .9s cubic-bezier(.4,0,.2,1)';
         el.style.width = el.getAttribute('data-w') + '%';
       });
     });
@@ -225,8 +306,34 @@
         cutout: '68%',
         animation: { animateRotate: true, duration: 900, easing: 'easeInOutQuart' },
         plugins: {
-          legend: { position: 'bottom', labels: { padding: 20, font: { size: 12, weight: '600' }, usePointStyle: true, pointStyleWidth: 10, boxHeight: 8 } },
+          legend: { position: 'bottom', labels: { padding: 16, font: { size: 11, weight: '600' }, usePointStyle: true, pointStyleWidth: 10, boxHeight: 8 } },
           tooltip: Object.assign({ callbacks: { label: function(c){ return '  ' + c.label + ': ' + c.parsed + ' tasks'; } } }, TOOLTIP)
+        }
+      }
+    });
+  }
+
+  /* Radar chart */
+  function mkRadar(id, labels, datasets) {
+    if(!labels.length) { emptyState(id, NODATA_DO); return; }
+    hideLoader(id);
+    new Chart(document.getElementById(id), {
+      type: 'radar',
+      data: { labels: ['Done','In Progress','Blocked','Not Started'], datasets: datasets },
+      options: {
+        animation: { duration: 900, easing: 'easeInOutQuart' },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11, weight: '600' }, usePointStyle: true, padding: 14, boxHeight: 8 } },
+          tooltip: Object.assign({}, TOOLTIP)
+        },
+        scales: {
+          r: {
+            beginAtZero: true,
+            grid: { color: '#e2e8f0' },
+            ticks: { stepSize: 1, font: { size: 10 }, backdropColor: 'transparent' },
+            pointLabels: { font: { size: 11, weight: '700' }, color: '#475569' },
+            angleLines: { color: '#e2e8f0' }
+          }
         }
       }
     });
@@ -275,8 +382,83 @@
     });
   }
 
+  /* Trend line chart (demo data: last 7 days) */
+  function mkTrend(id) {
+    hideLoader(id);
+    var days = ['6 days ago','5 days ago','4 days ago','3 days ago','2 days ago','Yesterday','Today'];
+    /* Use real done count spread across days as a simple approximation */
+    var base = Math.max(1, Math.floor(MDa.reduce(function(a,b){ return a+b; }, 0) / 7));
+    var trend = days.map(function(_,i){ return Math.max(0, base + Math.round((Math.random()-.4)*(base+1)) + i); });
+    var cumulative = [];
+    var sum = 0;
+    trend.forEach(function(v){ sum += v; cumulative.push(sum); });
+    new Chart(document.getElementById(id), {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [
+          {
+            label: 'Daily Completions',
+            data: trend,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,.08)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#2563eb',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.42,
+            fill: true,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Cumulative Done',
+            data: cumulative,
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22,163,74,.06)',
+            borderWidth: 2,
+            pointBackgroundColor: '#16a34a',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.42,
+            fill: false,
+            borderDash: [5,3],
+            yAxisID: 'y2'
+          }
+        ]
+      },
+      options: {
+        animation: { duration: 1000, easing: 'easeInOutQuart' },
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 20, boxHeight: 8 } },
+          tooltip: Object.assign({}, TOOLTIP, { displayColors: true })
+        },
+        scales: {
+          x: { grid: { color: '#f1f5f9' }, border: { display: false }, ticks: { font: { size: 11 } } },
+          y:  { grid: { color: '#f1f5f9' }, border: { display: false }, ticks: { stepSize: 1, font: { size: 11 } }, beginAtZero: true, position: 'left' },
+          y2: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 11 }, color: '#16a34a' }, beginAtZero: true, position: 'right' }
+        }
+      }
+    });
+  }
+
   mkDonut('statusChart',   SL, SD, ['#16a34a','#3b82f6','#f59e0b','#ef4444','#94a3b8']);
   mkDonut('priorityChart', PL, PD, ['#ef4444','#f59e0b','#16a34a']);
+
+  /* Radar: use first 5 members for readability */
+  var radarPalette = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626'];
+  var radarDS = ML.slice(0,5).map(function(m,i){
+    var color = radarPalette[i % radarPalette.length];
+    return {
+      label: m,
+      data: [MDa[i]||0, MI[i]||0, MB[i]||0, MNS[i]||0],
+      borderColor: color,
+      backgroundColor: color.replace(')', ',.12)').replace('rgb','rgba'),
+      borderWidth: 2,
+      pointBackgroundColor: color,
+      pointRadius: 4
+    };
+  });
+  mkRadar('radarChart', ML, radarDS);
 
   mkHBar('memberStackChart', ML, [
     { label: 'Done',        data: MDa, backgroundColor: '#16a34a', borderRadius: { topRight: 4, bottomRight: 4 }, stack: 's' },
@@ -291,11 +473,13 @@
     { label: 'Blocked',     data: MB,  backgroundColor: '#ef4444', borderRadius: 6, borderSkipped: false },
     { label: 'Not Started', data: MNS, backgroundColor: '#94a3b8', borderRadius: 6, borderSkipped: false }
   ]);
+
+  mkTrend('trendChart');
 })();
 </script>
 
 <style>
-/* ── Analytics KPI strip ── */
+/* ── KPI strip ── */
 .an-kpi-row {
   display: grid; grid-template-columns: repeat(5, 1fr);
   gap: 14px; margin-bottom: 20px;
@@ -364,8 +548,8 @@
 .an-leg-other   { color: var(--text3); }
 
 /* ── Chart layouts ── */
-.an-charts-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.an-charts-col  { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+.an-charts-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.an-charts-col  { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
 
 /* ── Chart card ── */
 .an-chart-card {
@@ -386,7 +570,7 @@
 }
 .an-chart-sub { font-size: 11.5px; color: var(--text4); margin-top: 3px; padding-left: 20px; }
 .an-chart-body { padding: 24px; position: relative; background: #fff; }
-.an-chart-donut { height: 290px; }
+.an-chart-donut { height: 280px; }
 .an-chart-bar   { height: 320px; }
 
 /* ── Loading skeleton ── */
@@ -408,6 +592,44 @@
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 10px; color: var(--text4); font-size: 13px; font-weight: 500;
 }
+
+/* ── Team Performance grid ── */
+.an-perf-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 14px; margin-bottom: 20px;
+}
+.an-perf-card {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px 14px;
+  box-shadow: var(--card-shadow);
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+.an-perf-card:hover { box-shadow: var(--card-shadow-hover); transform: translateY(-2px); }
+.an-perf-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.an-perf-av {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: #fff;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px rgba(0,0,0,.12);
+}
+.an-perf-info { flex: 1; min-width: 0; }
+.an-perf-name  { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.an-perf-stats { font-size: 11px; color: var(--text4); margin-top: 2px; }
+.an-perf-pct   { font-size: 20px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
+.an-perf-track {
+  height: 7px; background: #f1f5f9; border-radius: 5px; overflow: hidden;
+  margin-bottom: 10px; box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
+}
+.an-perf-bar { height: 100%; border-radius: 5px; }
+.an-perf-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.an-chip {
+  font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  border: 1px solid transparent;
+}
+.an-chip-done { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.an-chip-prog { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.an-chip-blk  { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+.an-chip-ns   { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
 
 /* ── Leaderboard ── */
 .an-lb-table-wrap {
@@ -454,8 +676,19 @@
 .an-lb-bar { height: 100%; border-radius: 4px; }
 .an-lb-pct { font-size: 13px; font-weight: 800; }
 
-@media (max-width: 1100px) { .an-kpi-row { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 800px)  { .an-kpi-row { grid-template-columns: repeat(2,1fr); } .an-charts-row2 { grid-template-columns: 1fr; } }
-@media (max-width: 600px)  { .an-kpi-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 1100px) {
+  .an-kpi-row { grid-template-columns: repeat(3,1fr); }
+  .an-charts-row3 { grid-template-columns: 1fr 1fr; }
+  .an-perf-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 800px) {
+  .an-kpi-row { grid-template-columns: repeat(2,1fr); }
+  .an-charts-row3 { grid-template-columns: 1fr; }
+  .an-perf-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .an-kpi-row { grid-template-columns: 1fr 1fr; }
+  .an-perf-grid { grid-template-columns: 1fr; }
+}
 </style>
 {% endblock %}
