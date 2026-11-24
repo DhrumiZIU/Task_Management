@@ -223,34 +223,79 @@ body {
 
 /* ── Priority picker ── */
 .at-pri-row {
-  display: flex; gap: 8px;
+  display: flex; gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg);
 }
 .at-pri-opt {
   flex: 1;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
-  display: flex; align-items: center; gap: 8px;
+  border: none;
+  border-right: 1.5px solid var(--border);
+  padding: 11px 14px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
   cursor: pointer;
-  transition: all .15s;
+  transition: background .12s, box-shadow .12s;
   user-select: none;
-  background: var(--surface);
+  background: transparent;
+  position: relative;
+  overflow: hidden;
 }
+.at-pri-opt:last-child { border-right: none; }
 .at-pri-opt input[type=radio] { display: none; }
-.at-pri-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.at-pri-opt[data-pri="High"]   .at-pri-dot { background: #dc2626; }
-.at-pri-opt[data-pri="Medium"] .at-pri-dot { background: #d97706; }
-.at-pri-opt[data-pri="Low"]    .at-pri-dot { background: #16a34a; }
-.at-pri-opt-label { font-size: 13px; font-weight: 600; color: var(--text2); }
-.at-pri-opt-desc  { font-size: 11px; color: var(--text4); margin-left: auto; }
+.at-pri-dot { display: none; }
 
-.at-pri-opt:hover { border-color: var(--border2); background: var(--bg); }
-.at-pri-opt.selected {
-  border-color: var(--primary);
-  background: var(--primary-lt);
-  box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+/* accent bar on top */
+.at-pri-opt::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 0;
+  background: transparent;
+  transition: background .15s;
 }
-.at-pri-opt.selected .at-pri-opt-label { color: var(--primary); }
+.at-pri-opt[data-pri="High"]::before   { background: transparent; }
+.at-pri-opt[data-pri="Medium"]::before { background: transparent; }
+.at-pri-opt[data-pri="Low"]::before    { background: transparent; }
+
+.at-pri-opt.selected::before { }
+.at-pri-opt[data-pri="High"].selected::before   { background: #dc2626; }
+.at-pri-opt[data-pri="Medium"].selected::before { background: #d97706; }
+.at-pri-opt[data-pri="Low"].selected::before    { background: #16a34a; }
+
+.at-pri-opt-label {
+  font-size: 12px; font-weight: 700; color: var(--text3);
+  letter-spacing: .1px; transition: color .12s;
+  display: flex; align-items: center; gap: 5px;
+}
+/* small square icon per priority */
+.at-pri-opt-label::before {
+  content: '';
+  display: inline-block; width: 6px; height: 6px;
+  border-radius: 2px; flex-shrink: 0;
+}
+.at-pri-opt[data-pri="High"]   .at-pri-opt-label::before { background: #dc2626; }
+.at-pri-opt[data-pri="Medium"] .at-pri-opt-label::before { background: #d97706; }
+.at-pri-opt[data-pri="Low"]    .at-pri-opt-label::before { background: #16a34a; }
+
+.at-pri-opt-desc { font-size: 10.5px; color: var(--text4); font-weight: 500; transition: color .12s; }
+
+.at-pri-opt:hover { background: #fff; }
+.at-pri-opt:hover .at-pri-opt-label { color: var(--text); }
+
+.at-pri-opt.selected { background: #fff; }
+.at-pri-opt[data-pri="High"].selected   { background: #fff5f5; }
+.at-pri-opt[data-pri="Medium"].selected { background: #fffbf0; }
+.at-pri-opt[data-pri="Low"].selected    { background: #f4fff7; }
+
+.at-pri-opt[data-pri="High"].selected   .at-pri-opt-label { color: #b91c1c; }
+.at-pri-opt[data-pri="Medium"].selected .at-pri-opt-label { color: #92400e; }
+.at-pri-opt[data-pri="Low"].selected    .at-pri-opt-label { color: #15803d; }
+
+.at-pri-opt[data-pri="High"].selected   .at-pri-opt-desc { color: #dc2626; }
+.at-pri-opt[data-pri="Medium"].selected .at-pri-opt-desc { color: #d97706; }
+.at-pri-opt[data-pri="Low"].selected    .at-pri-opt-desc { color: #16a34a; }
 
 /* ── Form fields ── */
 .at-fields { display: flex; flex-direction: column; gap: 16px; }
@@ -505,21 +550,18 @@ body {
             <div class="at-pri-row" id="pri-row">
               <label class="at-pri-opt" data-pri="High" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="High">
-                <span class="at-pri-dot"></span>
                 <span class="at-pri-opt-label">High</span>
-                <span class="at-pri-opt-desc">Urgent</span>
+                <span class="at-pri-opt-desc">Must ship today</span>
               </label>
               <label class="at-pri-opt selected" data-pri="Medium" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="Medium" checked>
-                <span class="at-pri-dot"></span>
                 <span class="at-pri-opt-label">Medium</span>
-                <span class="at-pri-opt-desc">Normal</span>
+                <span class="at-pri-opt-desc">Normal pace</span>
               </label>
               <label class="at-pri-opt" data-pri="Low" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="Low">
-                <span class="at-pri-dot"></span>
                 <span class="at-pri-opt-label">Low</span>
-                <span class="at-pri-opt-desc">When free</span>
+                <span class="at-pri-opt-desc">When bandwidth allows</span>
               </label>
             </div>
           </div>
