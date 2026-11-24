@@ -252,7 +252,7 @@ html { scroll-behavior: smooth; }
   padding: 2px 9px; border-radius: 20px; white-space: nowrap;
 }
 
-.page-body { padding: 24px 28px 48px; }
+.page-body { padding: 24px 28px 48px; flex: 1; }
 
 /* ── Card system ─────────────────────────────────────────────────────── */
 :root {
