@@ -195,9 +195,9 @@ body {
 }
 .at-person-card.selected {
   border-color: var(--primary);
-  background: linear-gradient(135deg, #f0f7ff, #fff);
-  box-shadow: 0 0 0 3px rgba(37,99,235,.12), var(--shadow-md);
-  transform: translateY(-2px);
+  background: #f8fbff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+  transform: translateY(-1px);
 }
 .at-person-card.selected::after {
   content: '✓';
@@ -223,38 +223,34 @@ body {
 
 /* ── Priority picker ── */
 .at-pri-row {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  margin-bottom: 0;
+  display: flex; gap: 8px;
 }
 .at-pri-opt {
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 10px;
-  text-align: center;
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
   cursor: pointer;
   transition: all .15s;
   user-select: none;
+  background: var(--surface);
 }
 .at-pri-opt input[type=radio] { display: none; }
-.at-pri-opt-icon { font-size: 18px; margin-bottom: 5px; display: block; }
-.at-pri-opt-label { font-size: 12px; font-weight: 700; display: block; }
-.at-pri-opt-desc  { font-size: 10.5px; color: var(--text4); margin-top: 2px; display: block; }
+.at-pri-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.at-pri-opt[data-pri="High"]   .at-pri-dot { background: #dc2626; }
+.at-pri-opt[data-pri="Medium"] .at-pri-dot { background: #d97706; }
+.at-pri-opt[data-pri="Low"]    .at-pri-dot { background: #16a34a; }
+.at-pri-opt-label { font-size: 13px; font-weight: 600; color: var(--text2); }
+.at-pri-opt-desc  { font-size: 11px; color: var(--text4); margin-left: auto; }
 
-.at-pri-opt[data-pri="High"]:hover,
-.at-pri-opt[data-pri="High"].selected {
-  border-color: #fca5a5; background: #fef2f2;
+.at-pri-opt:hover { border-color: var(--border2); background: var(--bg); }
+.at-pri-opt.selected {
+  border-color: var(--primary);
+  background: var(--primary-lt);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.08);
 }
-.at-pri-opt[data-pri="High"].selected .at-pri-opt-label { color: #b91c1c; }
-.at-pri-opt[data-pri="Medium"]:hover,
-.at-pri-opt[data-pri="Medium"].selected {
-  border-color: #fcd34d; background: #fffbeb;
-}
-.at-pri-opt[data-pri="Medium"].selected .at-pri-opt-label { color: #92400e; }
-.at-pri-opt[data-pri="Low"]:hover,
-.at-pri-opt[data-pri="Low"].selected {
-  border-color: #86efac; background: #f0fdf4;
-}
-.at-pri-opt[data-pri="Low"].selected .at-pri-opt-label { color: #15803d; }
+.at-pri-opt.selected .at-pri-opt-label { color: var(--primary); }
 
 /* ── Form fields ── */
 .at-fields { display: flex; flex-direction: column; gap: 16px; }
@@ -509,21 +505,21 @@ body {
             <div class="at-pri-row" id="pri-row">
               <label class="at-pri-opt" data-pri="High" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="High">
-                <span class="at-pri-opt-icon">🔴</span>
+                <span class="at-pri-dot"></span>
                 <span class="at-pri-opt-label">High</span>
-                <span class="at-pri-opt-desc">Urgent / critical</span>
+                <span class="at-pri-opt-desc">Urgent</span>
               </label>
               <label class="at-pri-opt selected" data-pri="Medium" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="Medium" checked>
-                <span class="at-pri-opt-icon">🟡</span>
+                <span class="at-pri-dot"></span>
                 <span class="at-pri-opt-label">Medium</span>
-                <span class="at-pri-opt-desc">Normal priority</span>
+                <span class="at-pri-opt-desc">Normal</span>
               </label>
               <label class="at-pri-opt" data-pri="Low" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="Low">
-                <span class="at-pri-opt-icon">🟢</span>
+                <span class="at-pri-dot"></span>
                 <span class="at-pri-opt-label">Low</span>
-                <span class="at-pri-opt-desc">When time permits</span>
+                <span class="at-pri-opt-desc">When free</span>
               </label>
             </div>
           </div>
@@ -652,7 +648,7 @@ function updatePreview() {
   var date   = document.getElementById('task_date').value || '';
   var hrs    = document.getElementById('est_hours').value || '';
   var pri    = document.getElementById('hidden-priority').value || 'Medium';
-  var priMap = {High:'🔴 High', Medium:'🟡 Medium', Low:'🟢 Low'};
+  var priMap = {High:'High', Medium:'Medium', Low:'Low'};
   var priCls = {High:'pv-pri-high', Medium:'pv-pri-medium', Low:'pv-pri-low'};
 
   if (!_member && !task) {
