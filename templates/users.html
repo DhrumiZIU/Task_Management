@@ -175,9 +175,9 @@
 }
 .um-form-icon {
   width: 34px; height: 34px; border-radius: 9px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: #2563eb;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,.30);
+  flex-shrink: 0;
 }
 .um-form-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
 .um-form-sub   { font-size: 11px; color: var(--text4); margin-top: 1px; }
@@ -198,13 +198,12 @@
 .um-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .um-add-btn {
   width: 100%; padding: 10px; border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: #2563eb;
   border: none; color: #fff; font-size: 13px; font-weight: 700;
   cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
-  font-family: inherit; transition: all .15s;
-  box-shadow: 0 2px 8px rgba(37,99,235,.28);
+  font-family: inherit; transition: background .15s;
 }
-.um-add-btn:hover { background: linear-gradient(135deg,#2563eb,#1d4ed8); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.35); }
+.um-add-btn:hover { background: #1d4ed8; }
 
 /* ── Team stats ──────────────────────────────────────── */
 .um-team-stats {
@@ -214,7 +213,7 @@
 }
 .um-stat { flex: 1; text-align: center; }
 .um-stat-num   { font-size: 22px; font-weight: 900; line-height: 1; }
-.um-stat-label { font-size: 10px; color: var(--text4); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-top: 4px; }
+.um-stat-label { font-size: 11px; color: var(--text4); font-weight: 500; margin-top: 4px; }
 .um-stat-sep   { width: 1px; background: var(--border); flex-shrink: 0; }
 
 /* ── Table card ──────────────────────────────────────── */

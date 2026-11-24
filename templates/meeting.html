@@ -14,9 +14,8 @@
 .meeting-header {
   display: flex; align-items: center; gap: 20px;
   padding: 24px 28px;
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+  background: #2563eb;
   border-radius: 16px; color: #fff; margin-bottom: 24px;
-  box-shadow: 0 6px 24px rgba(37,99,235,.25);
 }
 .meeting-header-icon {
   width: 56px; height: 56px; background: rgba(255,255,255,.18);
@@ -44,8 +43,8 @@
   background: var(--bg2);
 }
 .upload-panel-label {
-  font-size: 11px; font-weight: 800; color: var(--text3);
-  text-transform: uppercase; letter-spacing: .7px; margin-bottom: 2px;
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  margin-bottom: 2px;
 }
 .upload-panel-title {
   font-size: 16px; font-weight: 800; color: var(--text1);
@@ -77,7 +76,7 @@
   box-shadow: 0 3px 10px rgba(37,99,235,.30);
   transition: background .15s, transform .1s;
 }
-.btn-process:hover  { background: #1d4ed8; transform: translateY(-1px); }
+.btn-process:hover  { background: #1d4ed8; }
 .btn-process:active { transform: translateY(0); }
 .btn-process:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
@@ -102,7 +101,7 @@
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
-.result-label { font-size: 11px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; flex: 1; }
+.result-label { font-size: 11px; font-weight: 600; color: var(--text3); flex: 1; }
 .result-filename { font-size: 12px; font-weight: 600; color: var(--text2); }
 .result-by      { font-size: 11px; color: var(--text3); }
 .status-badge {
@@ -140,20 +139,13 @@
   position: relative;
   overflow: hidden;
 }
-.audio-player-wrap::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 20% 50%, rgba(37,99,235,.2) 0%, transparent 60%),
-              radial-gradient(ellipse at 80% 50%, rgba(124,58,237,.15) 0%, transparent 60%);
-  pointer-events: none;
-}
+.audio-player-wrap::before { display: none; }
 .audio-player-header {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 20px; position: relative;
 }
 .audio-player-title {
-  font-size: 11px; font-weight: 700; color: rgba(255,255,255,.5);
-  text-transform: uppercase; letter-spacing: .9px;
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,.6);
 }
 .audio-player-select {
   appearance: none; -webkit-appearance: none;
@@ -174,15 +166,13 @@
 }
 .audio-disc {
   width: 56px; height: 56px; border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: #2563eb;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; position: relative;
-  box-shadow: 0 0 24px rgba(37,99,235,.4);
-  transition: box-shadow .3s;
+  transition: opacity .3s;
 }
 .audio-disc.playing {
   animation: disc-spin 4s linear infinite;
-  box-shadow: 0 0 32px rgba(37,99,235,.6);
 }
 @keyframes disc-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .audio-disc svg { position: relative; z-index: 1; }
@@ -238,11 +228,10 @@
 .audio-ctrl:hover { background: rgba(255,255,255,.15); color: #fff; }
 .audio-ctrl-play {
   width: 50px; height: 50px;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: #2563eb;
   border: none; color: #fff;
-  box-shadow: 0 4px 16px rgba(37,99,235,.4);
 }
-.audio-ctrl-play:hover { transform: scale(1.06); box-shadow: 0 6px 20px rgba(37,99,235,.5); }
+.audio-ctrl-play:hover { background: #1d4ed8; }
 .audio-vol-row {
   display: flex; align-items: center; gap: 8px;
   margin-top: 14px; position: relative;
@@ -277,8 +266,7 @@
 .meetings-history-head {
   padding: 12px 20px;
   background: var(--bg2); border-bottom: 1px solid var(--border);
-  font-size: 11px; font-weight: 800; color: var(--text3);
-  text-transform: uppercase; letter-spacing: .7px;
+  font-size: 12px; font-weight: 600; color: var(--text3);
   display: flex; align-items: center; gap: 8px;
 }
 .mh-row {
@@ -291,7 +279,7 @@
 .mh-row.active { background: #eff6ff; border-left: 3px solid #2563eb; padding-left: 17px; }
 .mh-icon {
   width: 32px; height: 32px; border-radius: 8px;
-  background: linear-gradient(135deg, #2563eb22, #7c3aed22);
+  background: rgba(37,99,235,.13);
   display: flex; align-items: center; justify-content: center;
   color: #2563eb; flex-shrink: 0;
 }
@@ -319,9 +307,9 @@
   font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;
 }
 .already-tasks-wrap { padding: 0 20px 2px; border-bottom: 1px solid var(--border); }
-.already-tasks-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; padding: 10px 0 6px; display: block; }
+.already-tasks-label { font-size: 11px; font-weight: 600; color: var(--text3); padding: 10px 0 6px; display: block; }
 .add-tasks-wrap { padding: 16px 20px; }
-.add-tasks-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+.add-tasks-label { font-size: 11px; font-weight: 600; color: var(--text3); margin-bottom: 10px; }
 .task-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
 .task-num {
   width: 22px; height: 22px; border-radius: 50%; background: var(--bg2);
@@ -343,12 +331,12 @@
   display: flex; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap;
 }
 .btn-save {
-  padding: 11px 26px; font-size: 14px; font-weight: 800;
-  background: linear-gradient(135deg, #059669, #047857);
+  padding: 11px 26px; font-size: 14px; font-weight: 700;
+  background: #059669;
   color: #fff; border: none; border-radius: 10px; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(5,150,105,.25); transition: transform .15s;
+  transition: background .15s;
 }
-.btn-save:hover { transform: translateY(-1px); }
+.btn-save:hover { background: #047857; }
 
 .info-bar {
   display: flex; align-items: flex-start; gap: 14px;
@@ -583,8 +571,7 @@ document.getElementById('upload-form').addEventListener('submit', function() {
       var pct = (audio.currentTime / audio.duration) * 100;
       scrub.value = pct;
       curEl.textContent = fmt(audio.currentTime);
-      var fill = 'linear-gradient(to right,#3b82f6 '+pct+'%,rgba(255,255,255,.12) '+pct+'%)';
-      scrub.style.background = fill;
+      scrub.style.background = 'linear-gradient(to right,#2563eb '+pct+'%,rgba(255,255,255,.12) '+pct+'%)';
     });
     audio.addEventListener('loadedmetadata', function(){ durEl.textContent = fmt(audio.duration); });
     audio.addEventListener('ended', function(){
@@ -671,7 +658,7 @@ document.getElementById('upload-form').addEventListener('submit', function() {
 {% endif %}
 
 {# ── Section header ── #}
-<div style="font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin:4px 0 16px;display:flex;align-items:center;gap:8px">
+<div style="font-size:13px;font-weight:600;color:var(--text);margin:4px 0 16px;display:flex;align-items:center;gap:8px">
   {% if is_manager %}Plan Tomorrow's Tasks{% else %}Add Your Tasks for Tomorrow{% endif %}
   <span style="flex:1;height:1px;background:var(--border);display:block"></span>
 </div>
