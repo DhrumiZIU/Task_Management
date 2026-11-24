@@ -130,6 +130,178 @@
 }
 .error-box-fix strong { display: block; margin-bottom: 2px; }
 
+/* ── Audio Player ── */
+.audio-player-wrap {
+  background: #0f172a;
+  border-radius: 16px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.audio-player-wrap::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(37,99,235,.2) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 50%, rgba(124,58,237,.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+.audio-player-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; position: relative;
+}
+.audio-player-title {
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,.5);
+  text-transform: uppercase; letter-spacing: .9px;
+}
+.audio-player-select {
+  appearance: none; -webkit-appearance: none;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+  color: #fff; font-size: 12px; font-weight: 600;
+  padding: 6px 28px 6px 12px; border-radius: 8px; cursor: pointer;
+  outline: none; min-width: 160px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%23ffffff80'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  transition: background .15s;
+}
+.audio-player-select:focus, .audio-player-select:hover { background-color: rgba(255,255,255,.12); }
+.audio-player-select option { background: #1e293b; color: #fff; }
+
+.audio-now-playing {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 22px; position: relative;
+}
+.audio-disc {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; position: relative;
+  box-shadow: 0 0 24px rgba(37,99,235,.4);
+  transition: box-shadow .3s;
+}
+.audio-disc.playing {
+  animation: disc-spin 4s linear infinite;
+  box-shadow: 0 0 32px rgba(37,99,235,.6);
+}
+@keyframes disc-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.audio-disc svg { position: relative; z-index: 1; }
+.audio-disc::after {
+  content: ''; position: absolute; inset: 20%;
+  background: #0f172a; border-radius: 50%;
+}
+.audio-file-info { flex: 1; min-width: 0; }
+.audio-file-name {
+  font-size: 15px; font-weight: 700; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.audio-file-meta { font-size: 12px; color: rgba(255,255,255,.45); margin-top: 4px; }
+.audio-no-file { font-size: 13px; color: rgba(255,255,255,.35); font-style: italic; }
+
+/* Progress / scrubber */
+.audio-progress-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; position: relative;
+}
+.audio-time { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.45); min-width: 36px; font-variant-numeric: tabular-nums; }
+.audio-time.current { text-align: right; }
+.audio-scrubber {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px; outline: none; cursor: pointer;
+  background: rgba(255,255,255,.12);
+}
+.audio-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  border-radius: 50%; background: #fff;
+  box-shadow: 0 0 6px rgba(37,99,235,.6); cursor: pointer;
+  transition: transform .12s;
+}
+.audio-scrubber::-webkit-slider-thumb:hover { transform: scale(1.3); }
+.audio-scrubber::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%; background: #fff; border: none; cursor: pointer;
+}
+
+/* Controls */
+.audio-controls {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  position: relative;
+}
+.audio-ctrl {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.7); cursor: pointer;
+  transition: all .15s; outline: none;
+  font-size: 11px; font-weight: 700;
+}
+.audio-ctrl:hover { background: rgba(255,255,255,.15); color: #fff; }
+.audio-ctrl-play {
+  width: 50px; height: 50px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border: none; color: #fff;
+  box-shadow: 0 4px 16px rgba(37,99,235,.4);
+}
+.audio-ctrl-play:hover { transform: scale(1.06); box-shadow: 0 6px 20px rgba(37,99,235,.5); }
+.audio-vol-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 14px; position: relative;
+}
+.audio-vol-icon { color: rgba(255,255,255,.4); flex-shrink: 0; }
+.audio-vol-slider {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 3px; border-radius: 2px; outline: none; cursor: pointer;
+  background: rgba(255,255,255,.12);
+}
+.audio-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 11px; height: 11px;
+  border-radius: 50%; background: rgba(255,255,255,.7); cursor: pointer;
+}
+.audio-speed-btn {
+  font-size: 11px; font-weight: 700; padding: 4px 10px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.6); border-radius: 6px; cursor: pointer;
+  transition: all .12s; outline: none; white-space: nowrap;
+}
+.audio-speed-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+/* Meeting history list */
+.meetings-history {
+  margin-top: 24px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.meetings-history-head {
+  padding: 12px 20px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 800; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .7px;
+  display: flex; align-items: center; gap: 8px;
+}
+.mh-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s;
+}
+.mh-row:last-child { border-bottom: none; }
+.mh-row:hover { background: #f0f9ff; }
+.mh-row.active { background: #eff6ff; border-left: 3px solid #2563eb; padding-left: 17px; }
+.mh-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, #2563eb22, #7c3aed22);
+  display: flex; align-items: center; justify-content: center;
+  color: #2563eb; flex-shrink: 0;
+}
+.mh-name { font-size: 13px; font-weight: 600; color: var(--text1); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mh-meta { font-size: 11px; color: var(--text3); }
+.mh-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+.mh-badge.done { background: #dcfce7; color: #15803d; }
+.mh-badge.failed { background: #fee2e2; color: #b91c1c; }
+.mh-badge.processing { background: #fef9c3; color: #92400e; }
+.mh-no-audio { font-size: 11px; color: var(--text4); }
+
 /* ── Member sections ── */
 .member-block {
   background: var(--bg); border: 1.5px solid var(--border);
@@ -301,6 +473,190 @@ document.getElementById('upload-form').addEventListener('submit', function() {
 });
 </script>
 {% endif %}
+
+{# ── Audio Player ── #}
+{% if all_meetings %}
+<div class="audio-player-wrap" id="audio-player-wrap">
+  <div class="audio-player-header">
+    <div class="audio-player-title">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:middle;margin-right:5px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      Meeting Recordings
+    </div>
+    <select class="audio-player-select" id="meeting-select" onchange="loadMeeting(this.value)">
+      <option value="">Select a recording…</option>
+      {% for m in all_meetings %}
+      {% if m.status == 'done' %}
+      <option value="{{ m.id }}" {% if loop.first %}selected{% endif %}>
+        {{ m.filename }} — {{ m.uploaded_at[:10] if m.uploaded_at else '' }}
+      </option>
+      {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="audio-now-playing">
+    <div class="audio-disc" id="audio-disc">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="position:relative;z-index:2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    </div>
+    <div class="audio-file-info">
+      <div class="audio-file-name" id="audio-file-name">
+        {% set first_done = all_meetings | selectattr('status','equalto','done') | list | first %}
+        {% if first_done %}{{ first_done.filename }}{% else %}<span class="audio-no-file">No recordings yet</span>{% endif %}
+      </div>
+      <div class="audio-file-meta" id="audio-file-meta">
+        {% if first_done %}Uploaded by {{ first_done.uploaded_by }} · {{ first_done.uploaded_at[:10] if first_done.uploaded_at else '' }}{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <audio id="main-audio" preload="none"
+    {% set first_done = all_meetings | selectattr('status','equalto','done') | list | first %}
+    {% if first_done %}src="{{ url_for('api_meeting_audio', meeting_id=first_done.id) }}"{% endif %}>
+  </audio>
+
+  <div class="audio-progress-row">
+    <span class="audio-time current" id="audio-current">0:00</span>
+    <input type="range" class="audio-scrubber" id="audio-scrubber" min="0" max="100" value="0" step="0.1">
+    <span class="audio-time" id="audio-duration">0:00</span>
+  </div>
+
+  <div class="audio-controls">
+    <button class="audio-ctrl" onclick="skip(-15)" title="Back 15s">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5.26"/><text x="7" y="17" font-size="6" fill="currentColor" stroke="none" font-weight="700">15</text></svg>
+    </button>
+    <button class="audio-ctrl audio-ctrl-play" id="play-btn" onclick="togglePlay()">
+      <svg id="play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    </button>
+    <button class="audio-ctrl" onclick="skip(30)" title="Forward 30s">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-5.26"/><text x="7" y="17" font-size="6" fill="currentColor" stroke="none" font-weight="700">30</text></svg>
+    </button>
+  </div>
+
+  <div class="audio-vol-row">
+    <svg class="audio-vol-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+    <input type="range" class="audio-vol-slider" id="vol-slider" min="0" max="1" step="0.05" value="1" oninput="setVol(this.value)">
+    <button class="audio-speed-btn" id="speed-btn" onclick="cycleSpeed()">1x</button>
+  </div>
+</div>
+
+{# Meeting history list #}
+{% if all_meetings|length > 1 %}
+<div class="meetings-history">
+  <div class="meetings-history-head">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Recording History ({{ all_meetings|length }})
+  </div>
+  {% for m in all_meetings %}
+  <div class="mh-row{% if loop.first %} active{% endif %}" id="mh-row-{{ m.id }}" onclick="loadMeetingFromRow({{ m.id }}, '{{ m.filename }}', '{{ m.uploaded_by }}', '{{ m.uploaded_at[:10] if m.uploaded_at else '' }}', {{ 'true' if m.status == 'done' else 'false' }})">
+    <div class="mh-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+    </div>
+    <div>
+      <div class="mh-name">{{ m.filename }}</div>
+      <div class="mh-meta">{{ m.uploaded_by }} · {{ m.uploaded_at[:10] if m.uploaded_at else '' }}</div>
+    </div>
+    <span class="mh-badge {{ m.status }}">{{ m.status|capitalize }}</span>
+    {% if m.status != 'done' %}<span class="mh-no-audio">No audio</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endif %}
+
+<script>
+(function(){
+  var audio  = document.getElementById('main-audio');
+  var disc   = document.getElementById('audio-disc');
+  var scrub  = document.getElementById('audio-scrubber');
+  var curEl  = document.getElementById('audio-current');
+  var durEl  = document.getElementById('audio-duration');
+  var playIcon = document.getElementById('play-icon');
+  var SPEEDS = [1, 1.25, 1.5, 1.75, 2];
+  var speedIdx = 0;
+
+  function fmt(s){ var m=Math.floor(s/60); return m+':'+(Math.floor(s%60)+'').padStart(2,'0'); }
+
+  if(audio){
+    audio.addEventListener('timeupdate', function(){
+      if(!audio.duration) return;
+      var pct = (audio.currentTime / audio.duration) * 100;
+      scrub.value = pct;
+      curEl.textContent = fmt(audio.currentTime);
+      var fill = 'linear-gradient(to right,#3b82f6 '+pct+'%,rgba(255,255,255,.12) '+pct+'%)';
+      scrub.style.background = fill;
+    });
+    audio.addEventListener('loadedmetadata', function(){ durEl.textContent = fmt(audio.duration); });
+    audio.addEventListener('ended', function(){
+      disc.classList.remove('playing');
+      playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    });
+    if(audio.src) audio.load();
+  }
+
+  window.togglePlay = function(){
+    if(!audio || !audio.src){ return; }
+    if(audio.paused){
+      audio.play();
+      disc.classList.add('playing');
+      playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
+    } else {
+      audio.pause();
+      disc.classList.remove('playing');
+      playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    }
+  };
+
+  window.skip = function(s){
+    if(audio){ audio.currentTime = Math.max(0, Math.min(audio.duration||0, audio.currentTime+s)); }
+  };
+
+  window.setVol = function(v){ if(audio){ audio.volume = v; } };
+
+  window.cycleSpeed = function(){
+    speedIdx = (speedIdx+1)%SPEEDS.length;
+    if(audio){ audio.playbackRate = SPEEDS[speedIdx]; }
+    document.getElementById('speed-btn').textContent = SPEEDS[speedIdx]+'x';
+  };
+
+  if(scrub){
+    scrub.addEventListener('input', function(){
+      if(audio && audio.duration){ audio.currentTime = (this.value/100)*audio.duration; }
+    });
+  }
+
+  var meetingData = {};
+  {% for m in all_meetings %}
+  {% if m.status == 'done' %}
+  meetingData[{{ m.id }}] = { name: "{{ m.filename }}", by: "{{ m.uploaded_by }}", date: "{{ m.uploaded_at[:10] if m.uploaded_at else '' }}" };
+  {% endif %}
+  {% endfor %}
+
+  window.loadMeeting = function(id){
+    if(!id) return;
+    var d = meetingData[id];
+    if(!d) return;
+    if(audio){
+      audio.pause();
+      audio.src = '/api/meeting-audio/' + id;
+      audio.load();
+      disc.classList.remove('playing');
+      playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+      scrub.value = 0; curEl.textContent='0:00'; durEl.textContent='0:00';
+      document.getElementById('audio-file-name').textContent = d.name;
+      document.getElementById('audio-file-meta').textContent = 'Uploaded by '+d.by+' · '+d.date;
+    }
+    document.querySelectorAll('.mh-row').forEach(function(r){ r.classList.remove('active'); });
+    var row = document.getElementById('mh-row-'+id);
+    if(row) row.classList.add('active');
+  };
+
+  window.loadMeetingFromRow = function(id, name, by, date, hasAudio){
+    if(!hasAudio){ return; }
+    document.getElementById('meeting-select').value = id;
+    loadMeeting(id);
+  };
+})();
+</script>
 
 {# ── Summary banner for members ── #}
 {% if not is_manager and latest_meeting and latest_meeting.status == 'done' and latest_meeting.overall_summary %}

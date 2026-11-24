@@ -165,8 +165,15 @@ def _init_db_postgres():
             filename TEXT,
             transcript TEXT,
             overall_summary TEXT,
-            status TEXT DEFAULT 'processing'
+            status TEXT DEFAULT 'processing',
+            audio_data BYTEA,
+            audio_mime TEXT
         )""")
+        try:
+            cur.execute("ALTER TABLE meetings ADD COLUMN IF NOT EXISTS audio_data BYTEA")
+            cur.execute("ALTER TABLE meetings ADD COLUMN IF NOT EXISTS audio_mime TEXT")
+        except Exception:
+            pass
 
 
 def _row_to_dict(cur, row) -> dict:
@@ -440,6 +447,33 @@ def seed_users():
 
 
 # ── Meeting Upload ────────────────────────────────────────────────────────────
+
+def save_meeting_audio(meeting_id: int, audio_bytes: bytes, mime_type: str):
+    with get_connection() as con:
+        cur = con.cursor()
+        import psycopg2
+        cur.execute(
+            "UPDATE meetings SET audio_data=%s, audio_mime=%s WHERE id=%s",
+            (psycopg2.Binary(audio_bytes), mime_type, meeting_id))
+
+
+def get_meeting_audio(meeting_id: int) -> dict | None:
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("SELECT audio_data, audio_mime, filename FROM meetings WHERE id=%s", (meeting_id,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        return {"audio_data": bytes(row[0]) if row[0] else None, "audio_mime": row[1], "filename": row[2]}
+
+
+def get_all_meetings() -> list:
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute("SELECT id, uploaded_by, uploaded_at, filename, overall_summary, status FROM meetings ORDER BY id DESC LIMIT 20")
+        cols = [d[0] for d in cur.description]
+        return [dict(zip(cols, r)) for r in cur.fetchall()]
+
 
 def save_meeting(uploaded_by: str, filename: str) -> int:
     init_db()

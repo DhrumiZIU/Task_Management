@@ -167,10 +167,11 @@ def register(app):
             return redirect(url_for("meeting"))
         grouped_next = {m: db_backup.get_tasks_db(filter_date=tomorrow, member=m) for m in members}
         latest_meeting = db_backup.get_latest_meeting()
+        all_meetings = db_backup.get_all_meetings()
         return render_template("meeting.html", members=members, tomorrow=tomorrow,
                                grouped_next=grouped_next, priorities=PRIORITY_OPTIONS,
                                is_manager=auth.is_manager(), team_name=team_name,
-                               latest_meeting=latest_meeting)
+                               latest_meeting=latest_meeting, all_meetings=all_meetings)
 
     @app.route("/upload-meeting", methods=["POST"])
     @auth.manager_required
@@ -192,6 +193,14 @@ def register(app):
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}")
         file.save(tmp.name)
         tmp.close()
+
+        # Store audio bytes in DB for playback (audio/video files only)
+        if mime_type.startswith(("audio/", "video/")):
+            try:
+                with open(tmp.name, "rb") as f:
+                    db_backup.save_meeting_audio(meeting_id, f.read(), mime_type)
+            except Exception:
+                pass
 
         try:
             # Get member names from DB
@@ -231,6 +240,19 @@ def register(app):
             os.unlink(tmp.name)
 
         return redirect(url_for("meeting"))
+
+    @app.route("/api/meeting-audio/<int:meeting_id>")
+    @auth.login_required
+    def api_meeting_audio(meeting_id):
+        from flask import Response
+        row = db_backup.get_meeting_audio(meeting_id)
+        if not row or not row["audio_data"]:
+            return Response("Not found", status=404)
+        mime = row["audio_mime"] or "audio/mpeg"
+        return Response(row["audio_data"], mimetype=mime, headers={
+            "Content-Disposition": f'inline; filename="{row["filename"]}"',
+            "Accept-Ranges": "bytes",
+        })
 
     @app.route("/api/meeting-summary")
     @auth.login_required
