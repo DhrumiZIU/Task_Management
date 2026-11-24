@@ -10,24 +10,27 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg:       #f0f2f5;
-  --surface:  #ffffff;
-  --primary:  #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-lt: #eff6ff;
-  --text:     #0f172a;
-  --text2:    #334155;
-  --text3:    #64748b;
-  --text4:    #94a3b8;
-  --border:   #e2e8f0;
-  --border2:  #cbd5e1;
-  --success:  #16a34a;
-  --warning:  #d97706;
-  --danger:   #dc2626;
-  --radius:   10px;
-  --shadow:   0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
-  --shadow-md:0 4px 16px rgba(0,0,0,.10);
-  --shadow-lg:0 12px 40px rgba(0,0,0,.14);
+  --bg:        #f0f2f5;
+  --surface:   #ffffff;
+  --primary:   #2563eb;
+  --primary-d: #1d4ed8;
+  --primary-lt:#eff6ff;
+  --text:      #0f172a;
+  --text2:     #334155;
+  --text3:     #64748b;
+  --text4:     #94a3b8;
+  --border:    #e2e8f0;
+  --border2:   #cbd5e1;
+  --success:   #16a34a;
+  --warning:   #d97706;
+  --danger:    #dc2626;
+  --purple:    #7c3aed;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow:    0 2px 8px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.05);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.14);
 }
 body {
   font-family: 'Inter', -apple-system, sans-serif;
@@ -39,279 +42,280 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Top bar ── */
+/* ══ Top bar ════════════════════════════════════════════════════════════ */
 .at-topbar {
-  height: 58px;
+  height: 56px;
   background: #0d1526;
   display: flex;
   align-items: center;
-  padding: 0 28px;
-  gap: 14px;
+  padding: 0 24px;
+  gap: 12px;
   position: sticky;
   top: 0;
-  z-index: 10;
-  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+  z-index: 50;
+  box-shadow: 0 2px 16px rgba(0,0,0,.24);
 }
 .at-brand {
-  display: flex; align-items: center; gap: 10px;
-  font-weight: 800; font-size: 15px; color: #f1f5f9;
-  text-decoration: none;
+  display: flex; align-items: center; gap: 9px;
+  font-weight: 800; font-size: 14.5px; color: #f1f5f9;
+  text-decoration: none; letter-spacing: -.2px;
 }
 .at-brand-icon {
-  width: 32px; height: 32px; border-radius: 9px;
+  width: 30px; height: 30px; border-radius: 8px;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(37,99,235,.4);
+  box-shadow: 0 3px 10px rgba(37,99,235,.4);
 }
 .at-breadcrumb {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 7px;
   font-size: 12px; color: #64748b;
 }
 .at-breadcrumb a { color: #94a3b8; text-decoration: none; transition: color .15s; }
 .at-breadcrumb a:hover { color: #e2e8f0; }
-.at-breadcrumb-sep { color: #334155; }
-.at-breadcrumb-cur { color: #e2e8f0; font-weight: 600; }
+.at-breadcrumb-sep { color: #2d3f5e; font-size: 14px; }
+.at-breadcrumb-cur { color: #cbd5e1; font-weight: 600; }
 .at-sep { flex: 1; }
 .at-back {
   display: flex; align-items: center; gap: 6px;
-  font-size: 12.5px; font-weight: 600; color: #64748b;
-  text-decoration: none; padding: 7px 14px; border-radius: 7px;
+  font-size: 12px; font-weight: 600; color: #64748b;
+  text-decoration: none; padding: 6px 13px; border-radius: 7px;
   border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04);
   transition: all .15s;
 }
-.at-back:hover { background: rgba(255,255,255,.08); color: #e2e8f0; }
+.at-back:hover { background: rgba(255,255,255,.10); color: #e2e8f0; }
 
-/* ── Steps bar ── */
-.at-steps {
-  background: #fff;
+/* ══ Progress bar ════════════════════════════════════════════════════════ */
+.at-progress-bar {
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 0 32px;
+}
+.at-steps-inner {
   display: flex;
   align-items: center;
-  gap: 0;
-  overflow-x: auto;
+  max-width: 1080px;
+  margin: 0 auto;
 }
 .at-step {
-  display: flex; align-items: center; gap: 10px;
-  padding: 14px 20px 14px 0;
+  display: flex; align-items: center; gap: 9px;
+  padding: 14px 0;
   font-size: 12.5px; font-weight: 600;
   color: var(--text4);
-  position: relative;
   white-space: nowrap;
+  transition: color .2s;
 }
-.at-step + .at-step::before {
-  content: '';
-  width: 24px; height: 1px;
+.at-step-connector {
+  flex: 1; height: 1px;
   background: var(--border);
-  margin-right: 20px;
-  flex-shrink: 0;
+  margin: 0 16px;
+  min-width: 32px;
+  transition: background .3s;
 }
-.at-step.active { color: var(--primary); }
-.at-step.done { color: var(--success); }
+.at-step-connector.done { background: var(--success); }
 .at-step-num {
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 24px; height: 24px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 800;
   background: var(--border); color: var(--text4);
   flex-shrink: 0;
-  transition: all .2s;
+  transition: all .25s;
 }
-.at-step.active .at-step-num { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,.35); }
-.at-step.done .at-step-num   { background: var(--success); color: #fff; }
+.at-step.active { color: var(--primary); }
+.at-step.active .at-step-num { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,.4); }
+.at-step.done   { color: var(--success); }
+.at-step.done   .at-step-num { background: var(--success); color: #fff; }
+.at-step-label { display: none; }
+@media (min-width: 560px) { .at-step-label { display: inline; } }
 
-/* ── Layout ── */
+/* ══ Body grid ══════════════════════════════════════════════════════════ */
 .at-body {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 0;
-  max-width: 1100px;
+  grid-template-columns: 1fr 348px;
+  gap: 20px;
+  max-width: 1080px;
   margin: 0 auto;
   width: 100%;
-  padding: 32px 24px 60px;
-  gap: 24px;
+  padding: 28px 24px 60px;
   align-items: start;
 }
 
-/* ── Left: form ── */
-.at-form-panel {
-  display: flex; flex-direction: column; gap: 20px;
-}
+/* ══ Left form panel ════════════════════════════════════════════════════ */
+.at-form-panel { display: flex; flex-direction: column; gap: 16px; }
 
 .at-section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow);
-  animation: cardIn .22s ease both;
-}
-@keyframes cardIn {
-  from { opacity:0; transform:translateY(12px); }
-  to   { opacity:1; transform:translateY(0); }
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s;
+  animation: sectionIn .22s ease both;
 }
 .at-section:nth-child(2) { animation-delay: .05s; }
-.at-section:nth-child(3) { animation-delay: .1s; }
+.at-section:nth-child(3) { animation-delay: .10s; }
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 .at-section-head {
-  padding: 18px 24px 16px;
+  padding: 16px 22px 15px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(to right, #f8faff, #fff);
-  display: flex; align-items: center; gap: 12px;
+  background: #fafbfd;
+  display: flex; align-items: center; gap: 13px;
 }
 .at-section-num {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--primary); color: #fff;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 800; flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(37,99,235,.30);
 }
-.at-section-title { font-size: 14px; font-weight: 700; color: var(--text); }
-.at-section-subtitle { font-size: 12px; color: var(--text3); margin-top: 1px; }
-.at-section-body { padding: 20px 24px 24px; }
+.at-section-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -.1px; }
+.at-section-subtitle { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
+.at-section-body { padding: 20px 22px 22px; }
 
-/* ── Person grid ── */
+/* ══ Member grid ════════════════════════════════════════════════════════ */
 .at-person-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 10px;
 }
 .at-person-card {
-  border: 2px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: 12px;
-  padding: 16px 10px 14px;
+  padding: 18px 10px 14px;
   text-align: center;
   cursor: pointer;
-  transition: all .15s;
-  background: var(--surface);
+  transition: border-color .15s, box-shadow .15s, transform .15s, background .15s;
+  background: #fafbfd;
   position: relative;
   user-select: none;
+  outline: none;
 }
 .at-person-card:hover {
   border-color: #93c5fd;
-  box-shadow: 0 0 0 3px #eff6ff;
+  box-shadow: 0 0 0 3px #eff6ff, 0 2px 8px rgba(37,99,235,.08);
   transform: translateY(-2px);
+  background: #fff;
+}
+.at-person-card:focus-visible {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.20);
 }
 .at-person-card.selected {
   border-color: var(--primary);
-  background: #f8fbff;
-  box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+  background: #f0f7ff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12), 0 2px 8px rgba(37,99,235,.10);
   transform: translateY(-1px);
 }
-.at-person-card.selected::after {
-  content: '✓';
-  position: absolute; top: 7px; right: 9px;
-  font-size: 11px; font-weight: 900; color: #fff;
+.at-check-badge {
+  position: absolute; top: 8px; right: 8px;
   width: 18px; height: 18px; border-radius: 50%;
   background: var(--primary);
-  display: flex; align-items: center; justify-content: center;
-  line-height: 18px;
+  display: none; align-items: center; justify-content: center;
 }
+.at-check-badge svg { display: block; }
+.at-person-card.selected .at-check-badge { display: flex; }
 .at-pav {
-  width: 46px; height: 46px; border-radius: 50%;
+  width: 50px; height: 50px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 800; color: #fff;
+  font-size: 19px; font-weight: 800; color: #fff;
   margin: 0 auto 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+  letter-spacing: -.5px;
   position: relative;
 }
 .at-pname { font-size: 12.5px; font-weight: 700; color: var(--text); line-height: 1.3; word-break: break-word; }
-.at-prole  { font-size: 11px; color: var(--text4); margin-top: 3px; }
-.at-err { font-size: 12px; color: #dc2626; margin-top: 10px; display: none; align-items: center; gap: 5px; }
+.at-prole  { font-size: 10.5px; color: var(--text4); margin-top: 3px; font-weight: 500; }
+
+.at-err {
+  font-size: 12px; color: var(--danger);
+  margin-top: 12px; display: none; align-items: center; gap: 6px;
+  padding: 9px 12px; border-radius: 8px;
+  background: #fff5f5; border: 1px solid #fecaca;
+}
 .at-err.show { display: flex; }
 
-/* ── Priority picker ── */
+/* ══ Priority picker ════════════════════════════════════════════════════ */
 .at-pri-row {
-  display: flex; gap: 0;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--bg);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 .at-pri-opt {
-  flex: 1;
-  border: none;
-  border-right: 1.5px solid var(--border);
-  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
   display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
   cursor: pointer;
-  transition: background .12s, box-shadow .12s;
-  user-select: none;
-  background: transparent;
+  transition: all .15s;
+  background: #fafbfd;
   position: relative;
   overflow: hidden;
+  user-select: none;
 }
-.at-pri-opt:last-child { border-right: none; }
 .at-pri-opt input[type=radio] { display: none; }
-.at-pri-dot { display: none; }
-
-/* accent bar on top */
-.at-pri-opt::before {
+.at-pri-opt::after {
   content: '';
   position: absolute; top: 0; left: 0; right: 0;
   height: 3px;
-  border-radius: 0;
-  background: transparent;
+  border-radius: 10px 10px 0 0;
+  transition: opacity .15s;
+  opacity: 0;
+}
+.at-pri-opt[data-pri="High"]::after   { background: var(--danger); }
+.at-pri-opt[data-pri="Medium"]::after { background: var(--warning); }
+.at-pri-opt[data-pri="Low"]::after    { background: var(--success); }
+.at-pri-opt.selected::after { opacity: 1; }
+
+.at-pri-icon {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
   transition: background .15s;
 }
-.at-pri-opt[data-pri="High"]::before   { background: transparent; }
-.at-pri-opt[data-pri="Medium"]::before { background: transparent; }
-.at-pri-opt[data-pri="Low"]::before    { background: transparent; }
-
-.at-pri-opt.selected::before { }
-.at-pri-opt[data-pri="High"].selected::before   { background: #dc2626; }
-.at-pri-opt[data-pri="Medium"].selected::before { background: #d97706; }
-.at-pri-opt[data-pri="Low"].selected::before    { background: #16a34a; }
+.at-pri-opt[data-pri="High"]   .at-pri-icon { background: #fef2f2; color: var(--danger); }
+.at-pri-opt[data-pri="Medium"] .at-pri-icon { background: #fffbeb; color: var(--warning); }
+.at-pri-opt[data-pri="Low"]    .at-pri-icon { background: #f0fdf4; color: var(--success); }
 
 .at-pri-opt-label {
-  font-size: 12px; font-weight: 700; color: var(--text3);
-  letter-spacing: .1px; transition: color .12s;
-  display: flex; align-items: center; gap: 5px;
+  font-size: 12.5px; font-weight: 700; color: var(--text2);
+  transition: color .12s;
 }
-/* small square icon per priority */
-.at-pri-opt-label::before {
-  content: '';
-  display: inline-block; width: 6px; height: 6px;
-  border-radius: 2px; flex-shrink: 0;
-}
-.at-pri-opt[data-pri="High"]   .at-pri-opt-label::before { background: #dc2626; }
-.at-pri-opt[data-pri="Medium"] .at-pri-opt-label::before { background: #d97706; }
-.at-pri-opt[data-pri="Low"]    .at-pri-opt-label::before { background: #16a34a; }
-
 .at-pri-opt-desc { font-size: 10.5px; color: var(--text4); font-weight: 500; transition: color .12s; }
 
-.at-pri-opt:hover { background: #fff; }
-.at-pri-opt:hover .at-pri-opt-label { color: var(--text); }
+.at-pri-opt:hover { border-color: var(--border2); background: #fff; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 
-.at-pri-opt.selected { background: #fff; }
-.at-pri-opt[data-pri="High"].selected   { background: #fff5f5; }
-.at-pri-opt[data-pri="Medium"].selected { background: #fffbf0; }
-.at-pri-opt[data-pri="Low"].selected    { background: #f4fff7; }
+.at-pri-opt[data-pri="High"].selected   { border-color: #fca5a5; background: #fff5f5; }
+.at-pri-opt[data-pri="Medium"].selected { border-color: #fcd34d; background: #fffbf0; }
+.at-pri-opt[data-pri="Low"].selected    { border-color: #86efac; background: #f4fff7; }
 
 .at-pri-opt[data-pri="High"].selected   .at-pri-opt-label { color: #b91c1c; }
 .at-pri-opt[data-pri="Medium"].selected .at-pri-opt-label { color: #92400e; }
 .at-pri-opt[data-pri="Low"].selected    .at-pri-opt-label { color: #15803d; }
-
 .at-pri-opt[data-pri="High"].selected   .at-pri-opt-desc { color: #dc2626; }
 .at-pri-opt[data-pri="Medium"].selected .at-pri-opt-desc { color: #d97706; }
 .at-pri-opt[data-pri="Low"].selected    .at-pri-opt-desc { color: #16a34a; }
 
-/* ── Form fields ── */
-.at-fields { display: flex; flex-direction: column; gap: 16px; }
-.at-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.at-field { display: flex; flex-direction: column; gap: 6px; }
+/* ══ Form fields ════════════════════════════════════════════════════════ */
+.at-fields { display: flex; flex-direction: column; gap: 18px; }
+.at-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.at-field  { display: flex; flex-direction: column; gap: 6px; }
 .at-field label {
   font-size: 12px; font-weight: 700; color: var(--text2);
-  display: flex; align-items: center; gap: 5px;
+  display: flex; align-items: center; gap: 5px; letter-spacing: .05px;
 }
 .at-field label .req { color: var(--primary); }
 .at-field input,
 .at-field select,
 .at-field textarea {
   border: 1.5px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 9px;
+  padding: 10px 13px;
   font-size: 13.5px;
   font-family: inherit;
   color: var(--text);
@@ -320,138 +324,229 @@ body {
   outline: none;
   width: 100%;
 }
+.at-field input:hover:not(:focus),
+.at-field select:hover:not(:focus),
+.at-field textarea:hover:not(:focus) { border-color: var(--border2); }
 .at-field input:focus,
 .at-field select:focus,
 .at-field textarea:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37,99,235,.10);
 }
-.at-field input:hover:not(:focus),
-.at-field select:hover:not(:focus),
-.at-field textarea:hover:not(:focus) {
-  border-color: var(--border2);
-}
-.at-field textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
-.at-field-hint { font-size: 11px; color: var(--text4); margin-top: 3px; }
+.at-field textarea { resize: vertical; min-height: 82px; line-height: 1.65; }
+.at-field-hint { font-size: 11px; color: var(--text4); margin-top: 3px; line-height: 1.5; }
 
-/* ── Actions ── */
+/* char counter */
+.at-field-row { display: flex; align-items: center; justify-content: space-between; }
+.at-char-count { font-size: 11px; color: var(--text4); font-variant-numeric: tabular-nums; }
+.at-char-count.warn { color: var(--warning); }
+
+/* ══ Section 3 actions ══════════════════════════════════════════════════ */
+.at-review-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 18px;
+}
+.at-review-item {
+  background: #f8fafc; border: 1px solid var(--border);
+  border-radius: 9px; padding: 10px 14px;
+}
+.at-review-label { font-size: 10.5px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+.at-review-val   { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.at-review-val.empty { color: var(--text4); font-style: italic; font-weight: 400; }
+
 .at-actions {
-  display: flex; gap: 12px; align-items: center;
-  padding-top: 4px;
+  display: flex; gap: 10px; align-items: center;
 }
 .btn-cancel {
-  padding: 11px 22px; border-radius: 9px;
+  padding: 11px 20px; border-radius: 9px;
   border: 1.5px solid var(--border); background: var(--surface);
-  font-size: 13.5px; font-weight: 600; color: var(--text3);
+  font-size: 13px; font-weight: 600; color: var(--text3);
   cursor: pointer; text-decoration: none;
   display: inline-flex; align-items: center; gap: 7px;
   transition: all .15s; font-family: inherit;
 }
 .btn-cancel:hover { background: var(--bg); color: var(--text); border-color: var(--border2); }
 .btn-submit {
-  padding: 11px 28px; border-radius: 9px;
+  flex: 1;
+  padding: 12px 24px; border-radius: 9px;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   border: none;
   font-size: 13.5px; font-weight: 700; color: #fff;
-  cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   transition: all .15s;
-  box-shadow: 0 2px 8px rgba(37,99,235,.35), 0 1px 2px rgba(37,99,235,.2);
+  box-shadow: 0 2px 10px rgba(37,99,235,.35), 0 1px 2px rgba(37,99,235,.2);
   font-family: inherit; letter-spacing: -.1px;
 }
 .btn-submit:hover {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(37,99,235,.4);
+  box-shadow: 0 6px 18px rgba(37,99,235,.4);
 }
 .btn-submit:active { transform: translateY(0); }
 
-/* ── Right: preview panel ── */
-.at-preview-panel {
+/* ══ Right panel ════════════════════════════════════════════════════════ */
+.at-right-panel {
   position: sticky;
-  top: 100px;
-  display: flex; flex-direction: column; gap: 16px;
-  animation: cardIn .3s ease both;
+  top: 80px;
+  display: flex; flex-direction: column; gap: 14px;
+  animation: sectionIn .28s ease both;
   animation-delay: .15s;
 }
 
+/* Preview card */
 .at-preview-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
 }
 .at-preview-head {
-  padding: 14px 20px;
+  padding: 13px 18px;
   background: linear-gradient(135deg, #0f172a, #1e293b);
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 9px;
 }
-.at-preview-head-title { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .6px; }
-.at-preview-body { padding: 18px 20px; }
+.at-preview-head-title {
+  font-size: 11px; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .7px;
+}
+.at-preview-live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #22c55e;
+  margin-left: auto;
+  box-shadow: 0 0 0 2px rgba(34,197,94,.2);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(34,197,94,.2); }
+  50%       { box-shadow: 0 0 0 5px rgba(34,197,94,.0); }
+}
+.at-preview-body { padding: 18px 18px; }
 
 .pv-empty {
   text-align: center;
-  padding: 24px 0;
+  padding: 28px 10px 22px;
 }
-.pv-empty-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+.pv-empty-icon { font-size: 36px; margin-bottom: 12px; display: block; filter: grayscale(.4); }
 .pv-empty-text { font-size: 12.5px; color: var(--text4); line-height: 1.6; }
 
+/* filled preview */
 .pv-assignee {
   display: flex; align-items: center; gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid #f1f5f9;
 }
 .pv-av {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 42px; height: 42px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 16px; font-weight: 800; color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
 }
 .pv-av-name { font-size: 14px; font-weight: 700; color: var(--text); }
 .pv-av-role { font-size: 11px; color: var(--text4); margin-top: 1px; }
 
-.pv-row {
-  display: flex; align-items: flex-start;
-  gap: 10px; margin-bottom: 10px;
-  font-size: 12.5px;
+.pv-task-block {
+  background: #f8fafc; border: 1px solid var(--border);
+  border-radius: 9px; padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 13px; font-weight: 600; color: var(--text);
+  line-height: 1.55;
+  min-height: 48px;
 }
-.pv-row-label {
-  font-size: 10.5px; font-weight: 700; color: var(--text4);
-  text-transform: uppercase; letter-spacing: .4px;
-  min-width: 70px; padding-top: 1px;
+.pv-task-block.empty { color: var(--text4); font-weight: 400; font-style: italic; }
+
+.pv-meta-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 12px;
 }
-.pv-row-val { color: var(--text2); font-weight: 500; line-height: 1.5; flex: 1; }
-.pv-task-text { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.5; }
+.pv-meta-item {
+  background: #f8fafc; border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+}
+.pv-meta-label { font-size: 10px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+.pv-meta-val   { font-size: 12.5px; font-weight: 600; color: var(--text2); }
 
 .pv-pri {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 2px 10px; border-radius: 5px; font-size: 11px; font-weight: 700;
+  padding: 2px 9px; border-radius: 5px; font-size: 11px; font-weight: 700;
   border: 1px solid transparent;
 }
 .pv-pri-high   { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
 .pv-pri-medium { background:#fffbeb; color:#92400e; border-color:#fde68a; }
 .pv-pri-low    { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
 
+.pv-done-block {
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-radius: 9px; padding: 10px 13px;
+  font-size: 12px; color: #15803d; line-height: 1.55;
+}
+.pv-done-label { font-size: 10px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+
+/* Tips card */
 .at-tips-card {
   background: linear-gradient(135deg, #f0f7ff, #f8faff);
   border: 1px solid #bfdbfe;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 16px 18px;
 }
-.at-tips-title { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
-.at-tips-list { display: flex; flex-direction: column; gap: 7px; }
-.at-tip { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text3); line-height: 1.5; }
-.at-tip-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 5px; }
+.at-tips-title {
+  font-size: 11px; font-weight: 700; color: var(--primary);
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: 11px;
+  display: flex; align-items: center; gap: 7px;
+}
+.at-tips-list { display: flex; flex-direction: column; gap: 8px; }
+.at-tip {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: 12px; color: var(--text3); line-height: 1.5;
+}
+.at-tip-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--primary); flex-shrink: 0; margin-top: 5px;
+}
 
-@media (max-width: 860px) {
-  .at-body { grid-template-columns: 1fr; padding: 20px 16px 40px; }
-  .at-preview-panel { position: static; }
-  .at-steps { padding: 0 16px; }
+/* Quick stats bar above preview */
+.at-quick-stats {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex; gap: 0;
+}
+.at-qs-item {
+  flex: 1; text-align: center;
+  padding: 0 10px;
+}
+.at-qs-item + .at-qs-item { border-left: 1px solid var(--border); }
+.at-qs-val   { font-size: 20px; font-weight: 800; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
+.at-qs-label { font-size: 10.5px; color: var(--text4); margin-top: 4px; font-weight: 500; }
+
+/* ══ Responsive ══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .at-body { grid-template-columns: 1fr; padding: 20px 16px 48px; gap: 16px; }
+  .at-right-panel { position: static; }
+  .at-progress-bar { padding: 0 16px; }
   .at-topbar { padding: 0 16px; }
-  .at-row { grid-template-columns: 1fr; }
-  .at-person-grid { grid-template-columns: repeat(3, 1fr); }
+  .at-quick-stats { display: none; }
+}
+@media (max-width: 640px) {
+  .at-row { grid-template-columns: 1fr; gap: 14px; }
+  .at-person-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .at-pav { width: 42px; height: 42px; font-size: 16px; }
+  .at-pri-row { grid-template-columns: 1fr; gap: 7px; }
+  .at-pri-opt { flex-direction: row; align-items: center; gap: 10px; padding: 10px 12px; }
+  .at-pri-icon { margin-bottom: 0; flex-shrink: 0; }
+  .at-review-grid { grid-template-columns: 1fr; }
+  .at-section-body { padding: 16px; }
+  .at-section-head { padding: 13px 16px 12px; }
+}
+@media (max-width: 420px) {
+  .at-person-grid { grid-template-columns: repeat(2, 1fr); }
+  .at-pname { font-size: 11.5px; }
+  .at-brand-icon { width: 26px; height: 26px; }
 }
 </style>
 </head>
@@ -461,7 +556,7 @@ body {
 <header class="at-topbar">
   <a class="at-brand" href="{{ url_for('dashboard') }}">
     <div class="at-brand-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
     </div>
     ZIU AI
   </a>
@@ -478,29 +573,33 @@ body {
   </a>
 </header>
 
-<!-- Steps bar -->
-<div class="at-steps">
-  <div class="at-step active" id="step1-indicator">
-    <div class="at-step-num">1</div>
-    Choose Member
-  </div>
-  <div class="at-step" id="step2-indicator">
-    <div class="at-step-num">2</div>
-    Task Details
-  </div>
-  <div class="at-step" id="step3-indicator">
-    <div class="at-step-num">3</div>
-    Review & Assign
+<!-- Step progress -->
+<div class="at-progress-bar">
+  <div class="at-steps-inner">
+    <div class="at-step active" id="step1-ind">
+      <div class="at-step-num">1</div>
+      <span class="at-step-label">Choose Member</span>
+    </div>
+    <div class="at-step-connector" id="conn1"></div>
+    <div class="at-step" id="step2-ind">
+      <div class="at-step-num">2</div>
+      <span class="at-step-label">Task Details</span>
+    </div>
+    <div class="at-step-connector" id="conn2"></div>
+    <div class="at-step" id="step3-ind">
+      <div class="at-step-num">3</div>
+      <span class="at-step-label">Review & Assign</span>
+    </div>
   </div>
 </div>
 
-<!-- Main layout -->
+<!-- Body -->
 <div class="at-body">
 
   <!-- Left: form -->
-  <form method="post" action="{{ url_for('add_task') }}" id="at-form" class="at-form-panel">
+  <form method="post" action="{{ url_for('add_task') }}" id="at-form" class="at-form-panel" novalidate>
     <input type="hidden" name="team_member" id="hidden-member">
-    <input type="hidden" name="priority" id="hidden-priority" value="Medium">
+    <input type="hidden" name="priority"    id="hidden-priority" value="Medium">
 
     <!-- Section 1: Assign To -->
     <div class="at-section">
@@ -519,6 +618,9 @@ body {
           <div class="at-person-card" data-name="{{ m }}" data-color="{{ ac }}"
                onclick="selectPerson(this)" tabindex="0"
                onkeydown="if(event.key==='Enter'||event.key===' ')selectPerson(this)">
+            <div class="at-check-badge">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.2"><polyline points="2 6 5 9 10 3"/></svg>
+            </div>
             <div class="at-pav" style="background:{{ ac }}">{{ m[0]|upper }}</div>
             <div class="at-pname">{{ m }}</div>
             <div class="at-prole">Team Member</div>
@@ -544,75 +646,108 @@ body {
       <div class="at-section-body">
         <div class="at-fields">
 
-          <!-- Priority visual picker -->
+          <!-- Priority -->
           <div class="at-field">
             <label>Priority <span class="req">*</span></label>
             <div class="at-pri-row" id="pri-row">
               <label class="at-pri-opt" data-pri="High" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="High">
+                <div class="at-pri-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                </div>
                 <span class="at-pri-opt-label">High</span>
                 <span class="at-pri-opt-desc">Must ship today</span>
               </label>
               <label class="at-pri-opt selected" data-pri="Medium" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="Medium" checked>
+                <div class="at-pri-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </div>
                 <span class="at-pri-opt-label">Medium</span>
                 <span class="at-pri-opt-desc">Normal pace</span>
               </label>
               <label class="at-pri-opt" data-pri="Low" onclick="selectPriority(this)">
                 <input type="radio" name="_priority_visual" value="Low">
+                <div class="at-pri-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
                 <span class="at-pri-opt-label">Low</span>
                 <span class="at-pri-opt-desc">When bandwidth allows</span>
               </label>
             </div>
           </div>
 
-          <!-- Date + Est hours row -->
+          <!-- Date + hours -->
           <div class="at-row">
             <div class="at-field">
-              <label for="task_date">Date <span class="req">*</span></label>
+              <label for="task_date">Due Date <span class="req">*</span></label>
               <input type="date" name="task_date" id="task_date"
-                     value="{{ today }}" required oninput="updatePreview()">
+                     value="{{ today }}" required oninput="updatePreview(); updateReview()">
             </div>
             <div class="at-field">
               <label for="est_hours">Estimated Hours</label>
               <input type="number" name="est_hours" id="est_hours"
                      min="0.25" max="24" step="0.25" placeholder="e.g. 2.5"
-                     oninput="updatePreview()">
+                     oninput="updatePreview(); updateReview()">
             </div>
           </div>
 
           <!-- Task description -->
           <div class="at-field">
-            <label for="task">Task Description <span class="req">*</span></label>
-            <textarea name="task" id="task" rows="3"
+            <div class="at-field-row">
+              <label for="task">Task Description <span class="req">*</span></label>
+              <span class="at-char-count" id="task-count">0 / 300</span>
+            </div>
+            <textarea name="task" id="task" rows="3" maxlength="300"
                       placeholder="What needs to be done? Be specific and actionable."
-                      required oninput="updatePreview()"></textarea>
-            <span class="at-field-hint">Be clear and specific — good tasks start with a verb: "Build", "Review", "Send", "Fix".</span>
+                      required oninput="updatePreview(); updateReview(); countChars('task','task-count',300)"></textarea>
+            <span class="at-field-hint">Start with a verb — "Build", "Review", "Send", "Fix", "Deploy".</span>
           </div>
 
-          <!-- Done looks like -->
+          <!-- Definition of done -->
           <div class="at-field">
-            <label for="done_looks_like">Definition of Done</label>
-            <textarea name="done_looks_like" id="done_looks_like" rows="2"
-                      placeholder="How will you know this is complete? What's the measurable outcome?"
-                      oninput="updatePreview()"></textarea>
-            <span class="at-field-hint">Optional but highly recommended — it removes ambiguity.</span>
+            <div class="at-field-row">
+              <label for="done_looks_like">Definition of Done</label>
+              <span class="at-char-count" id="dll-count">0 / 200</span>
+            </div>
+            <textarea name="done_looks_like" id="done_looks_like" rows="2" maxlength="200"
+                      placeholder="How will you know this task is complete? What's the measurable outcome?"
+                      oninput="updatePreview(); updateReview(); countChars('done_looks_like','dll-count',200)"></textarea>
+            <span class="at-field-hint">Optional but highly recommended — it removes ambiguity and scope creep.</span>
           </div>
 
         </div>
       </div>
     </div>
 
-    <!-- Section 3: Submit -->
+    <!-- Section 3: Review & Assign -->
     <div class="at-section">
       <div class="at-section-head">
         <div class="at-section-num">3</div>
         <div>
           <div class="at-section-title">Review & Assign</div>
-          <div class="at-section-subtitle">Double-check the preview on the right, then assign</div>
+          <div class="at-section-subtitle">Confirm the details below, then assign the task</div>
         </div>
       </div>
       <div class="at-section-body">
+        <div class="at-review-grid" id="review-grid">
+          <div class="at-review-item">
+            <div class="at-review-label">Assignee</div>
+            <div class="at-review-val empty" id="rv-member">Not selected</div>
+          </div>
+          <div class="at-review-item">
+            <div class="at-review-label">Priority</div>
+            <div class="at-review-val" id="rv-priority">Medium</div>
+          </div>
+          <div class="at-review-item">
+            <div class="at-review-label">Due Date</div>
+            <div class="at-review-val empty" id="rv-date">—</div>
+          </div>
+          <div class="at-review-item">
+            <div class="at-review-label">Est. Hours</div>
+            <div class="at-review-val empty" id="rv-hours">—</div>
+          </div>
+        </div>
         <div class="at-actions">
           <a class="btn-cancel" href="{{ url_for('dashboard') }}">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -628,22 +763,41 @@ body {
 
   </form>
 
-  <!-- Right: preview panel -->
-  <div class="at-preview-panel">
+  <!-- Right: preview -->
+  <div class="at-right-panel">
 
+    <!-- Quick stats -->
+    <div class="at-quick-stats">
+      <div class="at-qs-item">
+        <div class="at-qs-val" id="qs-members">{{ members|length }}</div>
+        <div class="at-qs-label">Team Members</div>
+      </div>
+      <div class="at-qs-item">
+        <div class="at-qs-val" id="qs-pri">M</div>
+        <div class="at-qs-label">Priority</div>
+      </div>
+      <div class="at-qs-item">
+        <div class="at-qs-val" id="qs-hrs">—</div>
+        <div class="at-qs-label">Hrs Est.</div>
+      </div>
+    </div>
+
+    <!-- Live preview card -->
     <div class="at-preview-card">
       <div class="at-preview-head">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <div class="at-preview-head-title">Task Preview</div>
+        <div class="at-preview-live-dot"></div>
       </div>
       <div class="at-preview-body" id="preview-body">
         <div class="pv-empty">
           <span class="pv-empty-icon">📋</span>
-          <div class="pv-empty-text">Select a member and fill in task details to see a live preview here.</div>
+          <div class="pv-empty-text">Select a member and fill in the task details to see a live preview here.</div>
         </div>
       </div>
     </div>
 
+    <!-- Tips -->
     <div class="at-tips-card">
       <div class="at-tips-title">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -671,71 +825,101 @@ function selectPerson(card) {
   _memberColor = card.dataset.color;
   document.getElementById('hidden-member').value = _member;
   document.getElementById('member-err').classList.remove('show');
-  document.getElementById('step1-indicator').classList.add('done');
-  document.getElementById('step1-indicator').classList.remove('active');
-  document.getElementById('step2-indicator').classList.add('active');
+  // step progress
+  document.getElementById('step1-ind').classList.remove('active');
+  document.getElementById('step1-ind').classList.add('done');
+  document.getElementById('conn1').classList.add('done');
+  document.getElementById('step2-ind').classList.add('active');
   updatePreview();
+  updateReview();
 }
 
 function selectPriority(label) {
   document.querySelectorAll('.at-pri-opt').forEach(l => l.classList.remove('selected'));
   label.classList.add('selected');
-  document.getElementById('hidden-priority').value = label.dataset.pri;
+  var pri = label.dataset.pri;
+  document.getElementById('hidden-priority').value = pri;
+  // quick stat
+  document.getElementById('qs-pri').textContent = pri[0];
   updatePreview();
+  updateReview();
+}
+
+function countChars(fieldId, countId, max) {
+  var len = document.getElementById(fieldId).value.length;
+  var el  = document.getElementById(countId);
+  el.textContent = len + ' / ' + max;
+  el.classList.toggle('warn', len > max * 0.85);
+}
+
+function updateReview() {
+  var rv  = function(id, val, empty) {
+    var el = document.getElementById(id);
+    if (val) { el.textContent = val; el.classList.remove('empty'); }
+    else      { el.textContent = empty; el.classList.add('empty'); }
+  };
+  rv('rv-member',   _member || '', 'Not selected');
+  rv('rv-priority', document.getElementById('hidden-priority').value, 'Medium');
+  var dateVal = document.getElementById('task_date').value;
+  rv('rv-date', dateVal ? formatDate(dateVal) : '', '—');
+  var hrs = document.getElementById('est_hours').value;
+  rv('rv-hours', hrs ? hrs + ' hr' + (parseFloat(hrs) === 1 ? '' : 's') : '', '—');
+  document.getElementById('qs-hrs').textContent = hrs || '—';
+  // step 3 indicator
+  if (_member) {
+    document.getElementById('step2-ind').classList.remove('active');
+    document.getElementById('step2-ind').classList.add('done');
+    document.getElementById('conn2').classList.add('done');
+    document.getElementById('step3-ind').classList.add('active');
+  }
 }
 
 function updatePreview() {
-  var task   = (document.getElementById('task').value || '').trim();
-  var dll    = (document.getElementById('done_looks_like').value || '').trim();
-  var date   = document.getElementById('task_date').value || '';
-  var hrs    = document.getElementById('est_hours').value || '';
-  var pri    = document.getElementById('hidden-priority').value || 'Medium';
-  var priMap = {High:'High', Medium:'Medium', Low:'Low'};
-  var priCls = {High:'pv-pri-high', Medium:'pv-pri-medium', Low:'pv-pri-low'};
+  var task = (document.getElementById('task').value || '').trim();
+  var dll  = (document.getElementById('done_looks_like').value || '').trim();
+  var date = document.getElementById('task_date').value || '';
+  var hrs  = document.getElementById('est_hours').value || '';
+  var pri  = document.getElementById('hidden-priority').value || 'Medium';
+  var priCls = { High:'pv-pri-high', Medium:'pv-pri-medium', Low:'pv-pri-low' };
 
   if (!_member && !task) {
-    document.getElementById('preview-body').innerHTML = '<div class="pv-empty"><span class="pv-empty-icon">📋</span><div class="pv-empty-text">Select a member and fill in task details to see a live preview here.</div></div>';
+    document.getElementById('preview-body').innerHTML =
+      '<div class="pv-empty"><span class="pv-empty-icon">📋</span><div class="pv-empty-text">Select a member and fill in the task details to see a live preview here.</div></div>';
     return;
   }
 
   var html = '';
+
   if (_member) {
     html += '<div class="pv-assignee">';
     html += '<div class="pv-av" style="background:'+_memberColor+'">'+_member[0].toUpperCase()+'</div>';
-    html += '<div><div class="pv-av-name">'+_member+'</div><div class="pv-av-role">Team Member</div></div>';
+    html += '<div><div class="pv-av-name">'+esc(_member)+'</div><div class="pv-av-role">Team Member</div></div>';
     html += '</div>';
   }
-  if (task) {
-    html += '<div class="pv-task-text" style="margin-bottom:14px">'+escHtml(task)+'</div>';
-  }
-  if (date || pri) {
-    html += '<div class="pv-row"><span class="pv-row-label">Priority</span><span class="pv-row-val"><span class="pv-pri '+priCls[pri]+'">'+priMap[pri]+'</span></span></div>';
-  }
-  if (date) {
-    html += '<div class="pv-row"><span class="pv-row-label">Date</span><span class="pv-row-val">'+formatDate(date)+'</span></div>';
-  }
-  if (hrs) {
-    html += '<div class="pv-row"><span class="pv-row-label">Est.</span><span class="pv-row-val">'+hrs+' hour'+(parseFloat(hrs)===1?'':'s')+'</span></div>';
-  }
+
+  html += '<div class="pv-task-block'+(task?'':' empty')+'">'+(task ? esc(task) : 'Task description will appear here…')+'</div>';
+
+  html += '<div class="pv-meta-grid">';
+  html += '<div class="pv-meta-item"><div class="pv-meta-label">Priority</div><div class="pv-meta-val"><span class="pv-pri '+priCls[pri]+'">'+pri+'</span></div></div>';
+  html += '<div class="pv-meta-item"><div class="pv-meta-label">Due Date</div><div class="pv-meta-val">'+(date ? formatDate(date) : '<span style="color:#94a3b8;font-weight:400">Not set</span>')+'</div></div>';
+  html += '<div class="pv-meta-item"><div class="pv-meta-label">Est. Hours</div><div class="pv-meta-val">'+(hrs ? hrs+' hr'+(parseFloat(hrs)===1?'':'s') : '<span style="color:#94a3b8;font-weight:400">—</span>')+'</div></div>';
+  html += '<div class="pv-meta-item"><div class="pv-meta-label">Status</div><div class="pv-meta-val" style="color:#64748b;font-size:11.5px">Not Started</div></div>';
+  html += '</div>';
+
   if (dll) {
-    html += '<div class="pv-row" style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9"><span class="pv-row-label">Done When</span><span class="pv-row-val">'+escHtml(dll)+'</span></div>';
+    html += '<div class="pv-done-block"><div class="pv-done-label">✓ Done When</div>'+esc(dll)+'</div>';
   }
 
-  if (!_member && !task) {
-    document.getElementById('preview-body').innerHTML = '<div class="pv-empty"><span class="pv-empty-icon">📋</span><div class="pv-empty-text">Fill in the form to see a preview.</div></div>';
-  } else {
-    document.getElementById('preview-body').innerHTML = html;
-    document.getElementById('step3-indicator').classList.add('active');
-  }
+  document.getElementById('preview-body').innerHTML = html;
 }
 
-function escHtml(s) {
+function esc(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 function formatDate(d) {
   if (!d) return '';
-  var dt = new Date(d+'T12:00:00');
-  return dt.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+  var dt = new Date(d + 'T12:00:00');
+  return dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
 }
 
 document.getElementById('at-form').addEventListener('submit', function(e) {
@@ -746,8 +930,10 @@ document.getElementById('at-form').addEventListener('submit', function(e) {
   }
 });
 
-// Init medium selected
+// Init
 document.querySelector('.at-pri-opt[data-pri="Medium"]').classList.add('selected');
+// Pre-fill date review
+updateReview();
 </script>
 </body>
 </html>
