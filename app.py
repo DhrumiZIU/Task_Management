@@ -12,10 +12,9 @@ import db_backup
 app = Flask(__name__)
 # SECRET_KEY from environment variable on Render; fallback for local dev only
 app.secret_key = os.environ.get("SECRET_KEY", "local-dev-only-change-on-render")
-# Secure session cookies on production (HTTPS); SameSite=Lax blocks CSRF
+# Secure session cookies: HttpOnly prevents JS access, Lax blocks CSRF
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") != "development"
 
 _db_ready = False
 
@@ -110,7 +109,7 @@ def dashboard():
     history_tasks = db_backup.get_history_tasks(days=14)
 
     # Add-task drawer: always show all team members so anyone can assign to anyone
-    drawer_members = [u["display_name"] or u["username"] for u in all_users
+    drawer_members = [u.get("display_name") or u.get("username") for u in all_users
                       if u.get("display_name") or u.get("username")]
 
     return render_template(
