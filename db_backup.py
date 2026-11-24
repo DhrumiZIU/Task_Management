@@ -49,11 +49,17 @@ def _onedrive_push():
         pass
 
 
+_db_initialized = False
+
 def init_db():
+    global _db_initialized
+    if _db_initialized:
+        return
     if _USE_SQLITE:
         _init_db_sqlite()
     else:
         _init_db_postgres()
+    _db_initialized = True
 
 
 def _init_db_sqlite():

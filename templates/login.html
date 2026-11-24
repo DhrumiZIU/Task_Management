@@ -181,6 +181,8 @@
   }
   @keyframes fadeIn { to { opacity: 1; } }
 
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; }
   }
@@ -263,13 +265,21 @@
                  placeholder="Enter your password"
                  autocomplete="current-password" required>
         </div>
-        <button type="submit" class="btn-signin">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/>
-            <line x1="15" y1="12" x2="3" y2="12"/>
-          </svg>
-          Sign In
+        <button type="submit" class="btn-signin" id="signin-btn">
+          <span id="signin-idle" style="display:flex;align-items:center;gap:8px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Sign In
+          </span>
+          <span id="signin-loading" style="display:none;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .7s linear infinite">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            Signing in…
+          </span>
         </button>
       </form>
     </div>
@@ -277,6 +287,18 @@
   </div>
 
 </div>
+
+<script>
+/* Login loading state */
+document.querySelector('form[method=post]').addEventListener('submit', function() {
+  var idle = document.getElementById('signin-idle');
+  var loading = document.getElementById('signin-loading');
+  var btn = document.getElementById('signin-btn');
+  if (idle) idle.style.display = 'none';
+  if (loading) loading.style.display = 'flex';
+  if (btn) btn.disabled = true;
+});
+</script>
 
 <script>
 (function () {

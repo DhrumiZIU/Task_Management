@@ -746,9 +746,15 @@
 
     <div class="at-actions">
       <button type="button" onclick="closeAddTaskDrawer()" class="btn btn-secondary">Cancel</button>
-      <button type="submit" class="btn btn-primary">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Task
+      <button type="submit" class="btn btn-primary" id="at-submit-btn">
+        <span id="at-submit-idle" style="display:flex;align-items:center;gap:6px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Task
+        </span>
+        <span id="at-submit-loading" style="display:none;align-items:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:atSpin .7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Saving…
+        </span>
       </button>
     </div>
   </form>
@@ -891,6 +897,7 @@
 .at-pri-medium input:checked ~ span { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
 .at-pri-low    input:checked ~ span { background: #f0fdf4; color: #15803d; border-color: #86efac; }
 .at-pri-opt span:hover { border-color: #94a3b8; background: #f1f5f9; }
+@keyframes atSpin { to { transform: rotate(360deg); } }
 .at-actions {
   display: flex; gap: 10px; justify-content: flex-end; padding-top: 4px;
 }
@@ -901,6 +908,15 @@
 </style>
 
 <script>
+document.getElementById('add-task-form').addEventListener('submit', function() {
+  var idle    = document.getElementById('at-submit-idle');
+  var loading = document.getElementById('at-submit-loading');
+  var btn     = document.getElementById('at-submit-btn');
+  if (idle)    idle.style.display    = 'none';
+  if (loading) loading.style.display = 'flex';
+  if (btn)     btn.disabled          = true;
+});
+
 function openAddTaskDrawer(preselect) {
   document.getElementById('add-task-overlay').classList.add('open');
   document.getElementById('add-task-drawer').classList.add('open');
