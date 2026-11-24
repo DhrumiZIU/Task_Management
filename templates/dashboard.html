@@ -249,7 +249,7 @@
             <form method="post" action="{{ url_for('quick_status', task_id=t.id) }}">
               <label for="s{{ t.id }}" class="sr-only">Status</label>
               {% set sc = (t.status or 'Not started')|lower|replace(' ','-') %}
-              <select id="s{{ t.id }}" name="status" onchange="this.form.submit()" class="d-sel d-sel-{{ sc }}">
+              <select id="s{{ t.id }}" name="status" class="d-sel d-sel-{{ sc }}">
                 {% for s in ['Not started','In progress','Pending','Done','Blocked'] %}
                 <option value="{{ s }}"{% if t.status == s %} selected{% endif %}>{{ s }}</option>
                 {% endfor %}

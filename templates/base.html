@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}ZIU AI{% endblock %}</title>
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
@@ -63,6 +65,7 @@
 </head>
 <body>
 <div id="nprogress-bar"></div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 <div class="app-layout">
   <!-- ── Sidebar ── -->
   <aside class="sidebar">
@@ -181,6 +184,9 @@
     <!-- ── Topbar (Header) ── -->
     <header class="topbar">
       <div class="topbar-left">
+        <button id="mob-menu-btn" aria-label="Open menu" title="Menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <div class="topbar-page-icon">
           {% block topbar_icon %}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -298,7 +304,7 @@
   setInterval(tick, 1000);
 })();
 
-/* ── Top progress bar on navigation ── */
+/* ── Top progress bar + page-out fade on navigation ── */
 (function(){
   var bar = document.getElementById('nprogress-bar');
   if(!bar) return;
@@ -309,9 +315,31 @@
     if(a.href.indexOf(location.origin) === -1) return;
     clearTimeout(timer);
     bar.className = 'loading';
-    timer = setTimeout(function(){ bar.className = 'done'; }, 600);
+    var pb = document.querySelector('.page-body');
+    if(pb){ pb.style.transition = 'opacity .15s'; pb.style.opacity = '0'; }
+    timer = setTimeout(function(){ bar.className = 'done'; }, 800);
   });
-  window.addEventListener('pageshow', function(){ bar.className = 'done'; });
+  window.addEventListener('pageshow', function(){
+    bar.className = 'done';
+    var pb = document.querySelector('.page-body');
+    if(pb){ pb.style.opacity = ''; pb.style.transition = ''; }
+  });
+})();
+
+/* ── Mobile sidebar toggle ── */
+(function(){
+  var btn     = document.getElementById('mob-menu-btn');
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  if(!btn || !sidebar || !overlay) return;
+  btn.addEventListener('click', function(){
+    var open = sidebar.classList.toggle('sidebar-open');
+    overlay.style.display = open ? 'block' : 'none';
+  });
+  overlay.addEventListener('click', function(){
+    sidebar.classList.remove('sidebar-open');
+    overlay.style.display = 'none';
+  });
 })();
 
 /* ── Form submit loading states ── */

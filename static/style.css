@@ -60,7 +60,7 @@ html { scroll-behavior: smooth; }
   0%   { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
-.page-body { animation: fadeUp .28s cubic-bezier(.4,0,.2,1) both; }
+.page-body { animation: fadeUp .28s cubic-bezier(.4,0,.2,1) both; will-change: transform, opacity; }
 
 /* ── Skeleton loader ─────────────────────────────────────────────────── */
 .skeleton {
@@ -98,6 +98,8 @@ html { scroll-behavior: smooth; }
   top: 0; left: 0; bottom: 0;
   z-index: 100;
   box-shadow: 2px 0 20px rgba(0,0,0,.18);
+  contain: layout style;
+  transition: transform .22s cubic-bezier(.4,0,.2,1);
 }
 .sidebar-brand {
   padding: 20px 18px 16px;
@@ -296,7 +298,7 @@ html { scroll-behavior: smooth; }
 }
 
 /* ── Page section labels ─────────────────────────────────────────────── */
-.page-section { margin-bottom: 24px; }
+.page-section { margin-bottom: 24px; padding: 20px 24px; }
 .page-section-label {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
   letter-spacing: .8px; color: var(--text4); margin-bottom: 10px;
@@ -551,7 +553,7 @@ html { scroll-behavior: smooth; }
 .form-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 24px 26px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow); overflow: hidden; max-width: 100%;
 }
 .form-card h3 {
   font-size: 15px; font-weight: 700; margin-bottom: 20px;
@@ -579,11 +581,11 @@ html { scroll-behavior: smooth; }
 }
 
 /* ── Users ───────────────────────────────────────────────────────────── */
-.inline-form { display: inline-flex; gap: 5px; align-items: center; }
+.inline-form { display: inline-flex; gap: 5px; align-items: center; min-width: 0; flex: 1; }
 .inline-input {
   padding: 5px 9px; border: 1.5px solid var(--border2); border-radius: 5px;
-  font-size: 12px; font-family: inherit; width: 130px; min-height: 30px;
-  transition: border-color var(--transition);
+  font-size: 12px; font-family: inherit; width: 130px; min-width: 0; min-height: 30px;
+  transition: border-color var(--transition); flex: 1;
 }
 .inline-input:focus { outline: none; border-color: var(--primary); }
 
@@ -989,3 +991,62 @@ code { background: var(--surface2); border: 1px solid var(--border); padding: 2p
   .discussion-compose { position: static; }
   .prog-label { font-size: 11px; }
 }
+
+/* ── Sidebar overlay & mobile hamburger ─────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 99;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+#mob-menu-btn {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(0,0,0,.04);
+  border: 1px solid var(--border);
+  cursor: pointer; color: var(--text3); flex-shrink: 0;
+  transition: background var(--transition), color var(--transition);
+}
+#mob-menu-btn:hover { background: var(--primary-lt); color: var(--primary); }
+
+/* ── Mobile breakpoint ≤768px — sidebar becomes drawer ─────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-228px);
+    z-index: 200;
+  }
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0,0,0,.35);
+  }
+  .sidebar-overlay.active,
+  .sidebar.sidebar-open ~ .sidebar-overlay { display: block !important; }
+  .main-content { margin-left: 0 !important; width: 100% !important; }
+  #nprogress-bar { left: 0 !important; }
+  #mob-menu-btn { display: flex !important; }
+  .topbar-clock-group { display: none; }
+  .topbar { padding: 0 14px; gap: 10px; }
+  .page-body { padding: 16px 14px 36px; }
+  .topbar-subtitle { display: none; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .d-kpi-row { grid-template-columns: repeat(2, 1fr) !important; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .at-body { grid-template-columns: 1fr !important; padding: 16px 14px 48px; }
+  .at-right-panel { position: static !important; }
+  .et-wrap { grid-template-columns: 1fr !important; }
+  .et-sidebar { position: static !important; }
+  .users-layout { grid-template-columns: 1fr !important; }
+  .discussion-layout { grid-template-columns: 1fr !important; }
+  .discussion-compose { position: static !important; }
+  .at-row { grid-template-columns: 1fr !important; }
+  .et-row { grid-template-columns: 1fr !important; }
+  .topbar-actions .view-tabs { display: none; }
+  .footer-links { display: none; }
+  .footer-inner { height: auto; padding: 10px 0; gap: 6px; flex-direction: column; align-items: flex-start; }
+  .footer-right { gap: 8px; }
+}
+
+/* ── at-section / et-section will-change for smooth animation ── */
+.at-section, .et-section { will-change: transform, opacity; }
