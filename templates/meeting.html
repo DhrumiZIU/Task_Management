@@ -12,22 +12,24 @@
 <style>
 /* ── Meeting Page ── */
 .meeting-header {
-  display: flex; align-items: center; gap: 20px;
-  padding: 24px 28px;
-  background: #2563eb;
-  border-radius: 16px; color: #fff; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
 .meeting-header-icon {
-  width: 56px; height: 56px; background: rgba(255,255,255,.18);
-  border-radius: 14px; display: flex; align-items: center; justify-content: center;
-  font-size: 26px; flex-shrink: 0;
+  width: 40px; height: 40px; background: var(--primary-lt);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  color: var(--primary); flex-shrink: 0;
 }
-.meeting-header-title { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
-.meeting-header-sub   { font-size: 13px; opacity: .8; margin-top: 4px; line-height: 1.4; }
+.meeting-header-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.2px; }
+.meeting-header-sub   { font-size: 12px; color: var(--text3); margin-top: 3px; line-height: 1.4; }
 .meeting-header-date  {
   margin-left: auto; text-align: right; flex-shrink: 0;
-  font-size: 12px; opacity: .75; line-height: 1.6;
+  font-size: 12px; color: var(--text3); line-height: 1.6;
 }
+.meeting-header-date strong { color: var(--text2); font-weight: 600; }
 
 /* ── Upload Panel ── */
 .upload-panel {
@@ -291,62 +293,167 @@
 .mh-badge.processing { background: #fef9c3; color: #92400e; }
 .mh-no-audio { font-size: 11px; color: var(--text4); }
 
-/* ── Member sections ── */
+/* ── Section header ── */
+.plan-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 4px 0 16px; gap: 12px;
+}
+.plan-section-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.plan-section-line  { flex: 1; height: 1px; background: var(--border); }
+
+/* ── Member blocks ── */
 .member-block {
-  background: var(--bg); border: 1.5px solid var(--border);
-  border-radius: 14px; margin-bottom: 14px; overflow: hidden;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 14px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
 .member-block-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 14px 20px; background: #f8fafc; border-bottom: 1px solid var(--border);
+  gap: 12px;
 }
-.member-block-name { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; color: var(--text1); }
+.member-block-name { display: flex; align-items: center; gap: 10px; }
 .m-av {
-  width: 34px; height: 34px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
-.already-tasks-wrap { padding: 0 20px 2px; border-bottom: 1px solid var(--border); }
-.already-tasks-label { font-size: 11px; font-weight: 600; color: var(--text3); padding: 10px 0 6px; display: block; }
-.add-tasks-wrap { padding: 16px 20px; }
-.add-tasks-label { font-size: 11px; font-weight: 600; color: var(--text3); margin-bottom: 10px; }
-.task-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-.task-num {
-  width: 22px; height: 22px; border-radius: 50%; background: var(--bg2);
-  border: 1.5px solid var(--border); font-size: 11px; font-weight: 700;
-  color: var(--text3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+.m-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.m-count-pill {
+  font-size: 11px; font-weight: 600;
+  background: #fff; border: 1px solid var(--border);
+  color: var(--text3); padding: 3px 10px; border-radius: 20px;
 }
-.task-row input[type=text] {
-  flex: 1; min-width: 200px; padding: 9px 13px;
-  border: 1.5px solid var(--border); border-radius: 8px;
-  font-size: 13px; color: var(--text1); background: var(--bg);
-}
-.task-row input[type=text]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
-.task-row select {
-  padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-  font-size: 13px; color: var(--text1); background: var(--bg); min-width: 105px;
-}
+.m-no-tasks { font-size: 11px; color: var(--text4); }
 
+/* Already-planned table */
+.already-tasks-wrap {
+  border-bottom: 1px solid var(--border);
+}
+.already-tasks-subhead {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px 9px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+.already-tasks-subhead-label {
+  font-size: 11.5px; font-weight: 600; color: var(--text3);
+}
+.already-tasks-subhead-count {
+  font-size: 11px; font-weight: 600;
+  background: #f1f5f9; border: 1px solid var(--border);
+  color: var(--text3); padding: 1px 7px; border-radius: 10px;
+}
+.already-table { width: 100%; border-collapse: collapse; }
+.already-table th {
+  padding: 9px 20px; text-align: left;
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  background: #fcfcfd; border-bottom: 1px solid var(--border);
+}
+.already-table th:first-child { width: auto; }
+.already-table th:nth-child(2) { width: 110px; }
+.already-table th:nth-child(3) { width: 70px; }
+.already-table th:nth-child(4) { width: 180px; }
+.already-table td {
+  padding: 11px 20px; font-size: 13px; color: var(--text2);
+  border-bottom: 1px solid #f0f4f8; vertical-align: middle;
+}
+.already-table tbody tr:last-child td { border-bottom: none; }
+.already-table tbody tr:hover td { background: #f7f9fc; }
+.already-task-name { font-weight: 500; color: var(--text); }
+.already-task-done { font-size: 11.5px; color: var(--text3); font-style: italic; }
+
+/* Add tasks area */
+.add-tasks-wrap {
+  padding: 0;
+}
+.add-tasks-subhead {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px 10px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+.add-tasks-subhead-label {
+  font-size: 11.5px; font-weight: 600; color: var(--text3);
+}
+.add-tasks-table { width: 100%; border-collapse: collapse; }
+.add-tasks-table th {
+  padding: 9px 20px; text-align: left;
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  background: #fcfcfd; border-bottom: 1px solid var(--border);
+}
+.add-tasks-table th:first-child  { width: 36px; padding-right: 8px; }
+.add-tasks-table th:nth-child(2) { }
+.add-tasks-table th:nth-child(3) { width: 130px; }
+.add-tasks-table th:nth-child(4) { width: 90px; }
+.add-tasks-table td {
+  padding: 10px 20px; border-bottom: 1px solid #f0f4f8;
+  vertical-align: middle;
+}
+.add-tasks-table td:first-child  { padding-right: 8px; }
+.add-tasks-table tbody tr:last-child td { border-bottom: none; }
+.add-tasks-table tbody tr:hover td { background: #fafbfc; }
+
+.task-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #f1f5f9; border: 1px solid var(--border);
+  font-size: 11px; font-weight: 600; color: var(--text4);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin: 0 auto;
+}
+.add-tasks-table input[type=text] {
+  width: 100%; padding: 8px 12px;
+  border: 1.5px solid var(--border); border-radius: 7px;
+  font-size: 13px; color: var(--text); background: #fff;
+  font-family: inherit;
+  transition: border-color .15s, box-shadow .15s;
+}
+.add-tasks-table input[type=text]:focus {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+}
+.add-tasks-table input[type=text]::placeholder { color: var(--text4); }
+.add-tasks-table select {
+  width: 100%; padding: 8px 10px;
+  border: 1.5px solid var(--border); border-radius: 7px;
+  font-size: 12.5px; color: var(--text2); background: #fff;
+  font-family: inherit; cursor: pointer;
+  transition: border-color .15s;
+}
+.add-tasks-table select:focus { outline: none; border-color: var(--primary); }
+.add-tasks-table input[type=number] {
+  width: 100%; padding: 8px 10px;
+  border: 1.5px solid var(--border); border-radius: 7px;
+  font-size: 12.5px; color: var(--text2); background: #fff;
+  font-family: inherit;
+}
+.add-tasks-table input[type=number]:focus { outline: none; border-color: var(--primary); }
+
+/* Form actions */
 .form-actions {
-  display: flex; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap;
+  display: flex; gap: 10px; align-items: center;
+  margin-top: 16px; flex-wrap: wrap;
 }
 .btn-save {
-  padding: 11px 26px; font-size: 14px; font-weight: 700;
-  background: #059669;
-  color: #fff; border: none; border-radius: 10px; cursor: pointer;
-  transition: background .15s;
+  padding: 9px 22px; font-size: 13px; font-weight: 600;
+  background: #059669; color: #fff;
+  border: none; border-radius: 8px; cursor: pointer;
+  transition: background .15s; height: 36px;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: inherit;
 }
 .btn-save:hover { background: #047857; }
 
+/* Info bar (member view) */
 .info-bar {
-  display: flex; align-items: flex-start; gap: 14px;
-  padding: 16px 20px; border-radius: 12px;
-  background: var(--bg2); border: 1.5px solid var(--border);
-  margin-bottom: 20px;
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 18px; border-radius: 10px;
+  background: var(--primary-lt); border: 1px solid #bfdbfe;
+  margin-bottom: 16px;
 }
-.info-bar-icon { font-size: 26px; flex-shrink: 0; }
-.info-bar-title { font-size: 15px; font-weight: 800; color: var(--text1); margin-bottom: 3px; }
-.info-bar-sub   { font-size: 13px; color: var(--text3); line-height: 1.5; }
+.info-bar-icon { color: var(--primary); flex-shrink: 0; margin-top: 1px; }
+.info-bar-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.info-bar-sub   { font-size: 12.5px; color: var(--text3); line-height: 1.5; }
 
 @media (max-width: 600px) {
   .meeting-header { flex-wrap: wrap; }
@@ -658,40 +765,50 @@ document.getElementById('upload-form').addEventListener('submit', function() {
 {% endif %}
 
 {# ── Section header ── #}
-<div style="font-size:13px;font-weight:600;color:var(--text);margin:4px 0 16px;display:flex;align-items:center;gap:8px">
-  {% if is_manager %}Plan Tomorrow's Tasks{% else %}Add Your Tasks for Tomorrow{% endif %}
-  <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+<div class="plan-section-header">
+  <span class="plan-section-title">{% if is_manager %}Plan tomorrow's tasks{% else %}Add your tasks for tomorrow{% endif %}</span>
+  <span class="plan-section-line"></span>
+  <span style="font-size:12px;color:var(--text3);white-space:nowrap">{{ tomorrow.strftime('%a, %b %d') }}</span>
 </div>
 
 {# ── Task entry form ── #}
 {% if is_manager %}
 <form method="post">
-  {% for member in members %}
   {% set av_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#be185d','#64748b'] %}
+  {% for member in members %}
   <div class="member-block">
     <div class="member-block-head">
       <div class="member-block-name">
-        <div class="m-av" style="background:{{ av_colors[loop.index0 % av_colors|length] }}">{{ member[0] }}</div>
-        {{ member }}
+        <div class="m-av" style="background:{{ av_colors[loop.index0 % av_colors|length] }}">{{ member[0]|upper }}</div>
+        <span class="m-name">{{ member }}</span>
       </div>
       {% if grouped_next[member] %}
-      <span class="count-pill">{{ grouped_next[member]|length }} already planned</span>
+      <span class="m-count-pill">{{ grouped_next[member]|length }} already planned</span>
       {% else %}
-      <span style="font-size:11px;color:var(--text4)">No tasks yet</span>
+      <span class="m-no-tasks">No tasks yet</span>
       {% endif %}
     </div>
 
     {% if grouped_next[member] %}
     <div class="already-tasks-wrap">
-      <span class="already-tasks-label">Already planned for tomorrow</span>
-      <table class="task-table" style="margin-bottom:14px">
-        <thead><tr><th>Task</th><th>Priority</th><th>Est.</th></tr></thead>
+      <div class="already-tasks-subhead">
+        <span class="already-tasks-subhead-label">Already planned for tomorrow</span>
+        <span class="already-tasks-subhead-count">{{ grouped_next[member]|length }}</span>
+      </div>
+      <table class="already-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Priority</th>
+            <th>Est.</th>
+          </tr>
+        </thead>
         <tbody>
           {% for t in grouped_next[member] %}
           <tr>
-            <td style="font-weight:500">{{ t.task }}</td>
-            <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority }}</span></td>
-            <td style="font-size:12px;color:var(--text3)">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
+            <td class="already-task-name">{{ t.task }}</td>
+            <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority or 'Medium' }}</span></td>
+            <td style="font-variant-numeric:tabular-nums">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -700,23 +817,42 @@ document.getElementById('upload-form').addEventListener('submit', function() {
     {% endif %}
 
     <div class="add-tasks-wrap">
-      <div class="add-tasks-label">Add new tasks for {{ member }}</div>
-      {% for i in range(3) %}
-      <div class="task-row">
-        <div class="task-num">{{ i + 1 }}</div>
-        <input type="text" name="tasks_{{ member }}"
-               placeholder="Task {{ i+1 }} description (leave blank to skip)">
-        <select name="priorities_{{ member }}">
-          {% for p in priorities %}<option>{{ p }}</option>{% endfor %}
-        </select>
+      <div class="add-tasks-subhead">
+        <span class="add-tasks-subhead-label">Add new tasks for {{ member }}</span>
       </div>
-      {% endfor %}
+      <table class="add-tasks-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Task description</th>
+            <th>Priority</th>
+            <th>Est. hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in range(3) %}
+          <tr>
+            <td><div class="task-num">{{ i + 1 }}</div></td>
+            <td><input type="text" name="tasks_{{ member }}" placeholder="Leave blank to skip"></td>
+            <td>
+              <select name="priorities_{{ member }}">
+                {% for p in priorities %}<option>{{ p }}</option>{% endfor %}
+              </select>
+            </td>
+            <td><input type="number" name="hours_{{ member }}" placeholder="—" min="0.5" max="12" step="0.5"></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
   {% endfor %}
 
   <div class="form-actions">
-    <button type="submit" class="btn-save">Save All Tasks for Tomorrow</button>
+    <button type="submit" class="btn-save">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save all tasks for tomorrow
+    </button>
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
   </div>
 </form>
@@ -724,13 +860,12 @@ document.getElementById('upload-form').addEventListener('submit', function() {
 {% else %}
 {# ── Member view ── #}
 <div class="info-bar">
-  <div class="info-bar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+  <div class="info-bar-icon">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+  </div>
   <div>
-    <div class="info-bar-title">Plan your tomorrow · {{ tomorrow.strftime('%A, %B %d') }}</div>
-    <div class="info-bar-sub">
-      Add your tasks for tomorrow, then share updates in
-      <a href="{{ url_for('discussion') }}" style="color:var(--primary);font-weight:600">Discussion</a>.
-    </div>
+    <div class="info-bar-title">Plan your tomorrow — {{ tomorrow.strftime('%A, %B %d') }}</div>
+    <div class="info-bar-sub">Add your tasks below, then share updates in <a href="{{ url_for('discussion') }}" style="color:var(--primary);font-weight:600">Discussion</a>.</div>
   </div>
 </div>
 
@@ -739,26 +874,38 @@ document.getElementById('upload-form').addEventListener('submit', function() {
   <div class="member-block">
     <div class="member-block-head">
       <div class="member-block-name">
-        <div class="m-av" style="background:var(--primary,#2563eb)">{{ (team_name or 'M')[0] }}</div>
-        {{ team_name }}
+        <div class="m-av" style="background:var(--primary)">{{ (team_name or 'M')[0]|upper }}</div>
+        <span class="m-name">{{ team_name }}</span>
       </div>
       {% if my_tasks %}
-      <span class="count-pill">{{ my_tasks|length }} already planned</span>
+      <span class="m-count-pill">{{ my_tasks|length }} already planned</span>
+      {% else %}
+      <span class="m-no-tasks">No tasks yet</span>
       {% endif %}
     </div>
 
     {% if my_tasks %}
     <div class="already-tasks-wrap">
-      <span class="already-tasks-label">Already planned for tomorrow</span>
-      <table class="task-table" style="margin-bottom:14px">
-        <thead><tr><th>Task</th><th>Priority</th><th>Est.</th><th>Done looks like</th></tr></thead>
+      <div class="already-tasks-subhead">
+        <span class="already-tasks-subhead-label">Already planned for tomorrow</span>
+        <span class="already-tasks-subhead-count">{{ my_tasks|length }}</span>
+      </div>
+      <table class="already-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Priority</th>
+            <th>Est.</th>
+            <th>Done looks like</th>
+          </tr>
+        </thead>
         <tbody>
           {% for t in my_tasks %}
           <tr>
-            <td style="font-weight:500">{{ t.task }}</td>
-            <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority }}</span></td>
-            <td style="font-size:12px;color:var(--text3)">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
-            <td style="font-size:12px;color:var(--text3);font-style:italic">{{ t.done_looks_like or '—' }}</td>
+            <td class="already-task-name">{{ t.task }}</td>
+            <td><span class="badge priority-{{ (t.priority or 'medium')|lower }}">{{ t.priority or 'Medium' }}</span></td>
+            <td style="font-variant-numeric:tabular-nums">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
+            <td class="already-task-done">{{ t.done_looks_like or '—' }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -767,22 +914,41 @@ document.getElementById('upload-form').addEventListener('submit', function() {
     {% endif %}
 
     <div class="add-tasks-wrap">
-      <div class="add-tasks-label">Add new tasks for tomorrow</div>
-      {% for i in range(3) %}
-      <div class="task-row">
-        <div class="task-num">{{ i + 1 }}</div>
-        <input type="text" name="tasks_{{ team_name }}"
-               placeholder="Task {{ i+1 }} description (leave blank to skip)">
-        <select name="priorities_{{ team_name }}">
-          {% for p in priorities %}<option>{{ p }}</option>{% endfor %}
-        </select>
+      <div class="add-tasks-subhead">
+        <span class="add-tasks-subhead-label">Add new tasks for tomorrow</span>
       </div>
-      {% endfor %}
+      <table class="add-tasks-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Task description</th>
+            <th>Priority</th>
+            <th>Est. hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in range(3) %}
+          <tr>
+            <td><div class="task-num">{{ i + 1 }}</div></td>
+            <td><input type="text" name="tasks_{{ team_name }}" placeholder="Leave blank to skip"></td>
+            <td>
+              <select name="priorities_{{ team_name }}">
+                {% for p in priorities %}<option>{{ p }}</option>{% endfor %}
+              </select>
+            </td>
+            <td><input type="number" name="hours_{{ team_name }}" placeholder="—" min="0.5" max="12" step="0.5"></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn-save">Save My Tasks for Tomorrow</button>
+    <button type="submit" class="btn-save">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save my tasks for tomorrow
+    </button>
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
   </div>
 </form>
