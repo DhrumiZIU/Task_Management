@@ -16,10 +16,10 @@
   </div>
   <a href="{{ url_for('meeting') }}" class="btn btn-secondary btn-sm">7 PM Meeting</a>
   {% endif %}
-  <a href="{{ url_for('add_task') }}" class="btn btn-primary btn-sm">
+  <button onclick="openAddTaskDrawer()" class="btn btn-primary btn-sm">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Add Task
-  </a>
+  </button>
 {% endblock %}
 
 {% block content %}
@@ -201,10 +201,10 @@
       <option value="pending">Pending</option>
     </select>
     {% if is_manager %}
-    <a href="{{ url_for('add_task') }}" class="btn btn-primary btn-sm">
+    <button onclick="openAddTaskDrawer()" class="btn btn-primary btn-sm">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Assign
-    </a>
+    </button>
     {% endif %}
   </div>
 </div>
@@ -337,7 +337,7 @@
           <td colspan="{{ colspan - 1 }}" class="d-empty-task-cell">
             <span class="d-empty-task-text">No tasks assigned</span>
             {% if is_manager %}
-            <a href="{{ url_for('add_task') }}" class="d-empty-add">+ Assign</a>
+            <button onclick="openAddTaskDrawer('{{ member }}')" class="d-empty-add">+ Assign</button>
             {% endif %}
           </td>
         </tr>
@@ -677,6 +677,276 @@
 }
 @media (max-width: 500px)  { .d-kpi-row { grid-template-columns: 1fr 1fr; } .d-kpi-val { font-size: 30px; } }
 </style>
+
+{# ── Add Task Drawer ── #}
+<div id="add-task-overlay" class="at-overlay" onclick="closeAddTaskDrawer()"></div>
+<div id="add-task-drawer" class="at-drawer" role="dialog" aria-modal="true" aria-label="Add Task">
+  <div class="at-drawer-header">
+    <div class="at-drawer-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Task
+    </div>
+    <button class="at-close-btn" onclick="closeAddTaskDrawer()" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <form method="post" action="{{ url_for('add_task') }}" class="at-form" id="add-task-form">
+    <div class="at-field">
+      <label class="at-label" for="at-member">Team Member</label>
+      {% if drawer_members|length == 1 %}
+      <input type="hidden" name="team_member" value="{{ drawer_members[0] }}">
+      <div class="at-static-member">{{ drawer_members[0] }}</div>
+      {% else %}
+      <select name="team_member" id="at-member" class="at-select" required>
+        <option value="">Select member…</option>
+        {% for m in drawer_members %}
+        <option value="{{ m }}">{{ m }}</option>
+        {% endfor %}
+      </select>
+      <input type="hidden" id="at-member-hidden" name="team_member" disabled>
+      <div id="at-member-static" class="at-static-member" style="display:none"></div>
+      {% endif %}
+    </div>
+
+    <div class="at-row">
+      <div class="at-field">
+        <label class="at-label" for="at-date">Date</label>
+        <input type="date" name="task_date" id="at-date"
+               value="{{ today }}"{% if not is_manager %} min="{{ today }}"{% endif %}
+               class="at-input" required>
+      </div>
+      <div class="at-field">
+        <label class="at-label" for="at-hours">Est. Hours</label>
+        <input type="number" name="est_hours" id="at-hours" min="0.5" max="24" step="0.5"
+               placeholder="e.g. 2" class="at-input">
+      </div>
+    </div>
+
+    <div class="at-field">
+      <label class="at-label">Priority</label>
+      <div class="at-pri-group">
+        {% for p in priorities %}
+        <label class="at-pri-opt at-pri-{{ p|lower }}">
+          <input type="radio" name="priority" value="{{ p }}"{% if p == 'Medium' %} checked{% endif %}>
+          <span>{{ p }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="at-field">
+      <label class="at-label" for="at-task">Task Description <span class="at-req">*</span></label>
+      <textarea name="task" id="at-task" rows="3" class="at-textarea" placeholder="What needs to be done?" required></textarea>
+    </div>
+
+    <div class="at-field">
+      <label class="at-label" for="at-dll">Done Looks Like</label>
+      <textarea name="done_looks_like" id="at-dll" rows="2" class="at-textarea" placeholder="How will we know this is done?"></textarea>
+    </div>
+
+    <div class="at-actions">
+      <button type="button" onclick="closeAddTaskDrawer()" class="btn btn-secondary">Cancel</button>
+      <button type="submit" class="btn btn-primary">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Task
+      </button>
+    </div>
+  </form>
+</div>
+
+{# ── Task History Section ── #}
+{% if history_tasks %}
+<div class="dash-section-hd" style="margin-top:8px; animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .38s both">
+  <div class="dash-section-hd-left">
+    <span class="dash-section-title">Task History</span>
+    <span class="dash-section-count">Last 14 days · {{ history_tasks|length }} tasks</span>
+  </div>
+  <div class="dash-section-hd-right">
+    <button class="btn btn-secondary btn-sm" onclick="toggleHistory(this)" id="hist-toggle-btn">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="hist-chevron" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+      Show
+    </button>
+  </div>
+</div>
+
+<div id="history-section" class="d-team-wrap" style="display:none; margin-bottom:24px">
+  <div class="d-table-wrap">
+    <table class="d-table">
+      <thead>
+        <tr>
+          <th style="width:85px">Date</th>
+          <th style="width:180px">Member</th>
+          <th>Task</th>
+          <th style="width:92px">Priority</th>
+          <th style="width:54px">Est.</th>
+          <th style="width:140px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set av_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
+        {% for t in history_tasks %}
+        {% set row_class = 'row-done' if t.status == 'Done' else ('row-blocked' if t.status == 'Blocked' else '') %}
+        <tr class="d-task-row {{ row_class }}">
+          <td class="col-date">
+            <span class="d-chip chip-past">{{ t.date.strftime('%b %d') if t.date else '—' }}</span>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              {% set av_col = av_colors[loop.index0 % 8] %}
+              <div class="d-av" style="width:26px;height:26px;font-size:11px;background:{{ av_col }}">{{ t.team_member[0]|upper if t.team_member else '?' }}</div>
+              <span style="font-size:13px;font-weight:600;color:var(--text)">{{ t.team_member }}</span>
+            </div>
+          </td>
+          <td class="col-task">
+            <div class="d-task {% if t.status == 'Done' %}d-task-done{% endif %}">{{ t.task }}</div>
+            {% if t.done_looks_like %}<div class="d-dll">{{ t.done_looks_like }}</div>{% endif %}
+          </td>
+          <td class="col-pri">
+            {% set p = (t.priority or 'Medium')|lower %}
+            <span class="d-pri d-pri-{{ p }}">{{ t.priority or 'Medium' }}</span>
+          </td>
+          <td class="col-est"><span class="d-est">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</span></td>
+          <td>
+            {% set sc = (t.status or 'Not started')|lower|replace(' ','-') %}
+            <span class="d-status-pill d-sp-{{ sc }}">{{ t.status or 'Not started' }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<style>
+/* ── Add Task Drawer ── */
+.at-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  z-index: 400; backdrop-filter: blur(2px);
+}
+.at-overlay.open { display: block; }
+.at-drawer {
+  position: fixed; top: 0; right: 0; height: 100%; width: 420px; max-width: 95vw;
+  background: #fff; z-index: 401;
+  box-shadow: -4px 0 32px rgba(0,0,0,.14);
+  transform: translateX(100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.at-drawer.open { transform: translateX(0); }
+.at-drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.at-drawer-title {
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; color: var(--primary);
+}
+.at-close-btn {
+  background: none; border: none; cursor: pointer; color: var(--text3);
+  padding: 6px; border-radius: 7px; display: flex; align-items: center;
+  transition: all .12s;
+}
+.at-close-btn:hover { background: var(--border); color: var(--text); }
+.at-form {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.at-field { display: flex; flex-direction: column; gap: 6px; }
+.at-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.at-label { font-size: 12px; font-weight: 600; color: var(--text2); }
+.at-req { color: var(--danger); }
+.at-input, .at-select, .at-textarea {
+  border: 1.5px solid var(--border); border-radius: 9px;
+  padding: 9px 12px; font-size: 13px; font-family: inherit; color: var(--text);
+  background: #fafbfd; outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%; box-sizing: border-box;
+}
+.at-input:focus, .at-select:focus, .at-textarea:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+  background: #fff;
+}
+.at-textarea { resize: vertical; min-height: 68px; }
+.at-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%2394a3b8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 11px center;
+  padding-right: 30px;
+}
+.at-static-member {
+  padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 9px;
+  font-size: 13px; color: var(--text); background: #f5f7fa; font-weight: 600;
+}
+.at-pri-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.at-pri-opt { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.at-pri-opt input[type="radio"] { display: none; }
+.at-pri-opt span {
+  padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  border: 1.5px solid var(--border); background: #f8fafc; color: var(--text3);
+  cursor: pointer; transition: all .12s; letter-spacing: .2px;
+}
+.at-pri-high   input:checked ~ span { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
+.at-pri-medium input:checked ~ span { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
+.at-pri-low    input:checked ~ span { background: #f0fdf4; color: #15803d; border-color: #86efac; }
+.at-pri-opt span:hover { border-color: #94a3b8; background: #f1f5f9; }
+.at-actions {
+  display: flex; gap: 10px; justify-content: flex-end; padding-top: 4px;
+}
+@media (max-width: 500px) {
+  .at-drawer { width: 100vw; }
+  .at-row { grid-template-columns: 1fr; }
+}
+</style>
+
+<script>
+function openAddTaskDrawer(preselect) {
+  document.getElementById('add-task-overlay').classList.add('open');
+  document.getElementById('add-task-drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  var sel = document.getElementById('at-member');
+  var hidden = document.getElementById('at-member-hidden');
+  var staticEl = document.getElementById('at-member-static');
+  if (preselect && sel && hidden && staticEl) {
+    sel.style.display = 'none';
+    sel.removeAttribute('required');
+    sel.selectedIndex = 0;
+    hidden.value = preselect;
+    hidden.disabled = false;
+    staticEl.textContent = preselect;
+    staticEl.style.display = '';
+  } else if (sel) {
+    sel.style.display = '';
+    sel.setAttribute('required', '');
+    if (hidden) { hidden.disabled = true; hidden.value = ''; }
+    if (staticEl) staticEl.style.display = 'none';
+  }
+  setTimeout(function(){ var t = document.getElementById('at-task'); if(t) t.focus(); }, 300);
+}
+function closeAddTaskDrawer() {
+  document.getElementById('add-task-overlay').classList.remove('open');
+  document.getElementById('add-task-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+  var sel = document.getElementById('at-member');
+  var hidden = document.getElementById('at-member-hidden');
+  var staticEl = document.getElementById('at-member-static');
+  if (sel) { sel.style.display = ''; sel.setAttribute('required', ''); sel.selectedIndex = 0; }
+  if (hidden) { hidden.disabled = true; hidden.value = ''; }
+  if (staticEl) staticEl.style.display = 'none';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeAddTaskDrawer(); });
+
+function toggleHistory(btn) {
+  var sec = document.getElementById('history-section');
+  var chev = document.getElementById('hist-chevron');
+  var showing = sec.style.display !== 'none';
+  sec.style.display = showing ? 'none' : '';
+  chev.style.transform = showing ? '' : 'rotate(180deg)';
+  var label = btn.querySelector('svg').nextSibling;
+  if (label) label.textContent = showing ? ' Show' : ' Hide';
+}
+</script>
 
 <script>
 (function(){

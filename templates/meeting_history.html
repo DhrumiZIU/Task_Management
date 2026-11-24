@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Recording History — ZIU AI{% endblock %}
+{% block topbar_icon %}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{% endblock %}
+{% block topbar_title %}Recording History{% endblock %}
+{% block topbar_sub %}All meeting recordings{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('meeting') }}" class="btn btn-secondary btn-sm">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+    Meeting
+  </a>
+{% endblock %}
+
+{% block content %}
+<style>
+.hist-wrap {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: var(--card-radius); overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+.hist-table { width: 100%; border-collapse: collapse; }
+.hist-table thead tr { background: #fafbfc; }
+.hist-table th {
+  padding: 12px 20px; font-size: 11px; font-weight: 600; color: var(--text3);
+  border-bottom: 1px solid #eef0f4; text-align: left; white-space: nowrap;
+}
+.hist-table td {
+  padding: 14px 20px; font-size: 13px; color: var(--text2);
+  border-bottom: 1px solid #f0f4f8; vertical-align: top;
+}
+.hist-table tbody tr:last-child td { border-bottom: none; }
+.hist-table tbody tr:hover td { background: #f8fafc; }
+.hist-filename { font-weight: 600; color: var(--text); font-size: 13px; }
+.hist-by { font-size: 12px; color: var(--text4); margin-top: 2px; }
+.hist-summary { font-size: 13px; color: var(--text2); line-height: 1.6; max-width: 560px; }
+.hist-summary-empty { font-size: 12px; color: var(--text4); font-style: italic; }
+.hist-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; white-space: nowrap; display: inline-block;
+}
+.hist-badge.done       { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.hist-badge.failed     { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.hist-badge.processing { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.hist-play-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--primary);
+  text-decoration: none; padding: 5px 12px;
+  border: 1px solid #bfdbfe; border-radius: 7px;
+  background: #eff6ff; transition: background .12s;
+}
+.hist-play-link:hover { background: #dbeafe; }
+.hist-empty {
+  text-align: center; padding: 60px 24px;
+  font-size: 14px; color: var(--text4); font-weight: 500;
+}
+</style>
+
+{% if all_meetings %}
+<div class="hist-wrap" style="animation:fadeUp .2s ease both">
+  <table class="hist-table">
+    <thead>
+      <tr>
+        <th style="width:200px">Recording</th>
+        <th style="width:90px">Date</th>
+        <th style="width:90px">Status</th>
+        <th>Summary</th>
+        <th style="width:100px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in all_meetings %}
+      <tr>
+        <td>
+          <div class="hist-filename">{{ m.filename }}</div>
+          <div class="hist-by">Uploaded by {{ m.uploaded_by }}</div>
+        </td>
+        <td style="font-size:12px;color:var(--text3);white-space:nowrap">
+          {{ m.uploaded_at[:10] if m.uploaded_at else '—' }}
+        </td>
+        <td>
+          <span class="hist-badge {{ m.status }}">
+            {% if m.status == 'done' %}Done
+            {% elif m.status == 'failed' %}Failed
+            {% else %}Processing{% endif %}
+          </span>
+        </td>
+        <td>
+          {% if m.status == 'done' and m.overall_summary %}
+            <div class="hist-summary">{{ m.overall_summary }}</div>
+          {% elif m.status == 'processing' %}
+            <div class="hist-summary-empty">Processing — check back shortly.</div>
+          {% elif m.status == 'failed' %}
+            <div class="hist-summary-empty">Processing failed.</div>
+          {% else %}
+            <div class="hist-summary-empty">—</div>
+          {% endif %}
+        </td>
+        <td>
+          {% if m.status == 'done' %}
+          <a href="{{ url_for('meeting') }}#recording-{{ m.id }}" class="hist-play-link">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Play
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="hist-wrap" style="animation:fadeUp .2s ease both">
+  <div class="hist-empty">No recordings yet. Upload a meeting recording from the Meeting page.</div>
+</div>
+{% endif %}
+
+{% endblock %}

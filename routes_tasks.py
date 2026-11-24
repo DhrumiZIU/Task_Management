@@ -178,7 +178,7 @@ def register(app):
                                latest_meeting=latest_meeting, all_meetings=all_meetings)
 
     @app.route("/upload-meeting", methods=["POST"])
-    @auth.manager_required
+    @auth.login_required
     def upload_meeting():
         file = request.files.get("recording")
         if not file or not file.filename:
@@ -257,6 +257,12 @@ def register(app):
             "Content-Disposition": f'inline; filename="{row["filename"]}"',
             "Accept-Ranges": "bytes",
         })
+
+    @app.route("/meeting/history")
+    @auth.login_required
+    def meeting_history():
+        all_meetings = db_backup.get_all_meetings()
+        return render_template("meeting_history.html", all_meetings=all_meetings)
 
     @app.route("/api/meeting-summary")
     @auth.login_required
