@@ -21,12 +21,8 @@ def register(app):
     @app.route("/task/add", methods=["GET", "POST"])
     @auth.login_required
     def add_task():
-        if auth.is_manager():
-            # managers can assign tasks to anyone — members AND other managers (including self)
-            all_users = xl.get_all_users()
-            members = [u["display_name"] or u["username"] for u in all_users if u.get("display_name") or u.get("username")]
-        else:
-            members = [session.get("team_name")]
+        all_users = xl.get_all_users()
+        members = [u["display_name"] or u["username"] for u in all_users if u.get("display_name") or u.get("username")]
         if request.method == "POST":
             raw_date  = request.form.get("task_date") or str(date.today())
             member    = request.form.get("team_member", "").strip()
@@ -35,9 +31,6 @@ def register(app):
             dll       = request.form.get("done_looks_like", "").strip()
             hrs_raw   = request.form.get("est_hours", "").strip()
             est_hours = float(hrs_raw) if hrs_raw else None
-            if not auth.is_manager() and member != session.get("team_name"):
-                flash("You can only add tasks for yourself.", "error")
-                return redirect(url_for("add_task"))
             if not task or not member:
                 flash("Task description and team member are required.", "error")
             else:
