@@ -48,11 +48,12 @@
       </div>
       <div class="field">
         <label>Assign Team Members</label>
+        {% set mc = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
         <div class="member-checklist">
           {% for m in members %}
           <label class="member-check-row">
             <input type="checkbox" name="members" value="{{ m }}">
-            <div class="mck-av">{{ m[0]|upper }}</div>
+            <div class="mck-av" style="background:{{ mc[loop.index0 % 8] }}">{{ m[0]|upper }}</div>
             {{ m }}
           </label>
           {% endfor %}
@@ -217,11 +218,12 @@
       </div>
       <div class="field">
         <label>Team Members</label>
+        {% set mc2 = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
         <div class="member-checklist" id="edit-members">
           {% for m in members %}
           <label class="member-check-row">
             <input type="checkbox" name="members" value="{{ m }}" class="edit-member-cb">
-            <div class="mck-av">{{ m[0]|upper }}</div>
+            <div class="mck-av" style="background:{{ mc2[loop.index0 % 8] }}">{{ m[0]|upper }}</div>
             {{ m }}
           </label>
           {% endfor %}

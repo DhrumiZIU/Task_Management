@@ -648,7 +648,8 @@ body {
             <div class="at-field">
               <label for="task_date">Due Date <span class="req">*</span></label>
               <input type="date" name="task_date" id="task_date"
-                     value="{{ today }}" required oninput="updatePreview(); updateReview()">
+                     value="{{ today }}"{% if not is_manager %} min="{{ today }}"{% endif %}
+                     required oninput="updatePreview(); updateReview()">
             </div>
             <div class="at-field">
               <label for="est_hours">Estimated Hours</label>

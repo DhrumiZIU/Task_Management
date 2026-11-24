@@ -364,6 +364,34 @@ def log_activity(action: str, username: str, display_name: str, details: str = "
                     (action, username, display_name, details))
 
 
+def get_history_tasks(days: int = 14) -> list[dict]:
+    """Return completed/done tasks from the past N days, newest first."""
+    init_db()
+    from datetime import timedelta
+    today = date.today()
+    since = today - timedelta(days=days)
+    with get_connection() as con:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT * FROM tasks WHERE (is_deleted IS NULL OR is_deleted=0)"
+            " AND task_date>=%s AND task_date<%s"
+            " ORDER BY task_date DESC, team_member",
+            (str(since), str(today))
+        )
+        rows = _fetchall_dicts(cur)
+
+    def _parse(ds):
+        if isinstance(ds, date): return ds
+        try: return datetime.strptime(str(ds), "%Y-%m-%d").date()
+        except (ValueError, TypeError): return ds
+
+    return [{"id": r["id"], "date": _parse(r["task_date"]),
+             "team_member": r["team_member"], "task": r["task"],
+             "priority": r["priority"], "status": r["status"],
+             "done_looks_like": r["done_looks_like"], "est_hours": r["est_hours"]}
+            for r in rows]
+
+
 def get_activity_log(limit: int = 100) -> list[dict]:
     init_db()
     with get_connection() as con:

@@ -127,6 +127,9 @@ def register(app):
     @app.route("/discussion", methods=["GET", "POST"])
     @auth.login_required
     def discussion():
+        if session.get("role") != "manager":
+            flash("Notes are only available to managers.", "error")
+            return redirect(url_for("dashboard"))
         u, d = session.get("username", ""), session.get("display_name", "")
         if request.method == "POST":
             note = request.form.get("note", "").strip()
@@ -197,6 +200,14 @@ def register(app):
         return render_template("change_password.html",
                                current_username=session.get("username", ""),
                                current_display=session.get("display_name", ""))
+
+    @app.route("/settings")
+    @auth.login_required
+    def settings():
+        return render_template("settings.html",
+                               current_username=session.get("username", ""),
+                               current_display=session.get("display_name", ""),
+                               role=session.get("role", ""))
 
     # ── Backup ─────────────────────────────────────────────────────────────
 

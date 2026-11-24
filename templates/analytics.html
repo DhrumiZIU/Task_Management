@@ -26,27 +26,53 @@
 {% block content %}
 
 {# ── KPI Strip ── #}
-<div class="page-section-label">Overview</div>
+<div class="an-section-hd" style="animation:fadeUp .2s ease both">
+  <div class="an-section-title">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    Overview
+  </div>
+  <div class="an-section-sub">Team performance at a glance</div>
+</div>
 <div class="an-kpi-row">
   <div class="an-kpi an-kpi-blue" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .04s both">
-    <div class="an-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-    <div><div class="an-kpi-val">{{ total_tasks }}</div><div class="an-kpi-label">Total Tasks</div><div class="an-kpi-sub">All members</div></div>
+    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
+    <div class="an-kpi-body">
+      <div class="an-kpi-val">{{ total_tasks }}</div>
+      <div class="an-kpi-label">Total Tasks</div>
+      <div class="an-kpi-sub">All members</div>
+    </div>
   </div>
   <div class="an-kpi an-kpi-green" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .08s both">
-    <div class="an-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
-    <div><div class="an-kpi-val">{{ done_count }}</div><div class="an-kpi-label">Completed</div><div class="an-kpi-sub">{{ done_pct }}% completion rate</div></div>
+    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+    <div class="an-kpi-body">
+      <div class="an-kpi-val">{{ done_count }}</div>
+      <div class="an-kpi-label">Completed</div>
+      <div class="an-kpi-sub">{{ done_pct }}% completion rate</div>
+    </div>
   </div>
-  <div class="an-kpi an-kpi-orange" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .12s both">
-    <div class="an-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-    <div><div class="an-kpi-val">{{ inprog_count }}</div><div class="an-kpi-label">In Progress</div><div class="an-kpi-sub">Currently active</div></div>
+  <div class="an-kpi an-kpi-blue2" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .12s both">
+    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
+    <div class="an-kpi-body">
+      <div class="an-kpi-val">{{ inprog_count }}</div>
+      <div class="an-kpi-label">In Progress</div>
+      <div class="an-kpi-sub">Currently active</div>
+    </div>
   </div>
   <div class="an-kpi an-kpi-red" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .16s both">
-    <div class="an-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-    <div><div class="an-kpi-val">{{ blocked_count }}</div><div class="an-kpi-label">Blocked</div><div class="an-kpi-sub">Need attention</div></div>
+    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><octagon/><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
+    <div class="an-kpi-body">
+      <div class="an-kpi-val">{{ blocked_count }}</div>
+      <div class="an-kpi-label">Blocked</div>
+      <div class="an-kpi-sub">Need attention</div>
+    </div>
   </div>
   <div class="an-kpi an-kpi-slate" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .20s both">
-    <div class="an-kpi-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
-    <div><div class="an-kpi-val">{{ not_started }}</div><div class="an-kpi-label">Not Started</div><div class="an-kpi-sub">Pending kick-off</div></div>
+    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div></div>
+    <div class="an-kpi-body">
+      <div class="an-kpi-val">{{ not_started }}</div>
+      <div class="an-kpi-label">Not Started</div>
+      <div class="an-kpi-sub">Pending kick-off</div>
+    </div>
   </div>
 </div>
 
@@ -73,16 +99,24 @@
 {% endif %}
 
 {# ── Charts row 1 — 3 columns: status donut + priority donut + radar ── #}
-<div class="page-section-label" style="margin-top:4px">Charts &amp; Breakdown</div>
+<div class="an-section-hd" style="margin-top:8px;animation:fadeUp .28s ease .25s both">
+  <div class="an-section-title">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Charts &amp; Breakdown
+  </div>
+  <div class="an-section-sub">Visual breakdown of task distribution and team performance</div>
+</div>
 <div class="an-charts-row3" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .28s both">
 
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Task Status
+      <div class="an-chart-head-left">
+        <div class="an-chart-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Task Status
+        </div>
+        <div class="an-chart-sub">Distribution by status</div>
       </div>
-      <div class="an-chart-sub">Distribution by status</div>
     </div>
     <div class="an-chart-body an-chart-donut" style="position:relative">
       <div class="an-chart-loading" id="statusChart-loading"><div class="an-chart-skeleton"></div></div>
@@ -92,11 +126,13 @@
 
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        Priority Breakdown
+      <div class="an-chart-head-left">
+        <div class="an-chart-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Priority Breakdown
+        </div>
+        <div class="an-chart-sub">Tasks by priority level</div>
       </div>
-      <div class="an-chart-sub">Tasks by priority level</div>
     </div>
     <div class="an-chart-body an-chart-donut" style="position:relative">
       <div class="an-chart-loading" id="priorityChart-loading"><div class="an-chart-skeleton"></div></div>
@@ -106,11 +142,13 @@
 
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Team Radar
+      <div class="an-chart-head-left">
+        <div class="an-chart-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Team Radar
+        </div>
+        <div class="an-chart-sub">Status dimensions per team</div>
       </div>
-      <div class="an-chart-sub">Status dimensions per team</div>
     </div>
     <div class="an-chart-body an-chart-donut" style="position:relative">
       <div class="an-chart-loading" id="radarChart-loading"><div class="an-chart-skeleton"></div></div>
@@ -124,11 +162,13 @@
 <div class="an-charts-col" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .34s both">
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        Tasks per Member
+      <div class="an-chart-head-left">
+        <div class="an-chart-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Tasks per Member
+        </div>
+        <div class="an-chart-sub">Stacked by status — total assigned vs completed</div>
       </div>
-      <div class="an-chart-sub">Stacked by status — total assigned vs completed</div>
     </div>
     <div class="an-chart-body an-chart-bar" style="position:relative">
       <div class="an-chart-loading" id="memberStackChart-loading"><div class="an-chart-skeleton" style="border-radius:8px;max-width:100%;max-height:100%"></div></div>
@@ -138,11 +178,13 @@
 
   <div class="an-chart-card">
     <div class="an-chart-head">
-      <div class="an-chart-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-        Member Status Breakdown
+      <div class="an-chart-head-left">
+        <div class="an-chart-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          Member Status Breakdown
+        </div>
+        <div class="an-chart-sub">Done · In Progress · Blocked · Not Started per member</div>
       </div>
-      <div class="an-chart-sub">Done · In Progress · Blocked · Not Started per member</div>
     </div>
     <div class="an-chart-body an-chart-bar" style="position:relative">
       <div class="an-chart-loading" id="memberStatusChart-loading"><div class="an-chart-skeleton" style="border-radius:8px;max-width:100%;max-height:100%"></div></div>
@@ -151,58 +193,67 @@
   </div>
 </div>
 
-{# ── Trend / Activity chart ── #}
-<div class="an-chart-card" style="margin-bottom:16px;animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .38s both">
-  <div class="an-chart-head">
-    <div class="an-chart-title">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Task Activity Trend
-    </div>
-    <div class="an-chart-sub">Completion velocity across recent days (demo trend)</div>
-  </div>
-  <div class="an-chart-body" style="position:relative;height:230px">
-    <div class="an-chart-loading" id="trendChart-loading"><div class="an-chart-skeleton" style="border-radius:8px;width:90%;height:120px;max-width:100%"></div></div>
-    <canvas id="trendChart"></canvas>
-  </div>
-</div>
-
 {# ── Team Performance section ── #}
-<div class="page-section-label" style="margin-top:4px">Team Performance</div>
-<div class="an-perf-grid" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .42s both">
-  {% set perf_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
-  {% for m in members_data %}
-  {% set md_row = md[m] %}
-  {% set row_total = md_row.total %}
-  {% set row_done  = md_row.done %}
-  {% set row_inp   = md_row.get('inprog', 0) %}
-  {% set row_blk   = md_row.get('blocked', 0) %}
-  {% set pct = ((row_done / row_total * 100)|int) if row_total > 0 else 0 %}
-  {% set pc = perf_colors[loop.index0 % 8] %}
-  {% set bar_col = '#16a34a' if pct >= 70 else ('#d97706' if pct >= 40 else '#dc2626') %}
-  <div class="an-perf-card">
-    <div class="an-perf-header">
-      <div class="an-perf-av" style="background:{{ pc }}">{{ m[0]|upper }}</div>
-      <div class="an-perf-info">
-        <div class="an-perf-name">{{ m }}</div>
-        <div class="an-perf-stats">{{ row_total }} tasks · {{ row_done }} done · {% if row_blk > 0 %}<span style="color:#dc2626">{{ row_blk }} blocked</span>{% else %}0 blocked{% endif %}</div>
-      </div>
-      <div class="an-perf-pct" style="color:{{ bar_col }}">{{ pct }}%</div>
-    </div>
-    <div class="an-perf-track">
-      <div class="an-perf-bar" data-w="{{ pct }}" style="width:0;background:{{ bar_col }}"></div>
-    </div>
-    <div class="an-perf-chips">
-      <span class="an-chip an-chip-done">✓ {{ row_done }}</span>
-      <span class="an-chip an-chip-prog">↻ {{ row_inp }}</span>
-      <span class="an-chip an-chip-blk">✕ {{ row_blk }}</span>
-      <span class="an-chip an-chip-ns">– {{ row_total - row_done - row_inp - row_blk }}</span>
-    </div>
+<div class="an-section-hd" style="margin-top:8px;animation:fadeUp .3s ease .38s both">
+  <div class="an-section-title">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    Team Performance
   </div>
-  {% endfor %}
+  <div class="an-section-sub">Completion rates per team member</div>
+</div>
+<div class="an-perf-table-wrap" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .42s both">
+  <table class="an-perf-table">
+    <thead>
+      <tr>
+        <th>Member</th>
+        <th style="width:80px;text-align:center">Total</th>
+        <th style="width:80px;text-align:center">Done</th>
+        <th style="width:100px;text-align:center">In Progress</th>
+        <th style="width:80px;text-align:center">Blocked</th>
+        <th style="width:160px">Progress</th>
+        <th style="width:64px;text-align:right">Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set perf_colors = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#65a30d'] %}
+      {% for m in members_data %}
+      {% set md_row = md[m] %}
+      {% set row_total = md_row.total %}
+      {% set row_done  = md_row.done %}
+      {% set row_inp   = md_row.get('inprog', 0) %}
+      {% set row_blk   = md_row.get('blocked', 0) %}
+      {% set pct = ((row_done / row_total * 100)|int) if row_total > 0 else 0 %}
+      {% set pc = perf_colors[loop.index0 % 8] %}
+      {% set bar_col = '#16a34a' if pct >= 70 else ('#475569' if pct >= 40 else '#94a3b8') %}
+      <tr class="an-perf-tr">
+        <td>
+          <div class="an-perf-member">
+            <div class="an-perf-av" style="background:{{ pc }}">{{ m[0]|upper }}</div>
+            <span class="an-perf-name">{{ m }}</span>
+          </div>
+        </td>
+        <td style="text-align:center"><span class="an-perf-num">{{ row_total }}</span></td>
+        <td style="text-align:center"><span class="an-perf-num" style="color:#16a34a;font-weight:700">{{ row_done }}</span></td>
+        <td style="text-align:center"><span class="an-perf-num" style="color:#2563eb;font-weight:700">{{ row_inp }}</span></td>
+        <td style="text-align:center"><span class="an-perf-num" style="color:#dc2626;font-weight:700">{{ row_blk }}</span></td>
+        <td>
+          <div class="an-perf-track-wrap"><div class="an-perf-bar" data-w="{{ pct }}" style="width:0;background:{{ bar_col }}"></div></div>
+        </td>
+        <td style="text-align:right"><span class="an-perf-pct" style="color:{{ bar_col }}">{{ pct }}%</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 {# ── Leaderboard ── #}
-<div class="page-section-label" style="margin-top:4px">Member Leaderboard</div>
+<div class="an-section-hd" style="margin-top:8px;animation:fadeUp .3s ease .44s both">
+  <div class="an-section-title">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    Member Leaderboard
+  </div>
+  <div class="an-section-sub">Ranked by completion rate</div>
+</div>
 <div class="an-lb-table-wrap" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .46s both">
   <table class="an-lb-table">
     <thead>
@@ -382,65 +433,6 @@
     });
   }
 
-  /* Trend line chart (demo data: last 7 days) */
-  function mkTrend(id) {
-    hideLoader(id);
-    var days = ['6 days ago','5 days ago','4 days ago','3 days ago','2 days ago','Yesterday','Today'];
-    /* Use real done count spread across days as a simple approximation */
-    var base = Math.max(1, Math.floor(MDa.reduce(function(a,b){ return a+b; }, 0) / 7));
-    var trend = days.map(function(_,i){ return Math.max(0, base + Math.round((Math.random()-.4)*(base+1)) + i); });
-    var cumulative = [];
-    var sum = 0;
-    trend.forEach(function(v){ sum += v; cumulative.push(sum); });
-    new Chart(document.getElementById(id), {
-      type: 'line',
-      data: {
-        labels: days,
-        datasets: [
-          {
-            label: 'Daily Completions',
-            data: trend,
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,.08)',
-            borderWidth: 2.5,
-            pointBackgroundColor: '#2563eb',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            tension: 0.42,
-            fill: true,
-            yAxisID: 'y'
-          },
-          {
-            label: 'Cumulative Done',
-            data: cumulative,
-            borderColor: '#16a34a',
-            backgroundColor: 'rgba(22,163,74,.06)',
-            borderWidth: 2,
-            pointBackgroundColor: '#16a34a',
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            tension: 0.42,
-            fill: false,
-            borderDash: [5,3],
-            yAxisID: 'y2'
-          }
-        ]
-      },
-      options: {
-        animation: { duration: 1000, easing: 'easeInOutQuart' },
-        plugins: {
-          legend: { position: 'bottom', labels: { font: { size: 12, weight: '600' }, usePointStyle: true, padding: 20, boxHeight: 8 } },
-          tooltip: Object.assign({}, TOOLTIP, { displayColors: true })
-        },
-        scales: {
-          x: { grid: { color: '#f1f5f9' }, border: { display: false }, ticks: { font: { size: 11 } } },
-          y:  { grid: { color: '#f1f5f9' }, border: { display: false }, ticks: { stepSize: 1, font: { size: 11 } }, beginAtZero: true, position: 'left' },
-          y2: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 11 }, color: '#16a34a' }, beginAtZero: true, position: 'right' }
-        }
-      }
-    });
-  }
-
   mkDonut('statusChart',   SL, SD, ['#16a34a','#3b82f6','#f59e0b','#ef4444','#94a3b8']);
   mkDonut('priorityChart', PL, PD, ['#ef4444','#f59e0b','#16a34a']);
 
@@ -474,47 +466,55 @@
     { label: 'Not Started', data: MNS, backgroundColor: '#94a3b8', borderRadius: 6, borderSkipped: false }
   ]);
 
-  mkTrend('trendChart');
 })();
 </script>
 
 <style>
+/* ── Section header ── */
+.an-section-hd { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+.an-section-title { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: var(--text); }
+.an-section-sub { font-size: 12px; color: var(--text4); }
+
 /* ── KPI strip ── */
 .an-kpi-row {
   display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: 14px; margin-bottom: 20px;
+  gap: 14px; margin-bottom: 24px;
 }
 .an-kpi {
-  background: #fff; border: 1px solid var(--border);
-  border-radius: var(--card-radius); padding: 18px 18px 16px;
-  display: flex; align-items: flex-start; gap: 13px;
-  box-shadow: var(--card-shadow);
-  transition: box-shadow .2s ease, transform .2s ease;
-  border-left: 3px solid transparent; will-change: transform;
+  background: #fff; border: 1px solid #e8edf4;
+  border-radius: 14px; padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+  transition: box-shadow .22s ease, transform .22s ease;
+  will-change: transform; position: relative; overflow: hidden;
+  display: flex; align-items: flex-start; gap: 14px;
 }
-.an-kpi:hover { box-shadow: var(--card-shadow-hover); transform: translateY(-2px); }
+.an-kpi::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+.an-kpi:hover { box-shadow: 0 6px 24px rgba(0,0,0,.10); transform: translateY(-2px); }
+.an-kpi-blue::before   { background: linear-gradient(90deg,#2563eb,#60a5fa); }
+.an-kpi-blue2::before  { background: linear-gradient(90deg,#0891b2,#38bdf8); }
+.an-kpi-green::before  { background: linear-gradient(90deg,#16a34a,#4ade80); }
+.an-kpi-orange::before { background: linear-gradient(90deg,#d97706,#fbbf24); }
+.an-kpi-red::before    { background: linear-gradient(90deg,#dc2626,#f87171); }
+.an-kpi-slate::before  { background: linear-gradient(90deg,#64748b,#cbd5e1); }
+
+.an-kpi-icon-wrap { flex-shrink: 0; padding-top: 2px; }
 .an-kpi-icon {
-  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
 }
-.an-kpi-blue   { border-left-color: #2563eb; }
-.an-kpi-green  { border-left-color: #16a34a; }
-.an-kpi-orange { border-left-color: #d97706; }
-.an-kpi-red    { border-left-color: #dc2626; }
-.an-kpi-slate  { border-left-color: #94a3b8; }
 .an-kpi-blue   .an-kpi-icon { background: #eff6ff; color: #2563eb; }
+.an-kpi-blue2  .an-kpi-icon { background: #ecfeff; color: #0891b2; }
 .an-kpi-green  .an-kpi-icon { background: #f0fdf4; color: #16a34a; }
 .an-kpi-orange .an-kpi-icon { background: #fffbeb; color: #d97706; }
 .an-kpi-red    .an-kpi-icon { background: #fef2f2; color: #dc2626; }
 .an-kpi-slate  .an-kpi-icon { background: #f1f5f9; color: #64748b; }
-.an-kpi-val   { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
-.an-kpi-blue   .an-kpi-val { color: #1d4ed8; }
-.an-kpi-green  .an-kpi-val { color: #15803d; }
-.an-kpi-orange .an-kpi-val { color: #b45309; }
-.an-kpi-red    .an-kpi-val { color: #b91c1c; }
-.an-kpi-slate  .an-kpi-val { color: #475569; }
+.an-kpi-body { flex: 1; min-width: 0; }
+.an-kpi-val   { font-size: 28px; font-weight: 900; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1.5px; }
 .an-kpi-label { font-size: 12px; font-weight: 600; color: var(--text2); margin-top: 5px; }
-.an-kpi-sub   { font-size: 10.5px; color: var(--text4); margin-top: 2px; }
+.an-kpi-sub   { font-size: 11px; color: var(--text4); margin-top: 2px; }
 
 /* ── Progress card ── */
 .an-prog-card {
@@ -552,24 +552,27 @@
 
 /* ── Chart card ── */
 .an-chart-card {
-  background: #fff; border: 1px solid var(--border);
-  border-radius: var(--card-radius); overflow: hidden;
-  box-shadow: var(--card-shadow); transition: box-shadow .2s ease;
+  background: #fff; border: 1px solid #e8edf4;
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+  transition: box-shadow .22s ease, transform .22s ease;
 }
-.an-chart-card:hover { box-shadow: var(--card-shadow-hover); }
+.an-chart-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.09); transform: translateY(-1px); }
 .an-chart-head {
-  display: flex; flex-direction: column;
-  padding: 16px 20px 13px;
-  border-bottom: 1px solid #eef0f4;
-  background: #fafbfc;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid #eef1f6;
+  background: #fafbfd;
 }
+.an-chart-head-left { display: flex; flex-direction: column; }
 .an-chart-title {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 13.5px; font-weight: 700; color: var(--text); letter-spacing: -.1px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: -.1px;
 }
-.an-chart-sub { font-size: 11.5px; color: var(--text4); margin-top: 3px; padding-left: 20px; }
-.an-chart-body { padding: 24px; position: relative; background: #fff; }
-.an-chart-donut { height: 280px; }
+.an-chart-title svg { color: var(--text3); flex-shrink: 0; }
+.an-chart-sub { font-size: 11px; color: var(--text4); margin-top: 3px; padding-left: 21px; }
+.an-chart-body { padding: 20px; position: relative; background: #fff; }
+.an-chart-donut { height: 290px; }
 .an-chart-bar   { height: 320px; }
 
 /* ── Loading skeleton ── */
@@ -592,59 +595,54 @@
   gap: 10px; color: var(--text4); font-size: 13px; font-weight: 500;
 }
 
-/* ── Team Performance grid ── */
-.an-perf-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 14px; margin-bottom: 20px;
+/* ── Team Performance table ── */
+.an-perf-table-wrap {
+  background: #fff; border: 1px solid #e8edf4;
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04); margin-bottom: 20px;
 }
-.an-perf-card {
-  background: #fff; border: 1px solid var(--border);
-  border-radius: 12px; padding: 16px 18px 14px;
-  box-shadow: var(--card-shadow);
-  transition: box-shadow .2s ease, transform .2s ease;
+.an-perf-table { width: 100%; border-collapse: collapse; }
+.an-perf-table thead tr { background: #fafbfd; }
+.an-perf-table th {
+  padding: 12px 18px; font-size: 10.5px; font-weight: 700; color: var(--text4);
+  border-bottom: 1px solid #eef1f6; white-space: nowrap; text-align: left;
+  text-transform: uppercase; letter-spacing: .4px;
 }
-.an-perf-card:hover { box-shadow: var(--card-shadow-hover); transform: translateY(-2px); }
-.an-perf-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.an-perf-table td {
+  padding: 14px 18px; font-size: 13px; color: var(--text2);
+  border-bottom: 1px solid #f2f5fa; vertical-align: middle;
+}
+.an-perf-table tbody tr:last-child td { border-bottom: none; }
+.an-perf-tr { transition: background .1s; }
+.an-perf-tr:hover td { background: #f8fafc; }
+.an-perf-member { display: flex; align-items: center; gap: 10px; }
 .an-perf-av {
-  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 800; color: #fff;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px rgba(0,0,0,.12);
+  font-size: 12px; font-weight: 700; color: #fff;
 }
-.an-perf-info { flex: 1; min-width: 0; }
-.an-perf-name  { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.an-perf-stats { font-size: 11px; color: var(--text4); margin-top: 2px; }
-.an-perf-pct   { font-size: 20px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
-.an-perf-track {
-  height: 7px; background: #f1f5f9; border-radius: 5px; overflow: hidden;
-  margin-bottom: 10px; box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
-}
-.an-perf-bar { height: 100%; border-radius: 5px; }
-.an-perf-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.an-chip {
-  font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
-  border: 1px solid transparent;
-}
-.an-chip-done { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-.an-chip-prog { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-.an-chip-blk  { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-.an-chip-ns   { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
+.an-perf-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.an-perf-num  { font-size: 13px; font-weight: 600; color: var(--text2); }
+.an-perf-pct  { font-size: 13px; font-weight: 800; }
+.an-perf-track-wrap { width: 100%; height: 6px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.an-perf-bar { height: 100%; border-radius: 4px; }
 
 /* ── Leaderboard ── */
 .an-lb-table-wrap {
-  background: #fff; border: 1px solid var(--border);
-  border-radius: var(--card-radius); overflow: hidden;
-  box-shadow: var(--card-shadow); margin-bottom: 8px;
+  background: #fff; border: 1px solid #e8edf4;
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04); margin-bottom: 8px;
 }
 .an-lb-table { width: 100%; border-collapse: collapse; }
-.an-lb-table thead tr { background: #fafbfc; }
+.an-lb-table thead tr { background: #fafbfd; }
 .an-lb-table th {
-  padding: 11px 16px; font-size: 11px; font-weight: 600; color: var(--text3);
-  border-bottom: 1px solid #eef0f4; white-space: nowrap; text-align: left;
+  padding: 12px 18px; font-size: 10.5px; font-weight: 700; color: var(--text4);
+  border-bottom: 1px solid #eef1f6; white-space: nowrap; text-align: left;
+  text-transform: uppercase; letter-spacing: .4px;
 }
 .an-lb-table td {
-  padding: 12px 16px; font-size: 13px; color: var(--text2);
-  border-bottom: 1px solid #f0f4f8; vertical-align: middle;
+  padding: 13px 18px; font-size: 13px; color: var(--text2);
+  border-bottom: 1px solid #f2f5fa; vertical-align: middle;
 }
 .an-lb-table tbody tr:last-child td { border-bottom: none; }
 .an-lb-tr { transition: background .1s; }
@@ -667,9 +665,9 @@
 }
 .an-lb-name { font-size: 13px; font-weight: 700; color: var(--text); }
 .an-lb-num  { font-size: 13px; font-weight: 700; }
-.an-num-done    { color: #16a34a; }
-.an-num-inprog  { color: #2563eb; }
-.an-num-blocked { color: #dc2626; }
+.an-num-done    { color: #1a9450; }
+.an-num-inprog  { color: #1e40af; }
+.an-num-blocked { color: #9b1c1c; }
 .an-lb-bar-wrap { width: 100%; height: 7px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
 .an-lb-bar { height: 100%; border-radius: 4px; }
 .an-lb-pct { font-size: 13px; font-weight: 800; }
@@ -677,16 +675,14 @@
 @media (max-width: 1100px) {
   .an-kpi-row { grid-template-columns: repeat(3,1fr); }
   .an-charts-row3 { grid-template-columns: 1fr 1fr; }
-  .an-perf-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 800px) {
   .an-kpi-row { grid-template-columns: repeat(2,1fr); }
   .an-charts-row3 { grid-template-columns: 1fr; }
-  .an-perf-grid { grid-template-columns: 1fr 1fr; }
+  .an-perf-table-wrap { overflow-x: auto; }
 }
 @media (max-width: 600px) {
   .an-kpi-row { grid-template-columns: 1fr 1fr; }
-  .an-perf-grid { grid-template-columns: 1fr; }
 }
 </style>
 {% endblock %}
