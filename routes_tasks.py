@@ -178,6 +178,9 @@ def register(app):
     @app.route("/upload-meeting", methods=["POST"])
     @auth.login_required
     def upload_meeting():
+        if not auth.is_manager():
+            flash("Only the admin can upload meeting recordings.", "error")
+            return redirect(url_for("meeting"))
         file = request.files.get("recording")
         if not file or not file.filename:
             flash("Please select a file to upload.", "error")

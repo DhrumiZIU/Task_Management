@@ -523,7 +523,8 @@
   </div>
 </div>
 
-{# ── Upload Panel ── #}
+{# ── Upload Panel (manager/admin only) ── #}
+{% if is_manager %}
 <div class="upload-panel" style="animation:fadeUp .22s .05s ease both">
   <div class="upload-panel-top">
     <div class="upload-panel-label">AI Meeting Processor</div>
@@ -613,6 +614,7 @@ document.getElementById('upload-form').addEventListener('submit', function() {
   btn.disabled = true;
 });
 </script>
+{% endif %}
 
 {# ── Audio Player ── #}
 {% if all_meetings %}

@@ -35,7 +35,6 @@
 </div>
 <div class="an-kpi-row">
   <div class="an-kpi an-kpi-blue" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .04s both">
-    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
     <div class="an-kpi-body">
       <div class="an-kpi-val">{{ total_tasks }}</div>
       <div class="an-kpi-label">Total Tasks</div>
@@ -43,7 +42,6 @@
     </div>
   </div>
   <div class="an-kpi an-kpi-green" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .08s both">
-    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div></div>
     <div class="an-kpi-body">
       <div class="an-kpi-val">{{ done_count }}</div>
       <div class="an-kpi-label">Completed</div>
@@ -51,7 +49,6 @@
     </div>
   </div>
   <div class="an-kpi an-kpi-blue2" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .12s both">
-    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
     <div class="an-kpi-body">
       <div class="an-kpi-val">{{ inprog_count }}</div>
       <div class="an-kpi-label">In Progress</div>
@@ -59,7 +56,6 @@
     </div>
   </div>
   <div class="an-kpi an-kpi-red" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .16s both">
-    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><octagon/><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
     <div class="an-kpi-body">
       <div class="an-kpi-val">{{ blocked_count }}</div>
       <div class="an-kpi-label">Blocked</div>
@@ -67,7 +63,6 @@
     </div>
   </div>
   <div class="an-kpi an-kpi-slate" style="animation:fadeUp .28s cubic-bezier(.4,0,.2,1) .20s both">
-    <div class="an-kpi-icon-wrap"><div class="an-kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div></div>
     <div class="an-kpi-body">
       <div class="an-kpi-val">{{ not_started }}</div>
       <div class="an-kpi-label">Not Started</div>
@@ -502,39 +497,24 @@
 }
 .an-kpi {
   background: #fff; border: 1px solid #e8edf4;
-  border-radius: 14px; padding: 18px 20px;
+  border-radius: 12px; padding: 20px 22px;
   box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
   transition: box-shadow .22s ease, transform .22s ease;
-  will-change: transform; position: relative; overflow: hidden;
-  display: flex; align-items: flex-start; gap: 14px;
-}
-.an-kpi::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  border-radius: 14px 14px 0 0;
+  will-change: transform; position: relative;
+  border-left-width: 4px; border-left-style: solid;
 }
 .an-kpi:hover { box-shadow: 0 6px 24px rgba(0,0,0,.10); transform: translateY(-2px); }
-.an-kpi-blue::before   { background: linear-gradient(90deg,#2563eb,#60a5fa); }
-.an-kpi-blue2::before  { background: linear-gradient(90deg,#0891b2,#38bdf8); }
-.an-kpi-green::before  { background: linear-gradient(90deg,#16a34a,#4ade80); }
-.an-kpi-orange::before { background: linear-gradient(90deg,#d97706,#fbbf24); }
-.an-kpi-red::before    { background: linear-gradient(90deg,#dc2626,#f87171); }
-.an-kpi-slate::before  { background: linear-gradient(90deg,#64748b,#cbd5e1); }
+.an-kpi-blue   { border-left-color: #2563eb; }
+.an-kpi-blue2  { border-left-color: #0891b2; }
+.an-kpi-green  { border-left-color: #16a34a; }
+.an-kpi-orange { border-left-color: #d97706; }
+.an-kpi-red    { border-left-color: #dc2626; }
+.an-kpi-slate  { border-left-color: #64748b; }
 
-.an-kpi-icon-wrap { flex-shrink: 0; padding-top: 2px; }
-.an-kpi-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-}
-.an-kpi-blue   .an-kpi-icon { background: #eff6ff; color: #2563eb; }
-.an-kpi-blue2  .an-kpi-icon { background: #ecfeff; color: #0891b2; }
-.an-kpi-green  .an-kpi-icon { background: #f0fdf4; color: #16a34a; }
-.an-kpi-orange .an-kpi-icon { background: #fffbeb; color: #d97706; }
-.an-kpi-red    .an-kpi-icon { background: #fef2f2; color: #dc2626; }
-.an-kpi-slate  .an-kpi-icon { background: #f1f5f9; color: #64748b; }
-.an-kpi-body { flex: 1; min-width: 0; }
-.an-kpi-val   { font-size: 28px; font-weight: 900; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1.5px; }
-.an-kpi-label { font-size: 12px; font-weight: 600; color: var(--text2); margin-top: 5px; }
-.an-kpi-sub   { font-size: 11px; color: var(--text4); margin-top: 2px; }
+.an-kpi-body { min-width: 0; }
+.an-kpi-val   { font-size: 40px; font-weight: 900; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+.an-kpi-label { font-size: 13px; font-weight: 700; color: var(--text2); margin-top: 8px; }
+.an-kpi-sub   { font-size: 11px; color: var(--text4); margin-top: 3px; }
 
 /* ── Progress card ── */
 .an-prog-card {
@@ -546,16 +526,16 @@
 .an-prog-title { font-size: 13px; font-weight: 700; color: var(--text); }
 .an-prog-sub   { font-size: 11.5px; color: var(--text4); margin-top: 3px; }
 .an-prog-pct-badge {
-  font-size: 30px; font-weight: 900; letter-spacing: -1.5px; line-height: 1; flex-shrink: 0;
+  font-size: 36px; font-weight: 900; letter-spacing: -2px; line-height: 1; flex-shrink: 0;
   color: #16a34a;
 }
 .an-prog-track {
-  height: 10px; background: #f1f5f9; border-radius: 8px; overflow: hidden;
+  height: 12px; background: #f1f5f9; border-radius: 10px; overflow: hidden;
   box-shadow: inset 0 1px 2px rgba(0,0,0,.06); margin-bottom: 12px;
 }
-.an-prog-fill { height: 100%; background: #16a34a; border-radius: 8px; }
+.an-prog-fill { height: 100%; background: linear-gradient(90deg, #16a34a, #4ade80); border-radius: 10px; }
 .an-prog-legend { display: flex; gap: 18px; flex-wrap: wrap; }
-.an-leg { font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.an-leg { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
 .an-leg::before { content:''; width:8px; height:8px; border-radius:3px; flex-shrink:0; }
 .an-leg-done::before    { background: #16a34a; }
 .an-leg-inprog::before  { background: #3b82f6; }
