@@ -21,6 +21,9 @@ def register(app):
     @app.route("/task/add", methods=["GET", "POST"])
     @auth.login_required
     def add_task():
+        if not auth.is_manager():
+            flash("Task assignment is handled from the dashboard.", "error")
+            return redirect(url_for("dashboard"))
         all_users = xl.get_all_users()
         members = [u["display_name"] or u["username"] for u in all_users if u.get("display_name") or u.get("username")]
         if request.method == "POST":
