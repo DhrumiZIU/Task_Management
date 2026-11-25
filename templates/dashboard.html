@@ -16,6 +16,10 @@
   </div>
   <a href="{{ url_for('meeting') }}" class="btn btn-secondary btn-sm">7 PM Meeting</a>
   {% endif %}
+  <a href="{{ url_for('task_history') }}" class="btn btn-secondary btn-sm">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    History
+  </a>
   <button onclick="openAddTaskDrawer()" class="btn btn-primary btn-sm">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Add Task
@@ -181,10 +185,86 @@
 </div>
 {% endif %}
 
-{# ── Team Tasks section ── #}
+{# ── Member two-column task view (non-managers only) ── #}
+{% if not is_manager %}
+{% set my_tasks_today = grouped.get(current_user_name, []) %}
+{% set self_tasks = my_tasks_today | selectattr('assigned_by', 'equalto', current_user_name) | list %}
+{% set admin_tasks = my_tasks_today | rejectattr('assigned_by', 'equalto', current_user_name) | list %}
 <div class="dash-section-hd" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .30s both">
   <div class="dash-section-hd-left">
-    <span class="dash-section-title">Team tasks</span>
+    <span class="dash-section-title">My Tasks</span>
+    <span class="dash-section-count">{{ my_tasks_today|length }} task{{ 's' if my_tasks_today|length != 1 }}</span>
+  </div>
+</div>
+<div class="task-cols" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .33s both">
+  <div class="task-col">
+    <div class="task-col-head">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Self-Assigned ({{ self_tasks|length }})
+    </div>
+    {% if self_tasks %}
+    {% for t in self_tasks %}
+    <div class="task-card-col">
+      <div class="tc-top">
+        <span class="tc-task {% if t.status == 'Done' %}tc-done{% endif %}">{{ t.task }}</span>
+        <span class="d-pri d-pri-{{ (t.priority or 'Medium')|lower }}">{{ t.priority or 'Medium' }}</span>
+      </div>
+      {% if t.done_looks_like %}<div class="tc-dll">{{ t.done_looks_like }}</div>{% endif %}
+      <div class="tc-bottom">
+        <form method="post" action="{{ url_for('quick_status', task_id=t.id) }}" style="display:inline">
+          {% set sc = (t.status or 'Not started')|lower|replace(' ','-') %}
+          <select name="status" class="d-sel d-sel-{{ sc }}" onchange="this.form.submit()">
+            {% for s in ['Not started','In progress','Pending','Done','Blocked'] %}
+            <option value="{{ s }}"{% if t.status == s %} selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </form>
+        {% if t.est_hours %}<span class="d-est" style="margin-left:6px">{{ t.est_hours }}h</span>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="task-col-empty">No self-assigned tasks today</div>
+    {% endif %}
+  </div>
+  <div class="task-col">
+    <div class="task-col-head">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Assigned by Admin ({{ admin_tasks|length }})
+    </div>
+    {% if admin_tasks %}
+    {% for t in admin_tasks %}
+    <div class="task-card-col">
+      <div class="tc-top">
+        <span class="tc-task {% if t.status == 'Done' %}tc-done{% endif %}">{{ t.task }}</span>
+        <span class="d-pri d-pri-{{ (t.priority or 'Medium')|lower }}">{{ t.priority or 'Medium' }}</span>
+      </div>
+      {% if t.done_looks_like %}<div class="tc-dll">{{ t.done_looks_like }}</div>{% endif %}
+      <div class="tc-bottom">
+        <form method="post" action="{{ url_for('quick_status', task_id=t.id) }}" style="display:inline">
+          {% set sc = (t.status or 'Not started')|lower|replace(' ','-') %}
+          <select name="status" class="d-sel d-sel-{{ sc }}" onchange="this.form.submit()">
+            {% for s in ['Not started','In progress','Pending','Done','Blocked'] %}
+            <option value="{{ s }}"{% if t.status == s %} selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </form>
+        {% if t.est_hours %}<span class="d-est" style="margin-left:6px">{{ t.est_hours }}h</span>{% endif %}
+        {% if t.assigned_by %}<span style="font-size:11px;color:#94a3b8;margin-left:6px">by {{ t.assigned_by }}</span>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="task-col-empty">No admin-assigned tasks today</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{# ── Team Tasks section (admin view / fallback) ── #}
+<div class="dash-section-hd" style="animation:fadeUp .3s cubic-bezier(.4,0,.2,1) .30s both">
+  <div class="dash-section-hd-left">
+    <span class="dash-section-title">{% if is_manager %}Team tasks{% else %}All My Tasks{% endif %}</span>
     <span class="dash-section-count">{{ all_visible|length }} members</span>
   </div>
   <div class="dash-section-hd-right">
@@ -350,6 +430,20 @@
 </div>
 
 <style>
+/* ── Two-column member task layout ── */
+.task-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.task-col { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+.task-col-head { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 12px; }
+.task-col-empty { font-size: 13px; color: #94a3b8; text-align: center; padding: 24px 0; font-style: italic; }
+.task-card-col { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 12px 14px; margin-bottom: 10px; }
+.task-card-col:last-child { margin-bottom: 0; }
+.tc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.tc-task { font-size: 13px; font-weight: 500; color: #0f172a; line-height: 1.4; flex: 1; }
+.tc-done { text-decoration: line-through; color: #94a3b8; }
+.tc-dll { font-size: 11.5px; color: #94a3b8; margin-bottom: 8px; line-height: 1.4; }
+.tc-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 700px) { .task-cols { grid-template-columns: 1fr; } }
+
 /* ══════════════════════════════════════════════════════
    Dashboard — enterprise-grade redesign
    ══════════════════════════════════════════════════════ */
@@ -693,7 +787,10 @@
   <form method="post" action="{{ url_for('add_task') }}" class="at-form" id="add-task-form">
     <div class="at-field">
       <label class="at-label" for="at-member">Team Member</label>
-      {% if drawer_members|length == 1 %}
+      {% if not is_manager %}
+      <input type="hidden" name="team_member" value="{{ current_user_name }}">
+      <div class="at-static-member">{{ current_user_name }}</div>
+      {% elif drawer_members|length == 1 %}
       <input type="hidden" name="team_member" value="{{ drawer_members[0] }}">
       <div class="at-static-member">{{ drawer_members[0] }}</div>
       {% else %}

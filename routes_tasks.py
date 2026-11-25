@@ -26,11 +26,15 @@ def register(app):
         if request.method == "POST":
             raw_date  = request.form.get("task_date") or str(date.today())
             member    = request.form.get("team_member", "").strip()
+            # Members can only assign tasks to themselves
+            if not auth.is_manager():
+                member = session.get("team_name") or session.get("display_name") or session.get("username", "")
             task      = request.form.get("task", "").strip()
             priority  = request.form.get("priority", "Medium")
             dll       = request.form.get("done_looks_like", "").strip()
             hrs_raw   = request.form.get("est_hours", "").strip()
             est_hours = float(hrs_raw) if hrs_raw else None
+            assigned_by = session.get("display_name") or session.get("username", "")
             if not task or not member:
                 flash("Task description and team member are required.", "error")
             else:
@@ -41,7 +45,8 @@ def register(app):
                 # Write to Excel (manager view) then immediately write to SQLite
                 excel_row = xl.add_task(d, member, task, priority, dll, est_hours)
                 db_backup.write_task_db(excel_row, d, member, task, priority,
-                                        "Not started", dll, est_hours, "")
+                                        "Not started", dll, est_hours, "",
+                                        assigned_by=assigned_by)
                 db_backup.log_activity("add_task", session.get("username", ""),
                                        session.get("display_name", ""),
                                        f"Task for {member}: {task[:60]}")

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Task History — ZIU AI{% endblock %}
+{% block topbar_icon %}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{% endblock %}
+{% block topbar_title %}Task History{% endblock %}
+{% block topbar_sub %}{% if is_manager %}All tasks across the team{% else %}Your complete task history{% endif %} — read-only{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Dashboard
+  </a>
+{% endblock %}
+
+{% block content %}
+<style>
+.history-filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; animation: fadeUp .2s ease both; }
+.history-filter-bar input, .history-filter-bar select {
+  padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 13px; font-family: inherit; color: var(--text); background: var(--surface); outline: none;
+}
+.history-filter-bar input:focus, .history-filter-bar select:focus { border-color: var(--primary); }
+.history-count { font-size: 13px; color: var(--text3); margin-left: auto; }
+
+.hist-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); animation: fadeUp .25s ease .05s both; }
+.hist-table { width: 100%; border-collapse: collapse; }
+.hist-table th { background: #f1f5f9; font-size: 11.5px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .4px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.hist-table td { padding: 11px 14px; font-size: 13px; color: var(--text2); border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+.hist-table tbody tr:last-child td { border-bottom: none; }
+.hist-table tbody tr:hover td { background: #f8fafc; }
+
+.hbadge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.hb-done      { background: #dcfce7; color: #15803d; }
+.hb-progress  { background: #dbeafe; color: #1d4ed8; }
+.hb-blocked   { background: #fee2e2; color: #b91c1c; }
+.hb-notstart  { background: #f1f5f9; color: #64748b; }
+.hb-high      { background: #fee2e2; color: #b91c1c; }
+.hb-medium    { background: #fef9c3; color: #a16207; }
+.hb-low       { background: #dcfce7; color: #15803d; }
+
+.empty-hist { text-align: center; padding: 60px 20px; color: var(--text3); font-size: 14px; }
+</style>
+
+<div class="history-filter-bar">
+  <input type="text" id="hist-search" placeholder="Search tasks, members…" oninput="filterHist()">
+  {% if is_manager %}
+  <select id="hist-member-filter" onchange="filterHist()">
+    <option value="">All Members</option>
+    {% set seen = [] %}
+    {% for t in tasks %}{% if t.team_member not in seen %}{% if seen.append(t.team_member) %}{% endif %}
+    <option value="{{ t.team_member }}">{{ t.team_member }}</option>
+    {% endif %}{% endfor %}
+  </select>
+  {% endif %}
+  <select id="hist-status-filter" onchange="filterHist()">
+    <option value="">All Statuses</option>
+    <option value="done">Done</option>
+    <option value="in progress">In progress</option>
+    <option value="not started">Not started</option>
+    <option value="blocked">Blocked</option>
+  </select>
+  <span class="history-count" id="hist-count">{{ tasks|length }} tasks</span>
+</div>
+
+{% if tasks %}
+<div class="hist-table-wrap">
+  <table class="hist-table" id="hist-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        {% if is_manager %}<th>Member</th>{% endif %}
+        <th>Task</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Est.</th>
+        <th>Assigned By</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tasks %}
+      <tr>
+        <td style="white-space:nowrap;color:#64748b;font-size:12px">
+          {{ t.date.strftime('%b %d, %Y') if t.date else '—' }}
+        </td>
+        {% if is_manager %}
+        <td style="font-weight:600;color:#0f172a">{{ t.team_member }}</td>
+        {% endif %}
+        <td>
+          <div style="font-weight:500;color:#0f172a;line-height:1.4">{{ t.task }}</div>
+          {% if t.done_looks_like %}<div style="font-size:11.5px;color:#94a3b8;margin-top:3px">{{ t.done_looks_like }}</div>{% endif %}
+        </td>
+        <td>
+          {% set p = (t.priority or 'medium')|lower %}
+          <span class="hbadge hb-{{ p }}">{{ t.priority or 'Medium' }}</span>
+        </td>
+        <td>
+          {% set s = (t.status or '')|lower %}
+          {% if 'done' in s or 'complet' in s %}<span class="hbadge hb-done">{{ t.status }}</span>
+          {% elif 'progress' in s %}<span class="hbadge hb-progress">{{ t.status }}</span>
+          {% elif 'block' in s %}<span class="hbadge hb-blocked">{{ t.status }}</span>
+          {% else %}<span class="hbadge hb-notstart">{{ t.status or 'Not started' }}</span>{% endif %}
+        </td>
+        <td style="color:#64748b">{{ t.est_hours ~ 'h' if t.est_hours else '—' }}</td>
+        <td style="font-size:12px;color:#94a3b8">{{ t.assigned_by or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-hist">No task history found.</div>
+{% endif %}
+
+<script>
+function filterHist() {
+  var q = (document.getElementById('hist-search').value || '').toLowerCase();
+  var memberEl = document.getElementById('hist-member-filter');
+  var memberQ = memberEl ? memberEl.value.toLowerCase() : '';
+  var statusQ = (document.getElementById('hist-status-filter').value || '').toLowerCase();
+  var rows = document.querySelectorAll('#hist-table tbody tr');
+  var count = 0;
+  rows.forEach(function(r) {
+    var text = r.textContent.toLowerCase();
+    var matchQ = !q || text.includes(q);
+    var matchM = !memberQ || text.includes(memberQ);
+    var matchS = !statusQ || text.includes(statusQ);
+    var show = matchQ && matchM && matchS;
+    r.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+  document.getElementById('hist-count').textContent = count + ' tasks';
+}
+</script>
+{% endblock %}

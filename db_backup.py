@@ -72,11 +72,16 @@ def _init_db_sqlite():
             status TEXT DEFAULT 'Not started', done_looks_like TEXT,
             est_hours REAL, update_7pm TEXT,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            is_deleted INTEGER DEFAULT 0
+            is_deleted INTEGER DEFAULT 0,
+            assigned_by TEXT DEFAULT ''
         )""")
         # Migrate existing tables that don't have is_deleted yet
         try:
             cur.execute("ALTER TABLE tasks ADD COLUMN is_deleted INTEGER DEFAULT 0")
+        except Exception:
+            pass
+        try:
+            cur.execute("ALTER TABLE tasks ADD COLUMN assigned_by TEXT DEFAULT ''")
         except Exception:
             pass
         cur.execute("""
@@ -129,10 +134,15 @@ def _init_db_postgres():
             status TEXT DEFAULT 'Not started', done_looks_like TEXT,
             est_hours REAL, update_7pm TEXT,
             updated_at TEXT DEFAULT (NOW()::text),
-            is_deleted INTEGER DEFAULT 0
+            is_deleted INTEGER DEFAULT 0,
+            assigned_by TEXT DEFAULT ''
         )""")
         try:
             cur.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS is_deleted INTEGER DEFAULT 0")
+        except Exception:
+            pass
+        try:
+            cur.execute("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assigned_by TEXT DEFAULT ''")
         except Exception:
             pass
         cur.execute("""
@@ -209,7 +219,8 @@ def get_tasks_db(filter_date=None, member: str | None = None) -> list[dict]:
         return {"row": r["excel_row"], "id": r["id"], "date": _parse(r["task_date"]),
                 "team_member": r["team_member"], "task": r["task"], "priority": r["priority"],
                 "status": r["status"], "done_looks_like": r["done_looks_like"],
-                "est_hours": r["est_hours"], "update_7pm": r["update_7pm"]}
+                "est_hours": r["est_hours"], "update_7pm": r["update_7pm"],
+                "assigned_by": r.get("assigned_by", "")}
 
     base = "SELECT * FROM tasks WHERE (is_deleted IS NULL OR is_deleted=0)"
     member_clause = " AND team_member=%s" if member else ""
@@ -272,7 +283,8 @@ def get_tasks_db(filter_date=None, member: str | None = None) -> list[dict]:
 
 
 def write_task_db(excel_row: int, task_date, team_member: str, task: str,
-                  priority: str, status: str, done_looks_like: str, est_hours, update_7pm: str):
+                  priority: str, status: str, done_looks_like: str, est_hours, update_7pm: str,
+                  assigned_by: str = ""):
     init_db()
     with get_connection() as con:
         cur = con.cursor()
@@ -281,9 +293,9 @@ def write_task_db(excel_row: int, task_date, team_member: str, task: str,
         if not cur.fetchone():
             cur.execute(
                 "INSERT INTO tasks (excel_row,task_date,team_member,task,priority,"
-                "status,done_looks_like,est_hours,update_7pm) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                "status,done_looks_like,est_hours,update_7pm,assigned_by) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                 (excel_row, str(task_date), team_member, task, priority,
-                 status, done_looks_like, est_hours, update_7pm))
+                 status, done_looks_like, est_hours, update_7pm, assigned_by))
     _onedrive_push()
 
 
@@ -394,7 +406,37 @@ def get_history_tasks(days: int = 14) -> list[dict]:
     return [{"id": r["id"], "date": _parse(r["task_date"]),
              "team_member": r["team_member"], "task": r["task"],
              "priority": r["priority"], "status": r["status"],
-             "done_looks_like": r["done_looks_like"], "est_hours": r["est_hours"]}
+             "done_looks_like": r["done_looks_like"], "est_hours": r["est_hours"],
+             "assigned_by": r.get("assigned_by", "")}
+            for r in rows]
+
+
+def get_all_tasks_history(member: str | None = None) -> list[dict]:
+    """Return ALL tasks (not just recent) for the full history page, newest first."""
+    init_db()
+    with get_connection() as con:
+        cur = con.cursor()
+        if member:
+            cur.execute(
+                "SELECT * FROM tasks WHERE (is_deleted IS NULL OR is_deleted=0) AND team_member=%s"
+                " ORDER BY task_date DESC, id DESC",
+                (member,))
+        else:
+            cur.execute(
+                "SELECT * FROM tasks WHERE (is_deleted IS NULL OR is_deleted=0)"
+                " ORDER BY task_date DESC, id DESC")
+        rows = _fetchall_dicts(cur)
+
+    def _parse(ds):
+        if isinstance(ds, date): return ds
+        try: return datetime.strptime(str(ds), "%Y-%m-%d").date()
+        except (ValueError, TypeError): return ds
+
+    return [{"id": r["id"], "date": _parse(r["task_date"]),
+             "team_member": r["team_member"], "task": r["task"],
+             "priority": r["priority"], "status": r["status"],
+             "done_looks_like": r["done_looks_like"], "est_hours": r["est_hours"],
+             "assigned_by": r.get("assigned_by", ""), "update_7pm": r.get("update_7pm", "")}
             for r in rows]
 
 

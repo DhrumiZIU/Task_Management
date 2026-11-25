@@ -112,6 +112,7 @@ def dashboard():
     drawer_members = [u.get("display_name") or u.get("username") for u in all_users
                       if u.get("display_name") or u.get("username")]
 
+    current_user_name = session.get("display_name") or session.get("team_name") or session.get("username", "")
     return render_template(
         "dashboard.html", grouped=grouped, members=members,
         manager_names=manager_names,
@@ -120,7 +121,21 @@ def dashboard():
         can_delete=auth.can_delete_task(), team_name=session.get("team_name", ""),
         history_tasks=history_tasks, drawer_members=drawer_members,
         priorities=["High", "Medium", "Low"],
+        current_user_name=current_user_name,
     )
+
+
+# ── Task History ─────────────────────────────────────────────────────────────
+
+@app.route("/task-history")
+@auth.login_required
+def task_history():
+    if auth.is_manager():
+        all_tasks = db_backup.get_all_tasks_history()
+    else:
+        member = session.get("team_name") or session.get("display_name") or session.get("username", "")
+        all_tasks = db_backup.get_all_tasks_history(member=member)
+    return render_template("task_history.html", tasks=all_tasks, is_manager=auth.is_manager())
 
 
 # ── Analytics — always all tasks, matches dashboard "All Dates" ───────────────
