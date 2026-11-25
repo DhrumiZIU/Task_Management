@@ -27,10 +27,20 @@ else:
     import psycopg2.extras
     import psycopg2.pool
 
+    _pg_pool = None
+
+    def _get_pool():
+        global _pg_pool
+        if _pg_pool is None:
+            _pg_pool = psycopg2.pool.ThreadedConnectionPool(
+                1, 5, _DATABASE_URL, connect_timeout=5
+            )
+        return _pg_pool
+
     @contextmanager
     def get_connection():
-        # Use a fresh connection per request — compatible with Vercel serverless.
-        con = psycopg2.connect(_DATABASE_URL, connect_timeout=10)
+        pool = _get_pool()
+        con = pool.getconn()
         try:
             yield con
             con.commit()
@@ -38,7 +48,7 @@ else:
             con.rollback()
             raise
         finally:
-            con.close()
+            pool.putconn(con)
 
 
 def _onedrive_push():
