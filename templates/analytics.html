@@ -144,15 +144,15 @@
     <div class="an-chart-head">
       <div class="an-chart-head-left">
         <div class="an-chart-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Team Radar
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Completion Rate
         </div>
-        <div class="an-chart-sub">Status dimensions per team</div>
+        <div class="an-chart-sub">% done per team member</div>
       </div>
     </div>
     <div class="an-chart-body an-chart-donut" style="position:relative">
-      <div class="an-chart-loading" id="radarChart-loading"><div class="an-chart-skeleton"></div></div>
-      <canvas id="radarChart"></canvas>
+      <div class="an-chart-loading" id="completionChart-loading"><div class="an-chart-skeleton" style="border-radius:8px;width:90%;height:60%"></div></div>
+      <canvas id="completionChart"></canvas>
     </div>
   </div>
 
@@ -346,45 +346,44 @@
   var NODATA_BAR = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>';
   var NODATA_DO  = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
 
+  /* Center-text plugin for donuts */
+  var centerTextPlugin = {
+    id: 'centerText',
+    afterDraw: function(chart) {
+      if(chart.config.options.plugins.centerText) {
+        var cfg = chart.config.options.plugins.centerText;
+        var ctx = chart.ctx;
+        var cx = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
+        var cy = chart.chartArea.top  + (chart.chartArea.bottom - chart.chartArea.top)  / 2;
+        ctx.save();
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '800 28px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText(cfg.value, cx, cy - 8);
+        ctx.font = '500 11px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(cfg.label, cx, cy + 14);
+        ctx.restore();
+      }
+    }
+  };
+  Chart.register(centerTextPlugin);
+
   /* Donut charts */
   function mkDonut(id, labels, data, colors) {
     if(!data.some(function(d){ return d > 0; })) { emptyState(id, NODATA_DO); return; }
     hideLoader(id);
+    var total = data.reduce(function(a,b){ return a+b; }, 0);
     new Chart(document.getElementById(id), {
       type: 'doughnut',
-      data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 3, borderColor: '#fff', hoverOffset: 10 }] },
+      data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 4, borderColor: '#fff', hoverOffset: 12, hoverBorderColor: '#fff' }] },
       options: {
-        cutout: '68%',
-        animation: { animateRotate: true, duration: 900, easing: 'easeInOutQuart' },
+        cutout: '72%',
+        animation: { animateRotate: true, duration: 1000, easing: 'easeInOutQuart' },
         plugins: {
-          legend: { position: 'bottom', labels: { padding: 16, font: { size: 11, weight: '600' }, usePointStyle: true, pointStyleWidth: 10, boxHeight: 8 } },
+          centerText: { value: total, label: 'total tasks' },
+          legend: { position: 'bottom', labels: { padding: 18, font: { size: 11, weight: '600' }, usePointStyle: true, pointStyleWidth: 10, boxHeight: 8 } },
           tooltip: Object.assign({ callbacks: { label: function(c){ return '  ' + c.label + ': ' + c.parsed + ' tasks'; } } }, TOOLTIP)
-        }
-      }
-    });
-  }
-
-  /* Radar chart */
-  function mkRadar(id, labels, datasets) {
-    if(!labels.length) { emptyState(id, NODATA_DO); return; }
-    hideLoader(id);
-    new Chart(document.getElementById(id), {
-      type: 'radar',
-      data: { labels: ['Done','In Progress','Blocked','Not Started'], datasets: datasets },
-      options: {
-        animation: { duration: 900, easing: 'easeInOutQuart' },
-        plugins: {
-          legend: { position: 'bottom', labels: { font: { size: 11, weight: '600' }, usePointStyle: true, padding: 14, boxHeight: 8 } },
-          tooltip: Object.assign({}, TOOLTIP)
-        },
-        scales: {
-          r: {
-            beginAtZero: true,
-            grid: { color: '#e2e8f0' },
-            ticks: { stepSize: 1, font: { size: 10 }, backdropColor: 'transparent' },
-            pointLabels: { font: { size: 11, weight: '700' }, color: '#475569' },
-            angleLines: { color: '#e2e8f0' }
-          }
         }
       }
     });
@@ -436,21 +435,42 @@
   mkDonut('statusChart',   SL, SD, ['#16a34a','#3b82f6','#f59e0b','#ef4444','#94a3b8']);
   mkDonut('priorityChart', PL, PD, ['#ef4444','#f59e0b','#16a34a']);
 
-  /* Radar: use first 5 members for readability */
-  var radarPalette = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626'];
-  var radarDS = ML.slice(0,5).map(function(m,i){
-    var color = radarPalette[i % radarPalette.length];
-    return {
-      label: m,
-      data: [MDa[i]||0, MI[i]||0, MB[i]||0, MNS[i]||0],
-      borderColor: color,
-      backgroundColor: color.replace(')', ',.12)').replace('rgb','rgba'),
-      borderWidth: 2,
-      pointBackgroundColor: color,
-      pointRadius: 4
-    };
-  });
-  mkRadar('radarChart', ML, radarDS);
+  /* Completion rate horizontal bar */
+  var compPct = MT.map(function(t,i){ return t > 0 ? Math.round((MDa[i]/t)*100) : 0; });
+  var compColors = compPct.map(function(p){ return p>=70 ? '#16a34a' : p>=40 ? '#2563eb' : '#f59e0b'; });
+  if(ML.length > 0) {
+    hideLoader('completionChart');
+    new Chart(document.getElementById('completionChart'), {
+      type: 'bar',
+      data: {
+        labels: ML,
+        datasets: [{
+          label: 'Completion %',
+          data: compPct,
+          backgroundColor: compColors,
+          borderRadius: 6,
+          borderSkipped: false,
+          barThickness: 22
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        animation: { duration: 900, easing: 'easeInOutQuart' },
+        plugins: {
+          legend: { display: false },
+          tooltip: Object.assign({ callbacks: { label: function(c){ return '  ' + c.parsed.x + '% completed'; } } }, TOOLTIP)
+        },
+        scales: {
+          x: {
+            min: 0, max: 100,
+            grid: { color: '#f1f5f9' }, border: { display: false },
+            ticks: { callback: function(v){ return v+'%'; }, font: { size: 11 } }
+          },
+          y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 12, weight: '600' } } }
+        }
+      }
+    });
+  } else { emptyState('completionChart', NODATA_BAR); }
 
   mkHBar('memberStackChart', ML, [
     { label: 'Done',        data: MDa, backgroundColor: '#16a34a', borderRadius: { topRight: 4, bottomRight: 4 }, stack: 's' },
@@ -572,8 +592,8 @@
 .an-chart-title svg { color: var(--text3); flex-shrink: 0; }
 .an-chart-sub { font-size: 11px; color: var(--text4); margin-top: 3px; padding-left: 21px; }
 .an-chart-body { padding: 20px; position: relative; background: #fff; }
-.an-chart-donut { height: 290px; }
-.an-chart-bar   { height: 320px; }
+.an-chart-donut { height: 320px; }
+.an-chart-bar   { height: 340px; }
 
 /* ── Loading skeleton ── */
 .an-chart-loading {
